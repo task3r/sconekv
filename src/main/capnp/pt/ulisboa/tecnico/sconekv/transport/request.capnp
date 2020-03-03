@@ -2,12 +2,12 @@
 
 using Java = import "/java.capnp";
 $Java.package("pt.ulisboa.tecnico.sconekv.transport");
-$Java.outerClassname("Request");
+$Java.outerClassname("ClientRequest");
 
-struct Request {
+struct RequestMessage {
   id @0 :UInt64;
 
-  type :union {
+  union {
       write @1 :Write;
       read @2 :Read;
       commit @3 :Commit;
