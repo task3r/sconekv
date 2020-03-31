@@ -6,7 +6,13 @@
 
     <groupId>pt.ulisboa.tecnico.sconekv</groupId>
     <artifactId>SconeKV</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>common</module>
+        <module>client</module>
+        <module>server</module>
+    </modules>
 
 
     <dependencies>
@@ -31,30 +37,5 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-                <configuration>
-                    <release>13</release>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.expretio.maven.plugins</groupId>
-                <artifactId>capnp-maven-plugin</artifactId>
-                <version>1.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

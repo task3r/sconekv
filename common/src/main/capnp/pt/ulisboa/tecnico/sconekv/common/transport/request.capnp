@@ -1,7 +1,7 @@
 @0x85f35d96740c57e8;
 
 using Java = import "/java.capnp";
-$Java.package("pt.ulisboa.tecnico.sconekv.transport");
+$Java.package("pt.ulisboa.tecnico.sconekv.common.transport");
 $Java.outerClassname("ClientRequest");
 
 struct RequestMessage {
