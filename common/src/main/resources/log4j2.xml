@@ -3,7 +3,7 @@
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout
-                    pattern="[%highlight{%-5level}{INFO=blue bright, WARN=yellow bright, DEBUG=green bright}] [%style{%d{HH:mm:ss.SSS}}{cyan}] %style{%C{1.}}{bright,blue}: %msg%n%throwable" />
+                    pattern="%style{%d{HH:mm:ss.SSS}}{cyan} [%highlight{%level}{INFO=blue bright, WARN=yellow bright, DEBUG=green bright}] %style{%C{1.}.%M@%L}{bright,blue}: %msg%n%throwable" />
         </Console>
 
         <RollingFile name="RollingFile"
