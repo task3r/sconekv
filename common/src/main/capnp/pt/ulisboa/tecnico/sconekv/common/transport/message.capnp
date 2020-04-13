@@ -4,9 +4,14 @@ using Java = import "/java.capnp";
 $Java.package("pt.ulisboa.tecnico.sconekv.common.transport");
 $Java.outerClassname("Message");
 
+struct TransactionID {
+    mostSignificant @0: UInt64;
+    leastSignificant @1: UInt64;
+    localID @2: UInt32;
+}
 
 struct Request {
-    id @0 :UInt64;
+    txID @0 :TransactionID;
 
     union {
       write @1 :Write;
@@ -29,10 +34,6 @@ struct Commit {
     ops @1 :List(Operation);
 }
 
-struct Node {
-    id @0 :UInt64;
-}
-
 struct Operation {
     union {
         write @0 :Write;
@@ -42,7 +43,7 @@ struct Operation {
 }
 
 struct Response {
-    id @0 :UInt64; # same as the request
+    txID @0 :TransactionID; # same as the request
 
     union {
         write @1 :WriteResponse;
