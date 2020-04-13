@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.common.db;
+package pt.ulisboa.tecnico.sconekv.common.transaction;
 
 import org.jetbrains.annotations.NotNull;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message;
@@ -28,10 +28,11 @@ public class TransactionID implements Comparable<TransactionID> {
         return localID;
     }
 
-    public void serialize(Message.TransactionID.Builder builder) {
+    public Message.TransactionID.Reader serialize(Message.TransactionID.Builder builder) {
         builder.setMostSignificant(this.client.getMostSignificantBits());
         builder.setLeastSignificant(this.client.getLeastSignificantBits());
         builder.setLocalID(this.localID);
+        return builder.asReader();
     }
 
     @Override
