@@ -24,14 +24,14 @@ public class Transaction extends AbstractTransaction {
     }
 
     public byte[] read(String key) throws IOException {
-        Pair<byte[], ReadOperation> response = client.performRead(getId(), key);
-        addOperation(response.getSecond());
+        Pair<byte[], Short> response = client.performRead(getId(), key);
+        addOperation(new ReadOperation(key, response.getSecond()));
         return response.getFirst();
     }
 
     public void write(String key, byte[] value) throws IOException {
-        WriteOperation op = client.performWrite(getId(), key, value);
-        addOperation(op);
+        short version = client.performWrite(getId(), key);
+        addOperation(new WriteOperation(key, version, value));
     }
 
     public void commit() throws InvalidTransactionStateChangeException, IOException, CommitFailedException {
@@ -39,7 +39,7 @@ public class Transaction extends AbstractTransaction {
             throw new InvalidTransactionStateChangeException();
         if (!client.performCommit(getId(), getRwSet()))
             throw new CommitFailedException();
-        setState(State.COMMITED);
+        setState(State.COMMITTED);
     }
 
     public void abort() throws InvalidTransactionStateChangeException { //Specific client side exceptions?

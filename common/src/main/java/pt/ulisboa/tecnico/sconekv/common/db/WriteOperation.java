@@ -11,8 +11,8 @@ public class WriteOperation extends Operation {
     }
 
     public WriteOperation(Message.Operation.Reader reader) {
-        super(reader.getWrite().getKey().toString(), reader.getVersion());
-        this.value = reader.getWrite().getValue().toArray();
+        super(reader.getKey().toString(), reader.getVersion());
+        this.value = reader.getWrite().toArray();
     }
 
     public byte[] getValue() {
@@ -21,9 +21,8 @@ public class WriteOperation extends Operation {
 
     @Override
     public void serialize(Message.Operation.Builder builder) {
+        builder.setKey(getKey().getBytes());
         builder.setVersion(getVersion());
-        Message.Write.Builder wBuilder = builder.initWrite();
-        wBuilder.setKey(getKey().getBytes());
-        wBuilder.setValue(value);
+        builder.setWrite(value);
     }
 }

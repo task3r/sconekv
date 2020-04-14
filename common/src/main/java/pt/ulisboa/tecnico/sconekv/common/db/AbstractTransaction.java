@@ -9,7 +9,7 @@ import java.util.List;
 public abstract class AbstractTransaction {
 
     protected enum State {
-        COMMITED,
+        COMMITTED,
         ABORTED,
         NONE
     }

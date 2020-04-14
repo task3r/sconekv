@@ -50,30 +50,28 @@ public class SconeClient {
         return new Transaction(this, new TransactionID(this.clientID, transactionCounter++));
     }
 
-    protected Pair<byte[], ReadOperation> performRead(TransactionID txID, String key) throws IOException {
+    protected Pair<byte[], Short> performRead(TransactionID txID, String key) throws IOException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         Message.Request.Builder builder = message.initRoot(Message.Request.factory);
         txID.serialize(builder.getTxID());
-        builder.initRead().setKey(key.getBytes());
+        builder.setRead(key.getBytes());
 
         Message.Response.Reader response = request(message).getRoot(Message.Response.factory);
         assert response.which() == Message.Response.Which.READ;
 
-        return new Pair<>(response.getRead().getValue().toArray(), new ReadOperation(key, response.getRead().getVersion()));
+        return new Pair<>(response.getRead().getValue().toArray(), response.getRead().getVersion());
     }
 
-    protected WriteOperation performWrite(TransactionID txID, String key, byte[] value) throws IOException {
+    protected Short performWrite(TransactionID txID, String key) throws IOException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
-        Message.Request.Builder rBuilder = message.initRoot(Message.Request.factory);
-        txID.serialize(rBuilder.getTxID());
-        Message.Write.Builder wBuilder = rBuilder.initWrite();
-        wBuilder.setKey(key.getBytes());
-        wBuilder.setValue(value);
+        Message.Request.Builder builder = message.initRoot(Message.Request.factory);
+        txID.serialize(builder.getTxID());
+        builder.setWrite(key.getBytes());
 
         Message.Response.Reader response = request(message).getRoot(Message.Response.factory);
         assert response.which() == Message.Response.Which.WRITE;
 
-        return new WriteOperation(key, response.getRead().getVersion(), value);
+        return response.getRead().getVersion();
     }
 
     protected boolean performCommit(TransactionID txID, List<Operation> ops) throws IOException {

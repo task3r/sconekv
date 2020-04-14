@@ -9,13 +9,14 @@ public class ReadOperation extends Operation {
     }
 
     public ReadOperation(Message.Operation.Reader reader) {
-        super(reader.getRead().getKey().toString(), reader.getVersion());
+        super(reader.getKey().toString(), reader.getVersion());
     }
 
     @Override
     public void serialize(Message.Operation.Builder builder) {
+        builder.setKey(getKey().getBytes());
         builder.setVersion(getVersion());
-        builder.initRead().setKey(getKey().getBytes());
+        builder.setRead(null);
     }
 
 }

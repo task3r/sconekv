@@ -29,13 +29,13 @@ public class ServerApplication {
 
                 assert  request.which() == Message.Request.Which.READ;
 
-                logger.info("{} {}", request.which(), new String(request.getRead().getKey().toArray()));
+                logger.info("{} {}", request.which(), new String(request.getRead().toArray()));
 
                 MessageBuilder message = new org.capnproto.MessageBuilder();
                 Message.Response.Builder builder = message.initRoot(Message.Response.factory);
                 builder.setTxID(request.getTxID());
                 Message.ReadResponse.Builder rb = builder.initRead();
-                rb.setKey(request.getRead().getKey());
+                rb.setKey(request.getRead());
                 rb.setValue("bar".getBytes());
                 rb.setVersion((short) 17);
 

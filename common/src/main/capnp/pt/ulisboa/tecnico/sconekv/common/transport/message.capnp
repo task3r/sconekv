@@ -14,19 +14,10 @@ struct Request {
     txID @0 :TransactionID;
 
     union {
-      write @1 :Write;
-      read @2 :Read;
+      write @1 :Data; # read or write simply sends the key
+      read @2 :Data;
       commit @3 :Commit;
     }
-}
-
-struct Write {
-    key @0 :Data;
-    value @1 :Data;
-}
-
-struct Read {
-    key @0 :Data;
 }
 
 struct Commit {
@@ -36,10 +27,11 @@ struct Commit {
 
 struct Operation {
     union {
-        write @0 :Write;
-        read @1 :Read;
+        write @0 :Data; # value written
+        read @1 :Void;
     }
-    version @2 :Int16;
+    key @2 :Data;
+    version @3 :Int16;
 }
 
 struct Response {
