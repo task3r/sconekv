@@ -28,11 +28,10 @@ public class TransactionID implements Comparable<TransactionID> {
         return localID;
     }
 
-    public Message.TransactionID.Reader serialize(Message.TransactionID.Builder builder) {
+    public void serialize(Message.TransactionID.Builder builder) {
         builder.setMostSignificant(this.client.getMostSignificantBits());
         builder.setLeastSignificant(this.client.getLeastSignificantBits());
         builder.setLocalID(this.localID);
-        return builder.asReader();
     }
 
     @Override

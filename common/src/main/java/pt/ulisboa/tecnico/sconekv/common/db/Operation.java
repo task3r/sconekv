@@ -1,5 +1,7 @@
 package pt.ulisboa.tecnico.sconekv.common.db;
 
+import pt.ulisboa.tecnico.sconekv.common.transport.Message;
+
 public abstract class Operation {
     private String key;
     private short version;
@@ -16,4 +18,6 @@ public abstract class Operation {
     public short getVersion() {
         return version;
     }
+
+    public abstract void serialize(Message.Operation.Builder builder);
 }

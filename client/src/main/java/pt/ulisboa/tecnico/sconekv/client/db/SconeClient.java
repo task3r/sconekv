@@ -8,12 +8,16 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import pt.ulisboa.tecnico.sconekv.common.Constants;
+import pt.ulisboa.tecnico.sconekv.common.db.Operation;
+import pt.ulisboa.tecnico.sconekv.common.db.ReadOperation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
-import pt.ulisboa.tecnico.sconekv.common.transport.Message.Request;
-import pt.ulisboa.tecnico.sconekv.common.transport.Message.Response;
+import pt.ulisboa.tecnico.sconekv.common.db.WriteOperation;
+import pt.ulisboa.tecnico.sconekv.common.transport.Message;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.UUID;
 
 public class SconeClient {
@@ -46,17 +50,48 @@ public class SconeClient {
         return new Transaction(this, new TransactionID(this.clientID, transactionCounter++));
     }
 
-    protected Pair<byte[], Short> performRead(TransactionID txID, String key) throws IOException {
+    protected Pair<byte[], ReadOperation> performRead(TransactionID txID, String key) throws IOException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
-        Request.Builder builder = message.initRoot(Request.factory);
-        builder.setTxID(txID.serialize(builder.getTxID()));
+        Message.Request.Builder builder = message.initRoot(Message.Request.factory);
+        txID.serialize(builder.getTxID());
         builder.initRead().setKey(key.getBytes());
 
+        Message.Response.Reader response = request(message).getRoot(Message.Response.factory);
+        assert response.which() == Message.Response.Which.READ;
 
-        Response.Reader response = request(message).getRoot(Response.factory);
-        assert response.which() == Response.Which.READ;
+        return new Pair<>(response.getRead().getValue().toArray(), new ReadOperation(key, response.getRead().getVersion()));
+    }
 
-        return new Pair<>(response.getRead().getValue().toArray(), response.getRead().getVersion());
+    protected WriteOperation performWrite(TransactionID txID, String key, byte[] value) throws IOException {
+        MessageBuilder message = new org.capnproto.MessageBuilder();
+        Message.Request.Builder rBuilder = message.initRoot(Message.Request.factory);
+        txID.serialize(rBuilder.getTxID());
+        Message.Write.Builder wBuilder = rBuilder.initWrite();
+        wBuilder.setKey(key.getBytes());
+        wBuilder.setValue(value);
+
+        Message.Response.Reader response = request(message).getRoot(Message.Response.factory);
+        assert response.which() == Message.Response.Which.WRITE;
+
+        return new WriteOperation(key, response.getRead().getVersion(), value);
+    }
+
+    protected boolean performCommit(TransactionID txID, List<Operation> ops) throws IOException {
+        MessageBuilder message = new org.capnproto.MessageBuilder();
+        Message.Request.Builder rBuilder = message.initRoot(Message.Request.factory);
+        txID.serialize(rBuilder.getTxID());
+        Message.Commit.Builder cBuilder = rBuilder.initCommit();
+        StructList.Builder<Message.Operation.Builder> opsBuilder = cBuilder.initOps(ops.size());
+        ListIterator<Operation> it = ops.listIterator();
+        while (it.hasNext()) {
+            it.next().serialize(opsBuilder.get(it.nextIndex()));
+        }
+        cBuilder.initBuckets(0); // insert buckets in message
+
+        Message.Response.Reader response = request(message).getRoot(Message.Response.factory);
+        assert response.which() == Message.Response.Which.COMMIT;
+
+        return response.getCommit().getResult() == Message.CommitResponse.Result.OK;
     }
 
     private MessageReader request(MessageBuilder message) throws IOException {

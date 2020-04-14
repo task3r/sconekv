@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.sconekv.common.db;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class AbstractTransaction {
@@ -32,7 +33,7 @@ public abstract class AbstractTransaction {
     }
 
     public List<Operation> getRwSet() {
-        return rwSet;
+        return Collections.unmodifiableList(rwSet);
     }
 
     public State getState() {
