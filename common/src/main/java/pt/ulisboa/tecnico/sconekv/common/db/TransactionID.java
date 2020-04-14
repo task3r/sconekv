@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.common.transaction;
+package pt.ulisboa.tecnico.sconekv.common.db;
 
 import org.jetbrains.annotations.NotNull;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message;

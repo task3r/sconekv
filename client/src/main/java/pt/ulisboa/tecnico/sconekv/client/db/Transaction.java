@@ -1,12 +1,12 @@
-package pt.ulisboa.tecnico.sconekv.client;
+package pt.ulisboa.tecnico.sconekv.client.db;
 
 import kotlin.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
-import pt.ulisboa.tecnico.sconekv.common.transaction.AbstractTransaction;
-import pt.ulisboa.tecnico.sconekv.common.transaction.ReadOperation;
-import pt.ulisboa.tecnico.sconekv.common.transaction.TransactionID;
+import pt.ulisboa.tecnico.sconekv.common.db.AbstractTransaction;
+import pt.ulisboa.tecnico.sconekv.common.db.ReadOperation;
+import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 
 import java.io.IOException;
 

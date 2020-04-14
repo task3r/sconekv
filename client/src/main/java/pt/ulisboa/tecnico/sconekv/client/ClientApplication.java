@@ -3,6 +3,8 @@ package pt.ulisboa.tecnico.sconekv.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZContext;
+import pt.ulisboa.tecnico.sconekv.client.db.SconeClient;
+import pt.ulisboa.tecnico.sconekv.client.db.Transaction;
 
 import java.io.IOException;
 

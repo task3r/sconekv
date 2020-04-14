@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.common.transaction;
+package pt.ulisboa.tecnico.sconekv.common.db;
 
 public abstract class Operation {
     private String key;

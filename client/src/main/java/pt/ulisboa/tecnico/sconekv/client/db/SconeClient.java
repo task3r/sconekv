@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.client;
+package pt.ulisboa.tecnico.sconekv.client.db;
 
 import kotlin.Pair;
 import org.capnproto.*;
@@ -8,7 +8,7 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import pt.ulisboa.tecnico.sconekv.common.Constants;
-import pt.ulisboa.tecnico.sconekv.common.transaction.TransactionID;
+import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message.Request;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message.Response;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;

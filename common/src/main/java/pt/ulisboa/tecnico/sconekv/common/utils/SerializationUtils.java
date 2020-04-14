@@ -11,8 +11,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 
-public class SerializationUtils {
+public final class SerializationUtils {
     private static final Logger logger = LoggerFactory.getLogger(SerializationUtils.class);
+
+    private SerializationUtils() {}
 
     public static byte[] getBytesFromMessage(MessageBuilder message) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
