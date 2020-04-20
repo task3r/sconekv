@@ -9,9 +9,7 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import pt.ulisboa.tecnico.sconekv.common.Constants;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
-import pt.ulisboa.tecnico.sconekv.common.db.ReadOperation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
-import pt.ulisboa.tecnico.sconekv.common.db.WriteOperation;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 
@@ -82,7 +80,7 @@ public class SconeClient {
         StructList.Builder<Message.Operation.Builder> opsBuilder = cBuilder.initOps(ops.size());
         ListIterator<Operation> it = ops.listIterator();
         while (it.hasNext()) {
-            it.next().serialize(opsBuilder.get(it.nextIndex()));
+            it.next().serialize(opsBuilder.get(it.nextIndex() - 1));
         }
         cBuilder.initBuckets(0); // insert buckets in message
 
@@ -97,5 +95,7 @@ public class SconeClient {
         this.requester.send(SerializationUtils.getBytesFromMessage(message));
         this.requester.recv(); // delimiter
         return SerializationUtils.getMessageFromBytes(this.requester.recv(0));
+
+        // TODO falta garantir que é uma resposta à mesma mensagem que enviei
     }
 }

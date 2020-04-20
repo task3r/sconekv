@@ -11,6 +11,19 @@ public abstract class Operation {
         this.version = version;
     }
 
+    public static Operation unserialize(Message.Operation.Reader op) {
+        switch (op.which()) {
+            case WRITE:
+                return new WriteOperation(op);
+            case READ:
+                return new ReadOperation(op);
+            case _NOT_IN_SCHEMA:
+                // TODO throw something
+                break;
+        }
+        return null;
+    }
+
     public String getKey() {
         return key;
     }

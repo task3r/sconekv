@@ -11,7 +11,7 @@ public class WriteOperation extends Operation {
     }
 
     public WriteOperation(Message.Operation.Reader reader) {
-        super(reader.getKey().toString(), reader.getVersion());
+        super(new String(reader.getKey().toArray()), reader.getVersion());
         this.value = reader.getWrite().toArray();
     }
 

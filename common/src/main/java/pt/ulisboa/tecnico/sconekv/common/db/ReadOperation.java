@@ -9,7 +9,7 @@ public class ReadOperation extends Operation {
     }
 
     public ReadOperation(Message.Operation.Reader reader) {
-        super(reader.getKey().toString(), reader.getVersion());
+        super(new String(reader.getKey().toArray()), reader.getVersion());
     }
 
     @Override

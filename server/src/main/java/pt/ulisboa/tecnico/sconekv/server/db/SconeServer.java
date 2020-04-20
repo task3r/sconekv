@@ -6,8 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+import pt.ulisboa.tecnico.sconekv.common.db.Operation;
+import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
 
 import java.io.IOException;
 
@@ -16,9 +19,11 @@ public class SconeServer {
 
     ZContext context;
     ZMQ.Socket socket;
+    Store store;
 
     public SconeServer(ZContext context) {
         this.context = context;
+        this.store = new Store();
 
         initSockets();
     }
@@ -37,25 +42,86 @@ public class SconeServer {
 
             byte[] requestBytes = socket.recv(0);
 
-            logger.info("Received request from {}", client);
+            //logger.info("Received request from {}", client);
             Message.Request.Reader request = SerializationUtils.getMessageFromBytes(requestBytes).getRoot(Message.Request.factory);
 
-            assert  request.which() == Message.Request.Which.READ;
-
-            logger.info("{} {}", request.which(), new String(request.getRead().toArray()));
+            TransactionID txID = new TransactionID(request.getTxID());
 
             MessageBuilder message = new org.capnproto.MessageBuilder();
-            Message.Response.Builder builder = message.initRoot(Message.Response.factory);
-            builder.setTxID(request.getTxID());
-            Message.ReadResponse.Builder rb = builder.initRead();
-            rb.setKey(request.getRead());
-            rb.setValue("bar".getBytes());
-            rb.setVersion((short) 17);
+            Message.Response.Builder response = message.initRoot(Message.Response.factory);
+            response.setTxID(request.getTxID());
+
+            switch (request.which()) {
+                case WRITE:
+                    performWrite(response, txID, new String(request.getRead().toArray()));
+                    break;
+
+                case READ:
+                    performRead(response, txID, new String(request.getRead().toArray()));
+                    break;
+
+                case COMMIT:
+                    Message.Commit.Reader commit = request.getCommit();
+
+                    Operation[] ops = new  Operation[commit.getOps().size()];
+                    for (int i = 0; i < ops.length; i++) {
+                        ops[i] = Operation.unserialize(commit.getOps().get(i));
+                    }
+
+                    short[] buckets = new short[commit.getBuckets().size()];
+                    for (int i = 0; i < buckets.length; i++) {
+                        buckets[i] = commit.getBuckets().get(i);
+                    }
+
+                    performCommit(response, txID, ops, buckets);
+                    break;
+
+                case _NOT_IN_SCHEMA:
+                    logger.error("Received an incorrect request, ignoring...");
+                    break;
+            }
+
 
             socket.sendMore(client);
             socket.sendMore("");
             socket.send(SerializationUtils.getBytesFromMessage(message), 0);
         }
         logger.info("Shutting down...");
+    }
+
+    private void performRead(Message.Response.Builder response, TransactionID txID, String key) {
+        logger.info("Read {} : {}", key, txID);
+
+        Value value = store.get(key);
+
+        Message.ReadResponse.Builder builder = response.initRead();
+        builder.setKey(key.getBytes());
+        builder.setValue(value.getContent());
+        builder.setVersion(value.getVersion());
+    }
+
+    private void performWrite(Message.Response.Builder response, TransactionID txID, String key) {
+        logger.info("Write {} : {}", key, txID);
+
+        Value value = store.get(key);
+
+        Message.WriteResponse.Builder builder = response.initWrite();
+        builder.setKey(key.getBytes());
+        builder.setVersion(value.getVersion());
+    }
+
+    private void performCommit(Message.Response.Builder response, TransactionID txID, Operation[] ops, short[] buckets) {
+        logger.info("Commit : {}", txID);
+        Message.CommitResponse.Builder builder = response.initCommit();
+
+        try {
+            for (Operation op : ops) {
+                store.perform(op);
+            }
+            builder.setResult(Message.CommitResponse.Result.OK);
+        } catch (InvalidOperationException e) {
+            builder.setResult(Message.CommitResponse.Result.NOK);
+        }
+
     }
 }

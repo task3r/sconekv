@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.zeromq.ZContext;
 import pt.ulisboa.tecnico.sconekv.client.db.SconeClient;
 import pt.ulisboa.tecnico.sconekv.client.db.Transaction;
+import pt.ulisboa.tecnico.sconekv.client.exceptions.CommitFailedException;
+import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
 
 import java.io.IOException;
 
@@ -19,10 +21,22 @@ public class ClientApplication {
             SconeClient client = new SconeClient(context, "localhost");
             Transaction tx = client.newTransaction();
 
-            byte[] response = tx.read("foo");
+            tx.write("foo", "bar".getBytes());
+
+            tx.commit();
+
+            Transaction tx2 = client.newTransaction();
+
+            byte[] response = tx2.read("foo");
 
             logger.info("response: {}", new String(response));
 
+            tx2.write("bar", response);
+
+            tx2.commit();
+
+        } catch (CommitFailedException | InvalidTransactionStateChangeException e) {
+            e.printStackTrace();
         }
     }
 }
