@@ -11,27 +11,35 @@ import pt.ulisboa.tecnico.sconekv.common.db.ReadOperation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Transaction extends AbstractTransaction {
     private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
     private SconeClient client;
+    private Map<String, byte[]> context;
     // map bucket:ops ?
 
     protected Transaction(SconeClient client,TransactionID id) {
         super(id);
         this.client = client;
+        this.context = new HashMap<>();
     }
 
     public byte[] read(String key) throws IOException {
+        if (context.containsKey(key)) // repeatable reads and read-my-writes
+            return context.get(key);
         Pair<byte[], Short> response = client.performRead(getId(), key);
         addOperation(new ReadOperation(key, response.getSecond()));
+        context.put(key, response.getFirst());
         return response.getFirst();
     }
 
     public void write(String key, byte[] value) throws IOException {
         short version = client.performWrite(getId(), key);
         addOperation(new WriteOperation(key, version, value));
+        context.put(key, value);
     }
 
     public void commit() throws InvalidTransactionStateChangeException, IOException, CommitFailedException {
