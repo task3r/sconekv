@@ -61,19 +61,10 @@ public class SconeServer {
                     break;
 
                 case COMMIT:
-                    Message.Commit.Reader commit = request.getCommit();
+                    Transaction tx = new Transaction(txID, request.getCommit());
 
-                    Operation[] ops = new  Operation[commit.getOps().size()];
-                    for (int i = 0; i < ops.length; i++) {
-                        ops[i] = Operation.unserialize(commit.getOps().get(i));
-                    }
 
-                    short[] buckets = new short[commit.getBuckets().size()];
-                    for (int i = 0; i < buckets.length; i++) {
-                        buckets[i] = commit.getBuckets().get(i);
-                    }
-
-                    performCommit(response, txID, ops, buckets);
+                    performCommit(response, tx);
                     break;
 
                 case _NOT_IN_SCHEMA:
@@ -110,14 +101,12 @@ public class SconeServer {
         builder.setVersion(value.getVersion());
     }
 
-    private void performCommit(Message.Response.Builder response, TransactionID txID, Operation[] ops, short[] buckets) {
-        logger.info("Commit : {}", txID);
+    private void performCommit(Message.Response.Builder response, Transaction tx) {
+        logger.info("Commit : {}", tx.getId());
         Message.CommitResponse.Builder builder = response.initCommit();
 
         try {
-            for (Operation op : ops) {
-                store.perform(op);
-            }
+            store.perform(tx);
             builder.setResult(Message.CommitResponse.Result.OK);
         } catch (InvalidOperationException e) {
             builder.setResult(Message.CommitResponse.Result.NOK);

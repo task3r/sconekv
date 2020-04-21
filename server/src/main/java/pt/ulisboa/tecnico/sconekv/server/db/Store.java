@@ -31,14 +31,16 @@ public class Store {
             values.put(key, new Value(value, version));
     }
 
-    public void perform(Operation op) throws InvalidOperationException {
-        if (op instanceof WriteOperation) {
-            perform((WriteOperation) op);
-        } else if (op instanceof ReadOperation) {
-            perform((ReadOperation) op);
-        } else {
-            logger.error("Received invalid operation, aborting...");
-            throw new InvalidOperationException();
+    public void perform(Transaction tx) throws InvalidOperationException {
+        for (Operation op : tx.getRwSet()) {
+            if (op instanceof WriteOperation) {
+                perform((WriteOperation) op);
+            } else if (op instanceof ReadOperation) {
+                perform((ReadOperation) op);
+            } else {
+                logger.error("Received invalid operation, aborting...");
+                throw new InvalidOperationException();
+            }
         }
     }
 
