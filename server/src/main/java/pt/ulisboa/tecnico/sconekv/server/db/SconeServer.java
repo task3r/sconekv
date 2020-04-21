@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
-import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
@@ -106,7 +105,9 @@ public class SconeServer {
         Message.CommitResponse.Builder builder = response.initCommit();
 
         try {
+            store.validate(tx);
             store.perform(tx);
+            store.releaseLocks(tx);
             builder.setResult(Message.CommitResponse.Result.OK);
         } catch (InvalidOperationException e) {
             builder.setResult(Message.CommitResponse.Result.NOK);

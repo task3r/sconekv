@@ -45,5 +45,4 @@ public abstract class AbstractTransaction {
             throw new InvalidTransactionStateChangeException();
         this.state = state;
     }
-
 }

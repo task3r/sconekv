@@ -34,6 +34,19 @@ public class TransactionID implements Comparable<TransactionID> {
         builder.setLocalID(this.localID);
     }
 
+
+    public boolean isLesser(TransactionID other) {
+        return compareTo(other) < 0;
+    }
+
+    public boolean isEqual(TransactionID other) {
+        return compareTo(other) == 0;
+    }
+
+    public boolean isGreater(TransactionID other) {
+        return compareTo(other) > 0;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
