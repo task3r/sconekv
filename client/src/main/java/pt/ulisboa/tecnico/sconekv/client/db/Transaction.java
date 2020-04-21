@@ -4,42 +4,43 @@ import kotlin.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.CommitFailedException;
-import pt.ulisboa.tecnico.sconekv.common.db.WriteOperation;
+import pt.ulisboa.tecnico.sconekv.common.db.*;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
-import pt.ulisboa.tecnico.sconekv.common.db.AbstractTransaction;
-import pt.ulisboa.tecnico.sconekv.common.db.ReadOperation;
-import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Transaction extends AbstractTransaction {
     private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
     private SconeClient client;
-    private Map<String, byte[]> context;
+    private Map<String, Operation> rwSet;
     // map bucket:ops ?
 
     protected Transaction(SconeClient client,TransactionID id) {
         super(id);
         this.client = client;
-        this.context = new HashMap<>();
+        this.rwSet = new HashMap<>();
     }
 
     public byte[] read(String key) throws IOException {
-        if (context.containsKey(key)) // repeatable reads and read-my-writes
-            return context.get(key);
+        if (rwSet.containsKey(key)) // repeatable reads and read-my-writes
+            return rwSet.get(key).getValue();
         Pair<byte[], Short> response = client.performRead(getId(), key);
         addOperation(new ReadOperation(key, response.getSecond()));
-        context.put(key, response.getFirst());
         return response.getFirst();
     }
 
     public void write(String key, byte[] value) throws IOException {
-        short version = client.performWrite(getId(), key);
-        addOperation(new WriteOperation(key, version, value));
-        context.put(key, value);
+        if (rwSet.containsKey(key)) {
+            rwSet.replace(key, new WriteOperation(key, rwSet.get(key).getVersion(), value));
+        } else {
+            short version = client.performWrite(getId(), key);
+            addOperation(new WriteOperation(key, version, value));
+        }
     }
 
     public void commit() throws InvalidTransactionStateChangeException, IOException, CommitFailedException {
@@ -52,5 +53,15 @@ public class Transaction extends AbstractTransaction {
 
     public void abort() throws InvalidTransactionStateChangeException { //Specific client side exceptions?
         setState(State.ABORTED);
+    }
+
+    @Override
+    protected void addOperation(Operation op) {
+        rwSet.put(op.getKey(), op);
+    }
+
+    @Override
+    public List<Operation> getRwSet() {
+        return new ArrayList<>(rwSet.values());
     }
 }

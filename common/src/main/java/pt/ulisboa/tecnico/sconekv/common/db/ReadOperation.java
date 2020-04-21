@@ -8,6 +8,10 @@ public class ReadOperation extends Operation {
         super(key, version);
     }
 
+    public ReadOperation(String key, short version, byte[] value) {
+        super(key, version, value);
+    }
+
     public ReadOperation(Message.Operation.Reader reader) {
         super(new String(reader.getKey().toArray()), reader.getVersion());
     }

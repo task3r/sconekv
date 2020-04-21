@@ -39,6 +39,7 @@ public class ClientApplication {
             logger.info("response: {}", new String(response));
 
             tx2.write("bar", response);
+            tx2.write("bar", "barfoo".getBytes());
 
             tx2.commit();
 

@@ -5,12 +5,19 @@ import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class Transaction extends AbstractTransaction {
 
     private short[] buckets;
+    private List<Operation> rwSet;
 
     protected Transaction(TransactionID txID, Message.Commit.Reader commit) {
         super(txID);
+
+        rwSet = new ArrayList<>();
 
         for (int i = 0; i < commit.getOps().size(); i++) {
             addOperation(Operation.unserialize(commit.getOps().get(i)));
@@ -24,5 +31,15 @@ public class Transaction extends AbstractTransaction {
 
     public short[] getBuckets() {
         return buckets;
+    }
+
+    @Override
+    protected void addOperation(Operation op) {
+        rwSet.add(op);
+    }
+
+    @Override
+    public List<Operation> getRwSet() {
+        return Collections.unmodifiableList(rwSet);
     }
 }
