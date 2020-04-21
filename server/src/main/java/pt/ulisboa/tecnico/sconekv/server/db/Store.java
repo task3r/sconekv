@@ -45,7 +45,7 @@ public class Store {
     }
 
     private void perform(WriteOperation op) throws WriteOutdatedVersionException {
-        this.put(op.getKey(), op.getValue(), op.getVersion());
+        this.put(op.getKey(), op.getValue(), (short) (op.getVersion()+1));
     }
 
     private void perform(ReadOperation op) {

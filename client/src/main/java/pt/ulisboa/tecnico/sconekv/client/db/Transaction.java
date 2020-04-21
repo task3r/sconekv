@@ -31,7 +31,7 @@ public class Transaction extends AbstractTransaction {
 
     public void write(String key, byte[] value) throws IOException {
         short version = client.performWrite(getId(), key);
-        addOperation(new WriteOperation(key, ++version, value));
+        addOperation(new WriteOperation(key, version, value));
     }
 
     public void commit() throws InvalidTransactionStateChangeException, IOException, CommitFailedException {
