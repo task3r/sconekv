@@ -37,6 +37,8 @@ public class ClientApplication {
             byte[] response = tx2.read("foo");
 
             logger.info("response: {}", new String(response));
+            response = tx2.read("foo");
+            logger.info("response: {}", new String(response));
 
             tx2.write("bar", response);
             tx2.write("bar", "barfoo".getBytes());

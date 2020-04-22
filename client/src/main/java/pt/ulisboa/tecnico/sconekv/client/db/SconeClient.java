@@ -1,7 +1,7 @@
 package pt.ulisboa.tecnico.sconekv.client.db;
 
-import kotlin.Pair;
 import org.capnproto.*;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;

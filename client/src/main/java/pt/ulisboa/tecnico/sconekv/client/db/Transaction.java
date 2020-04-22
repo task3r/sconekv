@@ -1,6 +1,6 @@
 package pt.ulisboa.tecnico.sconekv.client.db;
 
-import kotlin.Pair;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.CommitFailedException;
@@ -30,8 +30,8 @@ public class Transaction extends AbstractTransaction {
         if (rwSet.containsKey(key)) // repeatable reads and read-my-writes
             return rwSet.get(key).getValue();
         Pair<byte[], Short> response = client.performRead(getId(), key);
-        addOperation(new ReadOperation(key, response.getSecond(), response.getFirst()));
-        return response.getFirst();
+        addOperation(new ReadOperation(key, response.getValue1(), response.getValue0()));
+        return response.getValue0();
     }
 
     public void write(String key, byte[] value) throws IOException {
