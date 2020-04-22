@@ -30,7 +30,7 @@ public class Transaction extends AbstractTransaction {
         if (rwSet.containsKey(key)) // repeatable reads and read-my-writes
             return rwSet.get(key).getValue();
         Pair<byte[], Short> response = client.performRead(getId(), key);
-        addOperation(new ReadOperation(key, response.getSecond()));
+        addOperation(new ReadOperation(key, response.getSecond(), response.getFirst()));
         return response.getFirst();
     }
 
