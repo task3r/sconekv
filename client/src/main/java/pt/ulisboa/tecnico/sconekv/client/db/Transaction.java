@@ -26,7 +26,8 @@ public class Transaction extends AbstractTransaction {
         this.rwSet = new HashMap<>();
     }
 
-    public byte[] read(String key) throws IOException {
+    public byte[] read(String key) throws IOException, InvalidTransactionStateChangeException {
+        validate();
         if (rwSet.containsKey(key)) // repeatable reads and read-my-writes
             return rwSet.get(key).getValue();
         Pair<byte[], Short> response = client.performRead(getId(), key);
@@ -34,7 +35,8 @@ public class Transaction extends AbstractTransaction {
         return response.getValue0();
     }
 
-    public void write(String key, byte[] value) throws IOException {
+    public void write(String key, byte[] value) throws IOException, InvalidTransactionStateChangeException {
+        validate();
         if (rwSet.containsKey(key)) {
             rwSet.replace(key, new WriteOperation(key, rwSet.get(key).getVersion(), value));
         } else {
@@ -44,8 +46,7 @@ public class Transaction extends AbstractTransaction {
     }
 
     public void commit() throws InvalidTransactionStateChangeException, IOException, CommitFailedException {
-        if (getState() != State.NONE)
-            throw new InvalidTransactionStateChangeException();
+        validate();
         if (!client.performCommit(getId(), getRwSet()))
             throw new CommitFailedException();
         setState(State.COMMITTED);
@@ -53,6 +54,11 @@ public class Transaction extends AbstractTransaction {
 
     public void abort() throws InvalidTransactionStateChangeException { //Specific client side exceptions?
         setState(State.ABORTED);
+    }
+
+    private void validate() throws InvalidTransactionStateChangeException {
+        if (getState() != State.NONE)
+            throw new InvalidTransactionStateChangeException();
     }
 
     @Override

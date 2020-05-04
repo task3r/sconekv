@@ -69,7 +69,7 @@ public class SconeClient {
         Message.Response.Reader response = request(message).getRoot(Message.Response.factory);
         assert response.which() == Message.Response.Which.WRITE;
 
-        return response.getRead().getVersion();
+        return response.getWrite().getVersion();
     }
 
     protected boolean performCommit(TransactionID txID, List<Operation> ops) throws IOException {
