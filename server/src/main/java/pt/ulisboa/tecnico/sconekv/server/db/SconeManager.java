@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+import pt.tecnico.ulisboa.prime.MembershipManager;
+import pt.tecnico.ulisboa.prime.UpdateViewCallback;
+import pt.tecnico.ulisboa.prime.membership.ring.Ring;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
@@ -17,22 +20,38 @@ import pt.ulisboa.tecnico.sconekv.server.db.events.WriteRequest;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadLocalRandom;
 
-public class SconeManager {
+public class SconeManager implements UpdateViewCallback {
     private static final Logger logger = LoggerFactory.getLogger(SconeManager.class);
 
+    MembershipManager membershipManager;
     ZContext context;
     ZMQ.Socket socket;
     Store store;
     BlockingQueue<SconeEvent> eventQueue;
     Thread worker;
 
-    public SconeManager(ZContext context) {
+    public SconeManager(ZContext context) throws IOException, InterruptedException {
         this.context = context;
         this.store = new Store();
         this.eventQueue = new LinkedBlockingQueue<>();
 
+        joinMembership();
+
         initSockets();
+    }
+
+    private void joinMembership() throws IOException, InterruptedException {
+        membershipManager = new MembershipManager(this);
+        if (!membershipManager.isFirstNode()) {
+            int sleepMs = ThreadLocalRandom.current().nextInt(15000);
+            logger.info("[{}] - Sleeping {} ms", MembershipManager.myself, sleepMs);
+            Thread.sleep(sleepMs);
+        } else {
+            logger.info("[{}] - Not sleeping", MembershipManager.myself);
+        }
+        membershipManager.join();
     }
 
     private void initSockets() {
@@ -42,13 +61,13 @@ public class SconeManager {
 
 
     public void run() throws IOException {
-        logger.info("Listening for requests...");
 
         worker = new Thread(new SconeWorker(1, socket, store, eventQueue));
         worker.start();
 
         short id = 0;
         int eventCounter = 0;
+        logger.info("Listening for requests...");
         while (!Thread.currentThread().isInterrupted()) {
             String client = socket.recvStr();
             socket.recv(0); // delimiter
@@ -81,8 +100,25 @@ public class SconeManager {
     }
 
     public void shutdown() {
+        logger.info("Shutdown handler");
+
+        if (membershipManager != null) {
+            logger.debug("before mm leave");
+            membershipManager.leave();
+        }
         if (worker != null) {
+            logger.debug("before mm worker interrupt");
             worker.interrupt();
         }
+    }
+
+    @Override
+    public void onUpdateView(Ring ring) {
+
+    }
+
+    @Override
+    public void onWrongLeave() {
+        shutdown();
     }
 }
