@@ -18,18 +18,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 public class ServerApplication {
     private static final Logger logger = LoggerFactory.getLogger(ServerApplication.class);
+    private static final int AWAIT_DEBUGGER = 15;
 
     private static SconeManager sm;
 
     public static void main(String[] args) throws Exception {
 
+        String debug = System.getenv("DEBUG");
+
+        if (debug.equals("REMOTE")) {
+            logger.info("Sleeping for {}s waiting for remote debugger...", AWAIT_DEBUGGER);
+            TimeUnit.SECONDS.sleep(AWAIT_DEBUGGER);
+        }
+
         logger.info("Launching server...");
 
+        // configure logger termination to ignore default shutdown hook
         final LoggerContextFactory factory = LogManager.getFactory();
-
         if (factory instanceof Log4jContextFactory) {
             logger.info("register shutdown hook");
             Log4jContextFactory contextFactory = (Log4jContextFactory) factory;
@@ -121,7 +130,7 @@ public class ServerApplication {
             field.set(null, property);
         } else if (t == PSSParams.class){
             logger.debug("{} {}", t, field);
-            field.set(null, new PSSParams(5000, 1, 3, 9, 12, 9877, 1, "http://localhost:4321"));
+            field.set(null, new PSSParams(5000, 1, 3, 9, 12, 9877, 1, "http://tracker:4321"));
         }
 
     }
