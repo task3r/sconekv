@@ -114,11 +114,12 @@ public class SconeManager implements UpdateViewCallback {
 
     @Override
     public void onUpdateView(Ring ring) {
-
+        logger.debug("New view! {}", ring);
     }
 
     @Override
     public void onWrongLeave() {
+        logger.debug("I was wrongly removed!");
         shutdown();
     }
 }
