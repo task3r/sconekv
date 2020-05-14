@@ -81,6 +81,20 @@ class FloridaHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", "text/plain")
             self.end_headers()
             self.wfile.write(b"Success")
+        elif url.path == '/current':
+            available_peers = server_state.available_peers
+            logging.info("Sent tracker state {}", available_peers)
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(bytes("{}".format(available_peers)))
+        elif url.path == '/clear':
+            self.server.florida_state = FloridaState()
+            logging.info("Cleared tracker state")
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"Cleared tracker state")
         else:
             self.send_response(404)
             self.send_header("Content-type", "text/plain")
