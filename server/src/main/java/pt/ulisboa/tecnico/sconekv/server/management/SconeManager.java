@@ -2,44 +2,33 @@ package pt.ulisboa.tecnico.sconekv.server.management;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zeromq.SocketType;
-import org.zeromq.ZContext;
-import org.zeromq.ZMQ;
 import pt.tecnico.ulisboa.prime.MembershipManager;
 import pt.tecnico.ulisboa.prime.UpdateViewCallback;
 import pt.tecnico.ulisboa.prime.membership.ring.Ring;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
+import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
-import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
 
 import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class SconeManager implements UpdateViewCallback {
     private static final Logger logger = LoggerFactory.getLogger(SconeManager.class);
 
-    MembershipManager membershipManager;
-    ZContext context;
-    ZMQ.Socket clientRequestSocket;
-    ZMQ.Socket internalCommSocket;
-    ZMQ.Poller poller;
-    Store store;
-    DHT dht;
-    BlockingQueue<SconeEvent> eventQueue;
-    Thread worker;
-    Thread server;
+    private CommunicationManager communicationManager;
+    private MembershipManager membershipManager;
+    private Store store;
+    private DHT dht;
+    private Thread worker;
+    private Thread server;
 
     public SconeManager() throws IOException, InterruptedException {
-        this.context = new ZContext();
         this.store = new Store();
-        this.eventQueue = new LinkedBlockingQueue<>();
+        this.communicationManager = new CommunicationManager();
 
-        joinMembership();
+        //joinMembership();
 
-        initSockets();
         start();
     }
 
@@ -55,22 +44,10 @@ public class SconeManager implements UpdateViewCallback {
         membershipManager.join();
     }
 
-    private void initSockets() {
-        this.clientRequestSocket = context.createSocket(SocketType.ROUTER);
-        this.clientRequestSocket.bind("tcp://*:" + SconeConstants.SERVER_REQUEST_PORT);
-
-        this.internalCommSocket = context.createSocket(SocketType.ROUTER);
-        this.internalCommSocket.bind("tcp://*:" + SconeConstants.SERVER_INTERNAL_PORT);
-
-        poller = context.createPoller(2);
-        poller.register(clientRequestSocket, ZMQ.Poller.POLLIN);
-        poller.register(internalCommSocket, ZMQ.Poller.POLLIN);
-    }
-
     private void start() {
         logger.info("Scone Node starting...");
-        server = new Thread(new SconeServer((short)0, clientRequestSocket, internalCommSocket, poller, eventQueue));
-        worker = new Thread(new SconeWorker((short)1, clientRequestSocket, store, eventQueue));
+        server = new Thread(new SconeServer((short)0, communicationManager));
+        worker = new Thread(new SconeWorker((short)1, communicationManager, store));
         server.start();
         worker.start();
     }
@@ -92,7 +69,8 @@ public class SconeManager implements UpdateViewCallback {
             server.interrupt();
             server.join();
         }
-        context.destroy(); // FIXME this is not enough but alternatives also raised exceptions
+
+        communicationManager.shutdown();
     }
 
     @Override
