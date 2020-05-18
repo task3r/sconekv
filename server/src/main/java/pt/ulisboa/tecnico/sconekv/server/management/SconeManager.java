@@ -30,14 +30,15 @@ public class SconeManager implements UpdateViewCallback {
     Thread worker;
     Thread server;
 
-    public SconeManager(ZContext context) throws IOException, InterruptedException {
-        this.context = context;
+    public SconeManager() throws IOException, InterruptedException {
+        this.context = new ZContext();
         this.store = new Store();
         this.eventQueue = new LinkedBlockingQueue<>();
 
         joinMembership();
 
         initSockets();
+        start();
     }
 
     private void joinMembership() throws IOException, InterruptedException {
@@ -65,7 +66,7 @@ public class SconeManager implements UpdateViewCallback {
         worker.start();
     }
 
-    public void shutdown() {
+    public void shutdown() throws InterruptedException {
         logger.info("Shutdown handler");
 
         if (membershipManager != null) {
@@ -75,11 +76,14 @@ public class SconeManager implements UpdateViewCallback {
         if (worker != null) {
             logger.debug("before mm worker interrupt");
             worker.interrupt();
+            worker.join();
         }
         if (server != null) {
             logger.debug("before mm server interrupt");
             server.interrupt();
+            server.join();
         }
+        context.destroy(); // FIXME this is not enough but alternatives also raised exceptions
     }
 
     @Override
@@ -95,6 +99,6 @@ public class SconeManager implements UpdateViewCallback {
     @Override
     public void onWrongLeave() {
         logger.debug("I was wrongly removed!");
-        shutdown();
+        System.exit(-1); // maybe this should be a normal termination
     }
 }

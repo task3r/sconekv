@@ -1,7 +1,7 @@
 package pt.ulisboa.tecnico.sconekv.common.db;
 
 import org.jetbrains.annotations.NotNull;
-import pt.ulisboa.tecnico.sconekv.common.transport.Message;
+import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -15,8 +15,8 @@ public class TransactionID implements Comparable<TransactionID> {
         this.localID = localID;
     }
 
-    public TransactionID(Message.TransactionID.Reader txID) {
-        this.client = new UUID(txID.getMostSignificant(), txID.getLeastSignificant());
+    public TransactionID(Common.TransactionID.Reader txID) {
+        this.client = new UUID(txID.getClientID().getMostSignificant(), txID.getClientID().getLeastSignificant());
         this.localID = txID.getLocalID();
     }
 
@@ -28,9 +28,9 @@ public class TransactionID implements Comparable<TransactionID> {
         return localID;
     }
 
-    public void serialize(Message.TransactionID.Builder builder) {
-        builder.setMostSignificant(this.client.getMostSignificantBits());
-        builder.setLeastSignificant(this.client.getLeastSignificantBits());
+    public void serialize(Common.TransactionID.Builder builder) {
+        builder.getClientID().setMostSignificant(this.client.getMostSignificantBits());
+        builder.getClientID().setLeastSignificant(this.client.getLeastSignificantBits());
         builder.setLocalID(this.localID);
     }
 

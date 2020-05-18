@@ -1,6 +1,6 @@
 package pt.ulisboa.tecnico.sconekv.common.db;
 
-import pt.ulisboa.tecnico.sconekv.common.transport.Message;
+import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 
 public abstract class Operation {
     private String key;
@@ -18,7 +18,7 @@ public abstract class Operation {
         this.value = value;
     }
 
-    public static Operation unserialize(Message.Operation.Reader op) {
+    public static Operation unserialize(Common.Operation.Reader op) {
         switch (op.which()) {
             case WRITE:
                 return new WriteOperation(op);
@@ -43,5 +43,5 @@ public abstract class Operation {
         return value;
     }
 
-    public abstract void serialize(Message.Operation.Builder builder);
+    public abstract void serialize(Common.Operation.Builder builder);
 }

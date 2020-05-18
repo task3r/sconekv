@@ -1,14 +1,11 @@
 @0x8ec0ed4ff0a7657a;
 
 using Java = import "/java.capnp";
-$Java.package("pt.ulisboa.tecnico.sconekv.common.transport");
-$Java.outerClassname("Message");
+using TransactionID = import "common.capnp".TransactionID;
+using Operation = import "common.capnp".Operation;
 
-struct TransactionID {
-    mostSignificant @0: UInt64;
-    leastSignificant @1: UInt64;
-    localID @2: UInt32;
-}
+$Java.package("pt.ulisboa.tecnico.sconekv.common.transport");
+$Java.outerClassname("External");
 
 struct Request {
     txID @0 :TransactionID;
@@ -23,15 +20,6 @@ struct Request {
 struct Commit {
     buckets @0 :List(UInt16);
     ops @1 :List(Operation);
-}
-
-struct Operation {
-    union {
-        write @0 :Data; # value written
-        read @1 :Void;
-    }
-    key @2 :Data;
-    version @3 :Int16;
 }
 
 struct Response {

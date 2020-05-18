@@ -4,8 +4,9 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
+import org.zeromq.ZMQException;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
-import pt.ulisboa.tecnico.sconekv.common.transport.Message;
+import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
@@ -37,14 +38,21 @@ public class SconeServer implements Runnable {
     public void run() {
         logger.info("Listening for requests...");
         while (!Thread.currentThread().isInterrupted()) {
-            String client = socket.recvStr();
-            socket.recv(0); // delimiter
+            String client;
+            byte[] requestBytes;
 
-            byte[] requestBytes = socket.recv(0);
-
-            Message.Request.Reader request;
             try {
-                request = SerializationUtils.getMessageFromBytes(requestBytes).getRoot(Message.Request.factory);
+                client = socket.recvStr();
+                socket.recv(0); // delimiter
+                requestBytes = socket.recv(0);
+            } catch (ZMQException e) {
+               logger.error(e.toString());
+               continue;
+            }
+
+            External.Request.Reader request;
+            try {
+                request = SerializationUtils.getMessageFromBytes(requestBytes).getRoot(External.Request.factory);
             } catch (IOException e) {
                logger.error("IOException deserializing client request. Continuing...");
                continue;

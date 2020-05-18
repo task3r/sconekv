@@ -3,7 +3,7 @@ package pt.ulisboa.tecnico.sconekv.server.db;
 import pt.ulisboa.tecnico.sconekv.common.db.AbstractTransaction;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
-import pt.ulisboa.tecnico.sconekv.common.transport.Message;
+import pt.ulisboa.tecnico.sconekv.common.transport.External;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +14,7 @@ public class Transaction extends AbstractTransaction {
     private short[] buckets;
     private List<Operation> rwSet;
 
-    public Transaction(TransactionID txID, Message.Commit.Reader commit) {
+    public Transaction(TransactionID txID, External.Commit.Reader commit) {
         super(txID);
 
         rwSet = new ArrayList<>();

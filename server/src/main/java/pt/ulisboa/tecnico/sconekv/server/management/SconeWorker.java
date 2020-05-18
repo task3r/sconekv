@@ -4,7 +4,7 @@ import org.capnproto.MessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
-import pt.ulisboa.tecnico.sconekv.common.transport.Message;
+import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
@@ -46,12 +46,12 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     public void handle(ReadRequest readRequest) {
         logger.info("Read {} : {}", readRequest.getKey(), readRequest.getTxID());
         MessageBuilder response = new org.capnproto.MessageBuilder();
-        Message.Response.Builder rBuilder = response.initRoot(Message.Response.factory);
+        External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
         readRequest.getTxID().serialize(rBuilder.getTxID());
 
         Value value = store.get(readRequest.getKey());
 
-        Message.ReadResponse.Builder builder = rBuilder.initRead();
+        External.ReadResponse.Builder builder = rBuilder.initRead();
         builder.setKey(readRequest.getKey().getBytes());
         builder.setValue(value.getContent());
         builder.setVersion(value.getVersion());
@@ -63,12 +63,12 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     public void handle(WriteRequest writeRequest) {
         logger.info("Write {} : {}", writeRequest.getKey(), writeRequest.getTxID());
         MessageBuilder response = new org.capnproto.MessageBuilder();
-        Message.Response.Builder rBuilder = response.initRoot(Message.Response.factory);
+        External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
         writeRequest.getTxID().serialize(rBuilder.getTxID());
 
         Value value = store.get(writeRequest.getKey());
 
-        Message.WriteResponse.Builder builder = rBuilder.initWrite();
+        External.WriteResponse.Builder builder = rBuilder.initWrite();
         builder.setKey(writeRequest.getKey().getBytes());
         builder.setVersion(value.getVersion());
 
@@ -79,17 +79,17 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     public void handle(CommitRequest commitRequest) {
         logger.info("Commit : {}", commitRequest.getTxID());
         MessageBuilder response = new org.capnproto.MessageBuilder();
-        Message.Response.Builder rBuilder = response.initRoot(Message.Response.factory);
+        External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
         commitRequest.getTxID().serialize(rBuilder.getTxID());
-        Message.CommitResponse.Builder builder = rBuilder.initCommit();
+        External.CommitResponse.Builder builder = rBuilder.initCommit();
 
         try {
             store.validate(commitRequest.getTx());
             store.perform(commitRequest.getTx());
             store.releaseLocks(commitRequest.getTx());
-            builder.setResult(Message.CommitResponse.Result.OK);
+            builder.setResult(External.CommitResponse.Result.OK);
         } catch (InvalidOperationException e) {
-            builder.setResult(Message.CommitResponse.Result.NOK);
+            builder.setResult(External.CommitResponse.Result.NOK);
         }
 
         reply(commitRequest, response);

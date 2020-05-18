@@ -40,16 +40,18 @@ public class ServerApplication {
         handleSigterm();
         PropertiesConfigurator.loadProperties("config.properties");
 
-        try (ZContext context = new ZContext()) {
-            sm = new SconeManager(context);
-        }
+        sm = new SconeManager();
     }
 
     private static void handleSigterm() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (sm != null) {
                 logger.info("Shutting down SconeKV node");
-                sm.shutdown();
+                try {
+                    sm.shutdown();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             } else {
                 logger.info("SconeManager was not created.");
             }
