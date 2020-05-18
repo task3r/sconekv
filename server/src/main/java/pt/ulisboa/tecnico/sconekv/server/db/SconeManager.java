@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.sconekv.server.db;
 
-import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
@@ -9,13 +8,8 @@ import org.zeromq.ZMQ;
 import pt.tecnico.ulisboa.prime.MembershipManager;
 import pt.tecnico.ulisboa.prime.UpdateViewCallback;
 import pt.tecnico.ulisboa.prime.membership.ring.Ring;
-import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
-import pt.ulisboa.tecnico.sconekv.common.transport.Message;
-import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
-import pt.ulisboa.tecnico.sconekv.server.db.events.CommitRequest;
-import pt.ulisboa.tecnico.sconekv.server.db.events.ReadRequest;
+import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.db.events.SconeEvent;
-import pt.ulisboa.tecnico.sconekv.server.db.events.WriteRequest;
 
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
@@ -31,6 +25,7 @@ public class SconeManager implements UpdateViewCallback {
     Store store;
     BlockingQueue<SconeEvent> eventQueue;
     Thread worker;
+    Thread server;
 
     public SconeManager(ZContext context) throws IOException, InterruptedException {
         this.context = context;
@@ -56,47 +51,15 @@ public class SconeManager implements UpdateViewCallback {
 
     private void initSockets() {
         this.socket = context.createSocket(SocketType.ROUTER);
-        this.socket.bind("tcp://*:5555");
+        this.socket.bind("tcp://*:" + SconeConstants.SERVER_REQUEST_PORT);
     }
 
-
-    public void run() throws IOException {
-
-        worker = new Thread(new SconeWorker(1, socket, store, eventQueue));
+    private void start() {
+        logger.info("Scone Node starting...");
+        server = new Thread(new SconeServer((short)0, socket, store, eventQueue));
+        worker = new Thread(new SconeWorker((short)1, socket, store, eventQueue));
+        server.start();
         worker.start();
-
-        short id = 0;
-        int eventCounter = 0;
-        logger.info("Listening for requests...");
-        while (!Thread.currentThread().isInterrupted()) {
-            String client = socket.recvStr();
-            socket.recv(0); // delimiter
-
-            byte[] requestBytes = socket.recv(0);
-
-            Message.Request.Reader request = SerializationUtils.getMessageFromBytes(requestBytes).getRoot(Message.Request.factory);
-
-            TransactionID txID = new TransactionID(request.getTxID());
-
-            switch (request.which()) {
-                case WRITE:
-                    eventQueue.add(new WriteRequest(new Pair<>(id, eventCounter++), client, txID, new String(request.getRead().toArray())));
-                    break;
-
-                case READ:
-                    eventQueue.add(new ReadRequest(new Pair<>(id, eventCounter++), client, txID, new String(request.getRead().toArray())));
-                    break;
-
-                case COMMIT:
-                    Transaction tx = new Transaction(txID, request.getCommit());
-                    eventQueue.add(new CommitRequest(new Pair<>(id, eventCounter++), client, tx));
-                    break;
-
-                case _NOT_IN_SCHEMA:
-                    logger.error("Received an incorrect request, ignoring...");
-                    break;
-            }
-        }
     }
 
     public void shutdown() {
@@ -110,11 +73,18 @@ public class SconeManager implements UpdateViewCallback {
             logger.debug("before mm worker interrupt");
             worker.interrupt();
         }
+        if (server != null) {
+            logger.debug("before mm server interrupt");
+            server.interrupt();
+        }
     }
 
     @Override
     public void onUpdateView(Ring ring) {
         logger.debug("New view! {}", ring);
+        if (ring.size() >= SconeConstants.BOOTSTRAP_NODE_NUMBER) {
+            start();
+        }
     }
 
     @Override

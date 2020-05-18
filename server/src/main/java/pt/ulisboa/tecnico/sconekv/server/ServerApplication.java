@@ -41,9 +41,7 @@ public class ServerApplication {
         PropertiesConfigurator.loadProperties("config.properties");
 
         try (ZContext context = new ZContext()) {
-
             sm = new SconeManager(context);
-            sm.run();
         }
     }
 

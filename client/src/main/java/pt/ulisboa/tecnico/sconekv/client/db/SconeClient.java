@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
-import pt.ulisboa.tecnico.sconekv.common.Constants;
+import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message;
@@ -40,7 +40,7 @@ public class SconeClient {
     private void initSockets() {
         this.requester = this.context.createSocket(SocketType.DEALER);
         this.requester.setIdentity(UUID.randomUUID().toString().getBytes(ZMQ.CHARSET));
-        this.requester.connect("tcp://" + server + ":" + Constants.SERVER_REQUEST_PORT);
+        this.requester.connect("tcp://" + server + ":" + SconeConstants.SERVER_REQUEST_PORT);
         logger.info("Client {} connected to {}", clientID, server);
     }
 

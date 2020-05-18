@@ -15,12 +15,12 @@ import java.util.concurrent.BlockingQueue;
 public class SconeWorker implements Runnable, SconeEventHandler {
     private static final Logger logger = LoggerFactory.getLogger(SconeWorker.class);
 
-    int id;
+    short id;
     Store store;
     ZMQ.Socket socket;
     BlockingQueue<SconeEvent> eventQueue;
 
-    public SconeWorker(int id, ZMQ.Socket socket, Store store, BlockingQueue<SconeEvent> eventQueue) {
+    public SconeWorker(short id, ZMQ.Socket socket, Store store, BlockingQueue<SconeEvent> eventQueue) {
         this.id = id;
         this.socket = socket;
         this.store = store;
