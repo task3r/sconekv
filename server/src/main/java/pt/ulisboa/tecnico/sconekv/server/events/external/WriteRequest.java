@@ -1,7 +1,8 @@
-package pt.ulisboa.tecnico.sconekv.server.events;
+package pt.ulisboa.tecnico.sconekv.server.events.external;
 
 import org.javatuples.Pair;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
+import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
 
 public class WriteRequest extends ClientRequest {
 

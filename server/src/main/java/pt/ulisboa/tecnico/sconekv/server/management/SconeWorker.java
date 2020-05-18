@@ -9,6 +9,12 @@ import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
 import pt.ulisboa.tecnico.sconekv.server.events.*;
+import pt.ulisboa.tecnico.sconekv.server.events.external.ClientRequest;
+import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
+import pt.ulisboa.tecnico.sconekv.server.events.external.ReadRequest;
+import pt.ulisboa.tecnico.sconekv.server.events.external.WriteRequest;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.Prepare;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.PrepareOK;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
 
 import java.io.IOException;
@@ -19,12 +25,12 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     short id;
     Store store;
-    ZMQ.Socket socket;
+    ZMQ.Socket clientRequestSocket;
     BlockingQueue<SconeEvent> eventQueue;
 
-    public SconeWorker(short id, ZMQ.Socket socket, Store store, BlockingQueue<SconeEvent> eventQueue) {
+    public SconeWorker(short id, ZMQ.Socket clientRequestSocket, Store store, BlockingQueue<SconeEvent> eventQueue) {
         this.id = id;
-        this.socket = socket;
+        this.clientRequestSocket = clientRequestSocket;
         this.store = store;
         this.eventQueue = eventQueue;
     }
@@ -42,6 +48,8 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         }
     }
 
+    // External Events
+
     @Override
     public void handle(ReadRequest readRequest) {
         logger.info("Read {} : {}", readRequest.getKey(), readRequest.getTxID());
@@ -56,7 +64,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         builder.setValue(value.getContent());
         builder.setVersion(value.getVersion());
 
-        reply(readRequest, response);
+        replyToClient(readRequest, response);
     }
 
     @Override
@@ -72,7 +80,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         builder.setKey(writeRequest.getKey().getBytes());
         builder.setVersion(value.getVersion());
 
-        reply(writeRequest, response);
+        replyToClient(writeRequest, response);
     }
 
     @Override
@@ -92,16 +100,28 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             builder.setResult(External.CommitResponse.Result.NOK);
         }
 
-        reply(commitRequest, response);
+        replyToClient(commitRequest, response);
     }
 
-    private void reply(ClientRequest request, MessageBuilder response) {
+    private void replyToClient(ClientRequest request, MessageBuilder response) {
         try {
-            socket.sendMore(request.getClient());
-            socket.sendMore("");
-            socket.send(SerializationUtils.getBytesFromMessage(response), 0);
+            clientRequestSocket.sendMore(request.getClient());
+            clientRequestSocket.sendMore("");
+            clientRequestSocket.send(SerializationUtils.getBytesFromMessage(response), 0);
         } catch (IOException e) {
             logger.error("IOException serializing response to {}", request);
         }
+    }
+
+    // Internal Events
+
+    @Override
+    public void handle(Prepare prepare) {
+
+    }
+
+    @Override
+    public void handle(PrepareOK prepareOK) {
+
     }
 }

@@ -23,7 +23,9 @@ public class SconeManager implements UpdateViewCallback {
 
     MembershipManager membershipManager;
     ZContext context;
-    ZMQ.Socket socket;
+    ZMQ.Socket clientRequestSocket;
+    ZMQ.Socket internalCommSocket;
+    ZMQ.Poller poller;
     Store store;
     DHT dht;
     BlockingQueue<SconeEvent> eventQueue;
@@ -54,14 +56,21 @@ public class SconeManager implements UpdateViewCallback {
     }
 
     private void initSockets() {
-        this.socket = context.createSocket(SocketType.ROUTER);
-        this.socket.bind("tcp://*:" + SconeConstants.SERVER_REQUEST_PORT);
+        this.clientRequestSocket = context.createSocket(SocketType.ROUTER);
+        this.clientRequestSocket.bind("tcp://*:" + SconeConstants.SERVER_REQUEST_PORT);
+
+        this.internalCommSocket = context.createSocket(SocketType.ROUTER);
+        this.internalCommSocket.bind("tcp://*:" + SconeConstants.SERVER_INTERNAL_PORT);
+
+        poller = context.createPoller(2);
+        poller.register(clientRequestSocket, ZMQ.Poller.POLLIN);
+        poller.register(internalCommSocket, ZMQ.Poller.POLLIN);
     }
 
     private void start() {
         logger.info("Scone Node starting...");
-        server = new Thread(new SconeServer((short)0, socket, store, eventQueue));
-        worker = new Thread(new SconeWorker((short)1, socket, store, eventQueue));
+        server = new Thread(new SconeServer((short)0, clientRequestSocket, internalCommSocket, poller, eventQueue));
+        worker = new Thread(new SconeWorker((short)1, clientRequestSocket, store, eventQueue));
         server.start();
         worker.start();
     }
@@ -89,10 +98,12 @@ public class SconeManager implements UpdateViewCallback {
     @Override
     public void onUpdateView(Ring ring) {
         logger.debug("New view! {}", ring);
-        if (ring.size() >= SconeConstants.BOOTSTRAP_NODE_NUMBER) {
+        if (this.dht == null & ring.size() >= SconeConstants.BOOTSTRAP_NODE_NUMBER) {
             logger.debug("Constructing DHT");
             this.dht = new DHT(ring, SconeConstants.NUM_BUCKETS, SconeConstants.MURMUR3_SEED);
             start();
+        } else if (this.dht != null) {
+            this.dht.applyView(ring);
         }
     }
 
