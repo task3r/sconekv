@@ -12,6 +12,7 @@ import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
 import pt.ulisboa.tecnico.sconekv.server.events.external.ClientRequest;
+import zmq.ZError;
 
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
@@ -25,6 +26,7 @@ public class CommunicationManager {
     private ZMQ.Socket internalCommSocket;
     private ZMQ.Poller poller;
     private BlockingQueue<SconeEvent> eventQueue;
+    private boolean running;
 
     public CommunicationManager() {
         this.context = new ZContext();
@@ -39,44 +41,55 @@ public class CommunicationManager {
         this.poller = context.createPoller(2);
         this.poller.register(clientRequestSocket, ZMQ.Poller.POLLIN);
         this.poller.register(internalCommSocket, ZMQ.Poller.POLLIN);
+        this.running = true;
     }
 
     public void shutdown() {
-        context.destroy(); // FIXME this is not enough but alternatives also raised exceptions
+        this.running = false;
+        clientRequestSocket.setLinger(0);
+        clientRequestSocket.close();
+        internalCommSocket.setLinger(0);
+        internalCommSocket.close();
+        context.destroy();
+        logger.info("Communication manager terminated.");
     }
 
     public Triplet<MessageType, String, byte[]> recvMessage() {
-        MessageType type = null;
-        ZMQ.Socket socket = null;
-        try {
-            poller.poll();
-            if (poller.pollin(0)) {
-                type = MessageType.EXTERNAL;
-                socket = clientRequestSocket;
-            } else if (poller.pollin(1)) {
-                type = MessageType.INTERNAL;
-                socket = internalCommSocket;
+        if (running) {
+            MessageType type = null;
+            ZMQ.Socket socket = null;
+            try {
+                poller.poll();
+                if (poller.pollin(0)) {
+                    type = MessageType.EXTERNAL;
+                    socket = clientRequestSocket;
+                } else if (poller.pollin(1)) {
+                    type = MessageType.INTERNAL;
+                    socket = internalCommSocket;
+                }
+                if (socket != null) {
+                    String client = socket.recvStr();
+                    socket.recv(0); // delimiter
+                    byte[] requestBytes = socket.recv(0);
+                    return new Triplet<>(type, client, requestBytes);
+                }
+            } catch (ZError.IOException | ZMQException e) {
+                logger.info("Probably due to termination");
+                logger.error(e.toString());
             }
-
-            if (socket != null) {
-                String client = socket.recvStr();
-                socket.recv(0); // delimiter
-                byte[] requestBytes = socket.recv(0);
-                return new Triplet<>(type, client, requestBytes);
-            }
-        } catch (ZMQException e) {
-            logger.error(e.toString());
         }
         return null;
     }
 
     public void replyToClient(ClientRequest request, MessageBuilder response) {
-        try {
-            clientRequestSocket.sendMore(request.getClient());
-            clientRequestSocket.sendMore("");
-            clientRequestSocket.send(SerializationUtils.getBytesFromMessage(response), 0);
-        } catch (IOException e) {
-            logger.error("IOException serializing response to {}", request);
+        if (running) {
+            try {
+                clientRequestSocket.sendMore(request.getClient());
+                clientRequestSocket.sendMore("");
+                clientRequestSocket.send(SerializationUtils.getBytesFromMessage(response), 0);
+            } catch (IOException e) {
+                logger.error("IOException serializing response to {}", request);
+            }
         }
     }
 

@@ -56,21 +56,26 @@ public class SconeManager implements UpdateViewCallback {
         logger.info("Shutdown handler");
 
         if (membershipManager != null) {
-            logger.debug("before mm leave");
             membershipManager.leave();
         }
-        if (worker != null) {
-            logger.debug("before mm worker interrupt");
-            worker.interrupt();
-            worker.join();
-        }
-        if (server != null) {
-            logger.debug("before mm server interrupt");
-            server.interrupt();
-            server.join();
+
+        if (communicationManager != null) {
+            communicationManager.shutdown();
         }
 
-        communicationManager.shutdown();
+        if (worker != null) {
+            worker.interrupt();
+            worker.join();
+            logger.info("Workers terminated.");
+        }
+
+        if (server != null) {
+            server.interrupt();
+            server.join();
+            logger.info("Servers terminated.");
+        }
+
+        logger.info("Scone node terminated.");
     }
 
     @Override
