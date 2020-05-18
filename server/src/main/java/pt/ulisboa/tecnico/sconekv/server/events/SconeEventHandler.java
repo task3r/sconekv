@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.server.db.events;
+package pt.ulisboa.tecnico.sconekv.server.events;
 
 public interface SconeEventHandler {
     void handle(ReadRequest readRequest);

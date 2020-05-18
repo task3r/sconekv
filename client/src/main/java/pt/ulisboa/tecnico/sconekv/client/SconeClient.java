@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.client.db;
+package pt.ulisboa.tecnico.sconekv.client;
 
 import org.capnproto.*;
 import org.javatuples.Pair;
@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+import pt.ulisboa.tecnico.sconekv.client.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
@@ -48,7 +49,7 @@ public class SconeClient {
         return new Transaction(this, new TransactionID(this.clientID, transactionCounter++));
     }
 
-    protected Pair<byte[], Short> performRead(TransactionID txID, String key) throws IOException {
+    public Pair<byte[], Short> performRead(TransactionID txID, String key) throws IOException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         Message.Request.Builder builder = message.initRoot(Message.Request.factory);
         txID.serialize(builder.getTxID());
@@ -60,7 +61,7 @@ public class SconeClient {
         return new Pair<>(response.getRead().getValue().toArray(), response.getRead().getVersion());
     }
 
-    protected Short performWrite(TransactionID txID, String key) throws IOException {
+    public Short performWrite(TransactionID txID, String key) throws IOException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         Message.Request.Builder builder = message.initRoot(Message.Request.factory);
         txID.serialize(builder.getTxID());
@@ -72,7 +73,7 @@ public class SconeClient {
         return response.getWrite().getVersion();
     }
 
-    protected boolean performCommit(TransactionID txID, List<Operation> ops) throws IOException {
+    public boolean performCommit(TransactionID txID, List<Operation> ops) throws IOException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         Message.Request.Builder rBuilder = message.initRoot(Message.Request.factory);
         txID.serialize(rBuilder.getTxID());

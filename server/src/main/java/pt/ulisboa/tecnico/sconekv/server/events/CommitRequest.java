@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.server.db.events;
+package pt.ulisboa.tecnico.sconekv.server.events;
 
 import org.javatuples.Pair;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;

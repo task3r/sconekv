@@ -14,7 +14,7 @@ public class Transaction extends AbstractTransaction {
     private short[] buckets;
     private List<Operation> rwSet;
 
-    protected Transaction(TransactionID txID, Message.Commit.Reader commit) {
+    public Transaction(TransactionID txID, Message.Commit.Reader commit) {
         super(txID);
 
         rwSet = new ArrayList<>();

@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.server.db;
+package pt.ulisboa.tecnico.sconekv.server.management;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +10,8 @@ import pt.tecnico.ulisboa.prime.UpdateViewCallback;
 import pt.tecnico.ulisboa.prime.membership.ring.Ring;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
-import pt.ulisboa.tecnico.sconekv.server.db.events.SconeEvent;
+import pt.ulisboa.tecnico.sconekv.server.db.Store;
+import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
 
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;

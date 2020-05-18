@@ -15,7 +15,7 @@ public abstract class AbstractTransaction {
     private TransactionID id;
     private State state;
 
-    protected AbstractTransaction(TransactionID id) {
+    public AbstractTransaction(TransactionID id) {
         this.id = id;
         this.state = State.NONE;
     }

@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.sconekv.client.db;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pt.ulisboa.tecnico.sconekv.client.SconeClient;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.CommitFailedException;
 import pt.ulisboa.tecnico.sconekv.common.db.*;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
@@ -20,7 +21,7 @@ public class Transaction extends AbstractTransaction {
     private Map<String, Operation> rwSet;
     // map bucket:ops ?
 
-    protected Transaction(SconeClient client,TransactionID id) {
+    public Transaction(SconeClient client,TransactionID id) {
         super(id);
         this.client = client;
         this.rwSet = new HashMap<>();

@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.server.db;
+package pt.ulisboa.tecnico.sconekv.server.management;
 
 import org.capnproto.MessageBuilder;
 import org.slf4j.Logger;
@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
-import pt.ulisboa.tecnico.sconekv.server.db.events.*;
+import pt.ulisboa.tecnico.sconekv.server.db.Store;
+import pt.ulisboa.tecnico.sconekv.server.db.Value;
+import pt.ulisboa.tecnico.sconekv.server.events.*;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
 
 import java.io.IOException;

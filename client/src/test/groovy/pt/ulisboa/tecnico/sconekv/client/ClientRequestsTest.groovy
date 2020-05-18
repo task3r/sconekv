@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.sconekv.client
 
 import org.zeromq.ZContext
-import pt.ulisboa.tecnico.sconekv.client.db.SconeClient
 import pt.ulisboa.tecnico.sconekv.client.db.Transaction
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException
 import spock.lang.Specification

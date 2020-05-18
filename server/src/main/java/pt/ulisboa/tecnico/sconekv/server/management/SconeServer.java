@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.server.db;
+package pt.ulisboa.tecnico.sconekv.server.management;
 
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -7,10 +7,12 @@ import org.zeromq.ZMQ;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.transport.Message;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
-import pt.ulisboa.tecnico.sconekv.server.db.events.CommitRequest;
-import pt.ulisboa.tecnico.sconekv.server.db.events.ReadRequest;
-import pt.ulisboa.tecnico.sconekv.server.db.events.SconeEvent;
-import pt.ulisboa.tecnico.sconekv.server.db.events.WriteRequest;
+import pt.ulisboa.tecnico.sconekv.server.db.Store;
+import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
+import pt.ulisboa.tecnico.sconekv.server.events.CommitRequest;
+import pt.ulisboa.tecnico.sconekv.server.events.ReadRequest;
+import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
+import pt.ulisboa.tecnico.sconekv.server.events.WriteRequest;
 
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
