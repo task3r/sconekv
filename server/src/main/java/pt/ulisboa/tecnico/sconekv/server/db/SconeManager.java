@@ -8,6 +8,7 @@ import org.zeromq.ZMQ;
 import pt.tecnico.ulisboa.prime.MembershipManager;
 import pt.tecnico.ulisboa.prime.UpdateViewCallback;
 import pt.tecnico.ulisboa.prime.membership.ring.Ring;
+import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.db.events.SconeEvent;
 
@@ -23,6 +24,7 @@ public class SconeManager implements UpdateViewCallback {
     ZContext context;
     ZMQ.Socket socket;
     Store store;
+    DHT dht;
     BlockingQueue<SconeEvent> eventQueue;
     Thread worker;
     Thread server;
@@ -83,6 +85,8 @@ public class SconeManager implements UpdateViewCallback {
     public void onUpdateView(Ring ring) {
         logger.debug("New view! {}", ring);
         if (ring.size() >= SconeConstants.BOOTSTRAP_NODE_NUMBER) {
+            logger.debug("Constructing DHT");
+            this.dht = new DHT(ring, SconeConstants.NUM_BUCKETS, SconeConstants.MURMUR3_SEED);
             start();
         }
     }

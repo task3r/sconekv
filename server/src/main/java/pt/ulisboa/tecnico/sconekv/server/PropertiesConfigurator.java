@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.constants.EpTOConstants;
 import pt.tecnico.ulisboa.prime.constants.PSSConstants;
 import pt.tecnico.ulisboa.prime.constants.PrimeConstants;
+import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,8 +23,6 @@ public class PropertiesConfigurator {
         Properties properties = new Properties();
 
         try (InputStream input = new FileInputStream(filename)) {
-
-            // load a properties file
             properties.load(input);
 
             configurePSS(properties);
@@ -39,8 +38,11 @@ public class PropertiesConfigurator {
     }
 
     private static void configureScone(Properties properties) {
-        SconeConstants.NUM_BUCKETS = getInt(properties, "NUM_BUCKETS");
+        SconeConstants.NUM_BUCKETS = getShort(properties, "NUM_BUCKETS");
         SconeConstants.REPLICATION = getInt(properties, "REPLICATION");
+        SconeConstants.BOOTSTRAP_NODE_NUMBER = getInt(properties, "BOOTSTRAP_NODE_NUMBER");
+        SconeConstants.MURMUR3_SEED = getInt(properties, "MURMUR3_SEED");
+        SconeConstants.SERVER_REQUEST_PORT = getInt(properties, "SERVER_REQUEST_PORT");
     }
 
     private static void configurePSS(Properties properties) {
@@ -105,6 +107,10 @@ public class PropertiesConfigurator {
 
     private static int getInt(Properties properties, String key) {
         return Integer.parseInt(properties.getProperty(key));
+    }
+
+    private static short getShort(Properties properties, String key) {
+        return Short.parseShort(properties.getProperty(key));
     }
 
     private static float getFloat(Properties properties, String key) {
