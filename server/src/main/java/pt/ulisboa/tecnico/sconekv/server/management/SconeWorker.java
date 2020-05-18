@@ -3,6 +3,9 @@ package pt.ulisboa.tecnico.sconekv.server.management;
 import org.capnproto.MessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pt.tecnico.ulisboa.prime.membership.ring.Node;
+import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
+import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
@@ -18,14 +21,18 @@ import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
 public class SconeWorker implements Runnable, SconeEventHandler {
     private static final Logger logger = LoggerFactory.getLogger(SconeWorker.class);
 
-    short id;
-    Store store;
-    CommunicationManager cm;
+    private short id;
+    private Store store;
+    private CommunicationManager cm;
+    private DHT dht;
+    private Node self;
 
-    public SconeWorker(short id, CommunicationManager cm, Store store) {
+    public SconeWorker(short id, CommunicationManager cm, Store store, DHT dht, Node self) {
         this.id = id;
-        this.store = store;
         this.cm = cm;
+        this.store = store;
+        this.dht = dht;
+        this.self = self;
     }
 
     @Override
@@ -43,8 +50,17 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     // External Events
 
+    private boolean responsibleForKey(String key) {
+        return self.equals(dht.getMasterForKey(key.getBytes()));
+    }
+
     @Override
     public void handle(ReadRequest readRequest) {
+        if (!responsibleForKey(readRequest.getKey())) {
+            logger.info("Received incorrect request, sending updated view to the client");
+            // return error to client with new view
+            return;
+        }
         logger.info("Read {} : {}", readRequest.getKey(), readRequest.getTxID());
         MessageBuilder response = new org.capnproto.MessageBuilder();
         External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
@@ -62,6 +78,11 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(WriteRequest writeRequest) {
+        if (!responsibleForKey(writeRequest.getKey())) {
+            logger.info("Received incorrect request, sending updated view to the client");
+            // return error to client with new view
+            return;
+        }
         logger.info("Write {} : {}", writeRequest.getKey(), writeRequest.getTxID());
         MessageBuilder response = new org.capnproto.MessageBuilder();
         External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
@@ -78,6 +99,11 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(CommitRequest commitRequest) {
+        if (!responsibleForKey(commitRequest.getTx().getRwSet().get(0).getKey())) { // FIXME
+            logger.info("Received incorrect request, sending updated view to the client");
+            // return error to client with new view
+            return;
+        }
         logger.info("Commit : {}", commitRequest.getTxID());
         MessageBuilder response = new org.capnproto.MessageBuilder();
         External.Response.Builder rBuilder = response.initRoot(External.Response.factory);

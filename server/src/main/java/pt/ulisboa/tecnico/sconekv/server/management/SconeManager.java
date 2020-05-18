@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.MembershipManager;
 import pt.tecnico.ulisboa.prime.UpdateViewCallback;
 import pt.tecnico.ulisboa.prime.membership.ring.Ring;
+import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
@@ -20,14 +21,16 @@ public class SconeManager implements UpdateViewCallback {
     private MembershipManager membershipManager;
     private Store store;
     private DHT dht;
+    private Bucket currentBucket;
     private Thread worker;
     private Thread server;
 
     public SconeManager() throws IOException, InterruptedException {
         this.store = new Store();
-        this.communicationManager = new CommunicationManager();
 
-        //joinMembership();
+        joinMembership();
+
+        this.communicationManager = new CommunicationManager(currentBucket, membershipManager.getMyself());
 
         start();
     }
@@ -47,7 +50,7 @@ public class SconeManager implements UpdateViewCallback {
     private void start() {
         logger.info("Scone Node starting...");
         server = new Thread(new SconeServer((short)0, communicationManager));
-        worker = new Thread(new SconeWorker((short)1, communicationManager, store));
+        worker = new Thread(new SconeWorker((short)1, communicationManager, store, dht, membershipManager.getMyself()));
         server.start();
         worker.start();
     }
@@ -81,12 +84,17 @@ public class SconeManager implements UpdateViewCallback {
     @Override
     public void onUpdateView(Ring ring) {
         logger.debug("New view! {}", ring);
-        if (this.dht == null & ring.size() >= SconeConstants.BOOTSTRAP_NODE_NUMBER) {
-            logger.debug("Constructing DHT");
-            this.dht = new DHT(ring, SconeConstants.NUM_BUCKETS, SconeConstants.MURMUR3_SEED);
+        if (dht == null & ring.size() >= SconeConstants.BOOTSTRAP_NODE_NUMBER) {
+            logger.debug("Constructing DHT...");
+            dht = new DHT(ring, SconeConstants.NUM_BUCKETS, SconeConstants.MURMUR3_SEED);
+            currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
+            communicationManager.updateBucket(currentBucket);
             start();
-        } else if (this.dht != null) {
-            this.dht.applyView(ring);
+        } else if (dht != null) {
+            logger.debug("Applying new view...");
+            dht.applyView(ring);
+            currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
+            communicationManager.updateBucket(currentBucket);
         }
     }
 

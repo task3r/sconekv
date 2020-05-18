@@ -59,4 +59,13 @@ public class DHT {
     public Node getMasterForKey(byte[] key) {
         return buckets[getBucketForKey(key)].getMaster();
     }
+
+    public Bucket getBucketOfNode(Node node) {
+        for (Bucket b: buckets) {
+            if (b.containsNode(node)) {
+                return b;
+            }
+        }
+        return null; //maybe raise exception?
+    }
 }

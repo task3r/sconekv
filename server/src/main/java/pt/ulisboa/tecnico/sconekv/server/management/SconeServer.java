@@ -24,9 +24,9 @@ import java.util.UUID;
 public class SconeServer implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(SconeServer.class);
 
-    short id;
-    int eventCounter;
-    CommunicationManager cm;
+    private short id;
+    private int eventCounter;
+    private CommunicationManager cm;
 
     public SconeServer(short id, CommunicationManager cm) {
         this.id = id;
