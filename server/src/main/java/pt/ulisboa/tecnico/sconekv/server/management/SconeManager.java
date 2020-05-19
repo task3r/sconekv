@@ -31,8 +31,9 @@ public class SconeManager implements UpdateViewCallback {
         joinMembership();
 
         this.communicationManager = new CommunicationManager(currentBucket, membershipManager.getMyself());
+        StateMachineManager.init(communicationManager, membershipManager);
 
-        start();
+        //start();
     }
 
     private void joinMembership() throws IOException, InterruptedException {
@@ -50,7 +51,7 @@ public class SconeManager implements UpdateViewCallback {
     private void start() {
         logger.info("Scone Node starting...");
         server = new Thread(new SconeServer((short)0, communicationManager));
-        worker = new Thread(new SconeWorker((short)1, communicationManager, store, dht, membershipManager.getMyself()));
+        worker = new Thread(new SconeWorker((short)1, communicationManager, store, dht, null)); //membershipManager.getMyself()));
         server.start();
         worker.start();
     }
@@ -84,16 +85,18 @@ public class SconeManager implements UpdateViewCallback {
     @Override
     public void onUpdateView(Ring ring) {
         logger.debug("New view! {}", ring);
-        if (dht == null & ring.size() >= SconeConstants.BOOTSTRAP_NODE_NUMBER) {
+        if (dht == null && ring.size() >= SconeConstants.BOOTSTRAP_NODE_NUMBER) {
             logger.debug("Constructing DHT...");
             dht = new DHT(ring, SconeConstants.NUM_BUCKETS, SconeConstants.MURMUR3_SEED);
             currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
+            logger.info("Belong to bucket {}, master: {}", currentBucket.getId(), currentBucket.getMaster());
             communicationManager.updateBucket(currentBucket);
             start();
         } else if (dht != null) {
             logger.debug("Applying new view...");
             dht.applyView(ring);
             currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
+            logger.info("Belong to bucket {}, master: {}", currentBucket.getId(), currentBucket.getMaster());
             communicationManager.updateBucket(currentBucket);
         }
     }

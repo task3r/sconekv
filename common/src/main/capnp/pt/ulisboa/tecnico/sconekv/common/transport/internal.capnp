@@ -24,9 +24,11 @@ struct Prepare {
     message @0: Request;
     opNumber @1: Int64;
     commitNumber @2: Int64;
+    bucket @3: Int16;
 }
 
 struct PrepareOK {
     opNumber @0: Int64;
     id @1: ID;
+    bucket @2: Int16;
 }

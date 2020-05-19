@@ -18,7 +18,7 @@ struct Request {
 }
 
 struct Commit {
-    buckets @0 :List(UInt16);
+    buckets @0 :List(Int16);
     ops @1 :List(Operation);
 }
 

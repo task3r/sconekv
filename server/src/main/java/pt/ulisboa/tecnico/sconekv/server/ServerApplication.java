@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ServerApplication {
     private static final Logger logger = LoggerFactory.getLogger(ServerApplication.class);
-    private static final int AWAIT_DEBUGGER = 15;
+    private static final int AWAIT_DEBUGGER = 5;
 
     private static SconeManager sm;
 

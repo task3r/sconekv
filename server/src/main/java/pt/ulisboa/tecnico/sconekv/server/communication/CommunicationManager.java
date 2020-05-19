@@ -56,14 +56,16 @@ public class CommunicationManager {
 
     public void updateBucket(Bucket newBucket) {
         if (newBucket != null && !newBucket.equals(currentBucket)) {
+            logger.debug("Updating bucket");
             Map<Node, ZMQ.Socket> oldBucketSockets = bucketSockets;
             bucketSockets = new HashMap<>();
             for (Node n : newBucket.getNodesExceptSelf(self)) {
                 if (oldBucketSockets.containsKey(n)) {
                     bucketSockets.put(n, oldBucketSockets.remove(n));
                 } else {
+                    logger.debug("New socket for {}", n.getAddress().getHostAddress());
                     ZMQ.Socket socket = context.createSocket(SocketType.DEALER);
-                    socket.connect(String.format("http://%s:%s",n.getAddress().getHostName(), SconeConstants.SERVER_INTERNAL_PORT));
+                    socket.connect(String.format("tcp://%s:%s",n.getAddress().getHostAddress(), SconeConstants.SERVER_INTERNAL_PORT));
                     bucketSockets.put(n, socket);
                 }
             }
@@ -123,6 +125,20 @@ public class CommunicationManager {
                 logger.error("IOException serializing response to {}", request);
             }
         }
+    }
+
+    public void sendPrepare(byte[] message) {
+        for (Node n : currentBucket.getNodesExceptSelf(self)) { // should guarantee that I am the master and they are all replicas
+            ZMQ.Socket socket = bucketSockets.get(n);
+            socket.sendMore(""); // delimiter
+            socket.send(message);
+        }
+    }
+
+    public void sendPrepareOK(byte[] message) {
+        ZMQ.Socket socket = bucketSockets.get(currentBucket.getMaster());
+        socket.sendMore(""); // delimiter
+        socket.send(message);
     }
 
     public SconeEvent takeEvent() throws InterruptedException {

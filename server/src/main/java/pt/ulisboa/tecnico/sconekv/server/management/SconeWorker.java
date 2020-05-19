@@ -11,6 +11,7 @@ import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
 import pt.ulisboa.tecnico.sconekv.server.events.*;
+import pt.ulisboa.tecnico.sconekv.server.events.external.ClientRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.external.ReadRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.external.WriteRequest;
@@ -24,6 +25,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     private short id;
     private Store store;
     private CommunicationManager cm;
+    private StateMachineManager smm;
     private DHT dht;
     private Node self;
 
@@ -33,6 +35,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         this.store = store;
         this.dht = dht;
         this.self = self;
+        this.smm = StateMachineManager.getInstance();
     }
 
     @Override
@@ -50,15 +53,19 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     // External Events
 
-    private boolean responsibleForKey(String key) {
-        return self.equals(dht.getMasterForKey(key.getBytes()));
+    private boolean notReady(ClientRequest clientRequest) {
+        // testar bucket & enviar nova view caso desatualizada
+        if (clientRequest.isPrepared()) {
+            return false;
+        } else {
+            smm.prepareLogMaster(clientRequest);
+            return true;
+        }
     }
 
     @Override
     public void handle(ReadRequest readRequest) {
-        if (!responsibleForKey(readRequest.getKey())) {
-            logger.info("Received incorrect request, sending updated view to the client");
-            // return error to client with new view
+        if (readRequest.getClient() != null && notReady(readRequest)) { // client != detects master for now
             return;
         }
         logger.info("Read {} : {}", readRequest.getKey(), readRequest.getTxID());
@@ -73,14 +80,14 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         builder.setValue(value.getContent());
         builder.setVersion(value.getVersion());
 
-        cm.replyToClient(readRequest, response);
+        // if I am the master
+        if (readRequest.getClient() != null)
+            cm.replyToClient(readRequest, response);
     }
 
     @Override
     public void handle(WriteRequest writeRequest) {
-        if (!responsibleForKey(writeRequest.getKey())) {
-            logger.info("Received incorrect request, sending updated view to the client");
-            // return error to client with new view
+        if (writeRequest.getClient() != null && notReady(writeRequest)) {
             return;
         }
         logger.info("Write {} : {}", writeRequest.getKey(), writeRequest.getTxID());
@@ -94,14 +101,14 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         builder.setKey(writeRequest.getKey().getBytes());
         builder.setVersion(value.getVersion());
 
-        cm.replyToClient(writeRequest, response);
+        // if I am the master
+        if (writeRequest.getClient() != null)
+            cm.replyToClient(writeRequest, response);
     }
 
     @Override
     public void handle(CommitRequest commitRequest) {
-        if (!responsibleForKey(commitRequest.getTx().getRwSet().get(0).getKey())) { // FIXME
-            logger.info("Received incorrect request, sending updated view to the client");
-            // return error to client with new view
+        if (commitRequest.getClient() != null && notReady(commitRequest)) {
             return;
         }
         logger.info("Commit : {}", commitRequest.getTxID());
@@ -119,18 +126,22 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             builder.setResult(External.CommitResponse.Result.NOK);
         }
 
-        cm.replyToClient(commitRequest, response);
+        // if I am the master
+        if (commitRequest.getClient() != null)
+            cm.replyToClient(commitRequest, response);
     }
 
     // Internal Events
 
     @Override
     public void handle(Prepare prepare) {
-
+        logger.info("Received prepare message");
+        smm.prepareLogReplica(prepare);
     }
 
     @Override
     public void handle(PrepareOK prepareOK) {
-
+        logger.info("Received prepareOK message");
+        smm.prepareOK(prepareOK);
     }
 }

@@ -12,6 +12,7 @@ import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.MessageType;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
+import pt.ulisboa.tecnico.sconekv.server.events.external.ClientRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.external.ReadRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.external.WriteRequest;
@@ -68,26 +69,31 @@ public class SconeServer implements Runnable {
             return;
         }
 
+        ClientRequest event = getClientRequest(request, client, generateId());
+        if (event != null)
+            cm.queueEvent(event);
+    }
+
+    private ClientRequest getClientRequest(External.Request.Reader request, String client, Pair<Short,Integer> eventId) {
         TransactionID txID = new TransactionID(request.getTxID());
 
         switch (request.which()) {
             case WRITE:
-                cm.queueEvent(new WriteRequest(generateId(), client, txID, new String(request.getRead().toArray())));
-                break;
+                return new WriteRequest(eventId, client, txID, new String(request.getRead().toArray()), request);
 
             case READ:
-                cm.queueEvent(new ReadRequest(generateId(), client, txID, new String(request.getRead().toArray())));
-                break;
+                return new ReadRequest(eventId, client, txID, new String(request.getRead().toArray()), request);
 
             case COMMIT:
                 Transaction tx = new Transaction(txID, request.getCommit());
-                cm.queueEvent(new CommitRequest(generateId(), client, tx));
-                break;
+                return new CommitRequest(eventId, client, tx, request);
 
             case _NOT_IN_SCHEMA:
                 logger.error("Received an incorrect request, ignoring...");
-                break;
+                return null;
         }
+
+        return null; // shouldn't reach here
     }
 
     private void recvInternalComm(String node, byte[] messageBytes) {
@@ -108,12 +114,15 @@ public class SconeServer implements Runnable {
                                           new UUID(message.getViewVersion().getMessageId().getMostSignificant(),
                                                    message.getViewVersion().getMessageId().getLeastSignificant()));
 
+        Pair<Short, Integer> eventId = generateId();
+
         switch (message.which()) {
             case PREPARE:
-                cm.queueEvent(new Prepare(generateId(), node, viewVersion, message.getPrepare().getOpNumber(), message.getPrepare().getCommitNumber()));
+                cm.queueEvent(new Prepare(eventId, node, viewVersion, message.getPrepare().getOpNumber(), message.getPrepare().getCommitNumber(),
+                        message.getPrepare().getBucket(), getClientRequest(message.getPrepare().getMessage(), null, generateId())));
                 break;
             case PREPARE_OK:
-                cm.queueEvent(new PrepareOK(generateId(), node, viewVersion, message.getPrepareOk().getOpNumber()));
+                cm.queueEvent(new PrepareOK(eventId, node, viewVersion, message.getPrepareOk().getOpNumber(), message.getPrepareOk().getBucket()));
                 break;
             case _NOT_IN_SCHEMA:
                 logger.error("Received an incorrect internal message, ignoring...");
