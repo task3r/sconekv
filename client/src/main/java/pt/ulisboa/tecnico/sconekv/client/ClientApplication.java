@@ -17,7 +17,7 @@ public class ClientApplication {
 
         try (ZContext context = new ZContext()) {
 
-            SconeClient client = new SconeClient(context, "localhost");
+            SconeClient client = new SconeClient(context, "172.28.0.4");
 //            Transaction tx0 = client.newTransaction();
 //
 //            byte[] response0 = tx0.read("foo");
@@ -35,9 +35,7 @@ public class ClientApplication {
 
             byte[] response = tx2.read("foo");
 
-            logger.info("response: {}", new String(response));
-            response = tx2.read("foo");
-            logger.info("response: {}", new String(response));
+            logger.info("tx2 read foo response: {}", new String(response));
 
             tx2.write("bar", response);
             tx2.write("bar", "barfoo".getBytes());

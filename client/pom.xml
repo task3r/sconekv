@@ -11,6 +11,9 @@
 
     <artifactId>client</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <properties>
+        <mainClass>pt.ulisboa.tecnico.sconekv.client.ClientApplication</mainClass>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -42,10 +45,33 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.6.0</version>
                 <configuration>
-                    <mainClass>pt.ulisboa.tecnico.sconekv.client.ClientApplication</mainClass>
+                    <mainClass>${mainClass}</mainClass>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>
+                                        ${mainClass}
+                                    </mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <!-- The gmavenplus plugin is used to compile Groovy code. To learn
                     more about this plugin, visit https://github.com/groovy/GMavenPlus/wiki -->
