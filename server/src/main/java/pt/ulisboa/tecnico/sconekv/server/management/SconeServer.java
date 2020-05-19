@@ -4,6 +4,7 @@ import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
@@ -20,6 +21,7 @@ import pt.ulisboa.tecnico.sconekv.server.events.internal.Prepare;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.PrepareOK;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.UUID;
 
 public class SconeServer implements Runnable {
@@ -42,7 +44,7 @@ public class SconeServer implements Runnable {
             Triplet<MessageType, String, byte[]> message = cm.recvMessage();
             if (message != null) {
                 if (message.getValue0() == MessageType.INTERNAL) {
-                    recvInternalComm(message.getValue1(), message.getValue2());
+                    recvInternalComm(message.getValue2());
                 } else if (message.getValue0() == MessageType.EXTERNAL) {
                     recvClientRequest(message.getValue1(), message.getValue2());
                 }
@@ -74,7 +76,7 @@ public class SconeServer implements Runnable {
             cm.queueEvent(event);
     }
 
-    private ClientRequest getClientRequest(External.Request.Reader request, String client, Pair<Short,Integer> eventId) {
+    private ClientRequest getClientRequest(External.Request.Reader request, String client, Pair<Short, Integer> eventId) {
         TransactionID txID = new TransactionID(request.getTxID());
 
         switch (request.which()) {
@@ -96,7 +98,7 @@ public class SconeServer implements Runnable {
         return null; // shouldn't reach here
     }
 
-    private void recvInternalComm(String node, byte[] messageBytes) {
+    private void recvInternalComm(byte[] messageBytes) {
         Internal.InternalMessage.Reader message;
         try {
             message = SerializationUtils.getMessageFromBytes(messageBytes).getRoot(Internal.InternalMessage.factory);
@@ -111,8 +113,16 @@ public class SconeServer implements Runnable {
         }
 
         Version viewVersion = new Version(message.getViewVersion().getTimestamp(),
-                                          new UUID(message.getViewVersion().getMessageId().getMostSignificant(),
-                                                   message.getViewVersion().getMessageId().getLeastSignificant()));
+                new UUID(message.getViewVersion().getMessageId().getMostSignificant(),
+                        message.getViewVersion().getMessageId().getLeastSignificant()));
+
+        Node node = null;
+        try {
+            node = SerializationUtils.getNodeFromMessage(message.getNode());
+        } catch (UnknownHostException e) {
+            logger.error("Unknown host in internal message, ignoring...");
+            return;
+        }
 
         Pair<Short, Integer> eventId = generateId();
 

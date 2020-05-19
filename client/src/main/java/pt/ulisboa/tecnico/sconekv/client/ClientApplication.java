@@ -17,11 +17,7 @@ public class ClientApplication {
 
         try (ZContext context = new ZContext()) {
 
-            SconeClient client = new SconeClient(context, "172.28.0.4");
-//            Transaction tx0 = client.newTransaction();
-//
-//            byte[] response0 = tx0.read("foo");
-//            tx0.write("bar", response0);
+            SconeClient client = new SconeClient(context, args[0]);
 
             Transaction tx1 = client.newTransaction();
             tx1.write("foo", "bar".getBytes());
@@ -41,8 +37,6 @@ public class ClientApplication {
             tx2.write("bar", "barfoo".getBytes());
 
             tx2.commit();
-
-//            tx0.commit();
 
         } catch (CommitFailedException | InvalidTransactionStateChangeException e) {
             e.printStackTrace();

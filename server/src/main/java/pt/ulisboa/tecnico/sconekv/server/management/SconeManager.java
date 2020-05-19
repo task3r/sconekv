@@ -10,6 +10,7 @@ import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
+import pt.ulisboa.tecnico.sconekv.server.smr.StateMachineManager;
 
 import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;

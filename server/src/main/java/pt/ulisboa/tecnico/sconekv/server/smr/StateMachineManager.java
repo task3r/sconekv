@@ -1,14 +1,13 @@
-package pt.ulisboa.tecnico.sconekv.server.management;
+package pt.ulisboa.tecnico.sconekv.server.smr;
 
 import org.capnproto.MessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.MembershipManager;
-import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.common.transport.Internal;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
-import pt.ulisboa.tecnico.sconekv.server.events.external.ClientRequest;
+import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.Prepare;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.PrepareOK;
 
@@ -27,12 +26,12 @@ public class StateMachineManager {
     private long opNumber;
     private long commitNumber;
 
-    private Map<Long, ClientRequest> pendingEntries;
+    private Map<Long, LogEntry> log;
 
     private StateMachineManager(CommunicationManager cm, MembershipManager mm) {
         this.cm = cm;
         this.mm = mm;
-        this.pendingEntries = new HashMap<>();
+        this.log = new HashMap<>();
     }
 
     public static StateMachineManager getInstance() {
@@ -52,13 +51,14 @@ public class StateMachineManager {
         return opNumber++;
     }
 
-    public void prepareLogMaster(ClientRequest request) {
+    public void prepareLogMaster(CommitRequest request) {
         logger.debug("Master logging request...");
         long requestOpNumber = newOpNumber();
-        pendingEntries.put(requestOpNumber, request);
+        log.put(requestOpNumber, new LogEntry(request, opNumber));
 
         MessageBuilder message = new MessageBuilder();
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
+        SerializationUtils.serializeNode(mBuilder.getNode(), mm.getMyself());
         Internal.Prepare.Builder builder = mBuilder.initPrepare();
         builder.setMessage(request.getRequest());
         builder.setBucket((short)0); // FIXME
@@ -73,6 +73,7 @@ public class StateMachineManager {
     }
 
     public void prepareLogReplica(Prepare prepare) {
+        // garantir que vem do master
         // garantir que tem as entries anteriores
         // fazer commit das entries com opNumber <= prepare.commitNumber
         this.opNumber = prepare.getOpNumber();
@@ -80,6 +81,7 @@ public class StateMachineManager {
 
         MessageBuilder message = new MessageBuilder();
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
+        SerializationUtils.serializeNode(mBuilder.getNode(), mm.getMyself());
         Internal.PrepareOK.Builder builder = mBuilder.initPrepareOk();
         builder.setBucket((short)0); // FIXME
         builder.setOpNumber(this.opNumber);
@@ -93,9 +95,13 @@ public class StateMachineManager {
     }
 
     public void prepareOK(PrepareOK prepareOK) {
-        ClientRequest clientRequest = pendingEntries.remove(prepareOK.getOpNumber());
-        clientRequest.setPrepared();
-        cm.queueEvent(clientRequest);
+        // in for loop from committed to prepareOk.opNum
+        LogEntry entry = log.get(prepareOK.getOpNumber());
+        entry.addOk(prepareOK.getNode());
+        if (entry.isReady()) {
+            entry.getRequest().setPrepared();
+            cm.queueEvent(entry.getRequest());
+        }
     }
 
 

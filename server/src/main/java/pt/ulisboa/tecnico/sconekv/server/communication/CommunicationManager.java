@@ -19,6 +19,7 @@ import zmq.ZError;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -65,6 +66,7 @@ public class CommunicationManager {
                 } else {
                     logger.debug("New socket for {}", n.getAddress().getHostAddress());
                     ZMQ.Socket socket = context.createSocket(SocketType.DEALER);
+                    socket.setIdentity(UUID.randomUUID().toString().getBytes(ZMQ.CHARSET));
                     socket.connect(String.format("tcp://%s:%s",n.getAddress().getHostAddress(), SconeConstants.SERVER_INTERNAL_PORT));
                     bucketSockets.put(n, socket);
                 }

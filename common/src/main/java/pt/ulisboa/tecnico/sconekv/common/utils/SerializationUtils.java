@@ -5,11 +5,16 @@ import org.capnproto.MessageReader;
 import org.capnproto.SerializePacked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pt.tecnico.ulisboa.prime.membership.ring.Node;
+import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.Channels;
+import java.util.UUID;
 
 public final class SerializationUtils {
     private static final Logger logger = LoggerFactory.getLogger(SerializationUtils.class);
@@ -27,4 +32,15 @@ public final class SerializationUtils {
         return SerializePacked.readFromUnbuffered(Channels.newChannel(bais));
     }
 
+
+    public static Node getNodeFromMessage(Common.Node.Reader node) throws UnknownHostException {
+        return new Node(InetAddress.getByAddress(node.getAddress().toArray()),
+                new UUID(node.getId().getMostSignificant(), node.getId().getLeastSignificant()));
+    }
+
+    public static void serializeNode(Common.Node.Builder builder, Node node) {
+        builder.getId().setMostSignificant(node.getId().getMostSignificantBits());
+        builder.getId().setMostSignificant(node.getId().getLeastSignificantBits());
+        builder.setAddress(node.getAddress().getAddress());
+    }
 }

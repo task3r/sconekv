@@ -4,7 +4,6 @@ import org.capnproto.MessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
-import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
@@ -18,6 +17,7 @@ import pt.ulisboa.tecnico.sconekv.server.events.external.WriteRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.Prepare;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.PrepareOK;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
+import pt.ulisboa.tecnico.sconekv.server.smr.StateMachineManager;
 
 public class SconeWorker implements Runnable, SconeEventHandler {
     private static final Logger logger = LoggerFactory.getLogger(SconeWorker.class);
@@ -53,7 +53,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     // External Events
 
-    private boolean notReady(ClientRequest clientRequest) {
+    private boolean notReady(CommitRequest clientRequest) {
         // testar bucket & enviar nova view caso desatualizada
         if (clientRequest.isPrepared()) {
             return false;
@@ -65,9 +65,6 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(ReadRequest readRequest) {
-        if (readRequest.getClient() != null && notReady(readRequest)) { // client != detects master for now
-            return;
-        }
         logger.info("Read {} : {}", readRequest.getKey(), readRequest.getTxID());
         MessageBuilder response = new org.capnproto.MessageBuilder();
         External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
@@ -80,16 +77,11 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         builder.setValue(value.getContent());
         builder.setVersion(value.getVersion());
 
-        // if I am the master
-        if (readRequest.getClient() != null)
-            cm.replyToClient(readRequest, response);
+        cm.replyToClient(readRequest, response);
     }
 
     @Override
     public void handle(WriteRequest writeRequest) {
-        if (writeRequest.getClient() != null && notReady(writeRequest)) {
-            return;
-        }
         logger.info("Write {} : {}", writeRequest.getKey(), writeRequest.getTxID());
         MessageBuilder response = new org.capnproto.MessageBuilder();
         External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
@@ -101,9 +93,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         builder.setKey(writeRequest.getKey().getBytes());
         builder.setVersion(value.getVersion());
 
-        // if I am the master
-        if (writeRequest.getClient() != null)
-            cm.replyToClient(writeRequest, response);
+        cm.replyToClient(writeRequest, response);
     }
 
     @Override

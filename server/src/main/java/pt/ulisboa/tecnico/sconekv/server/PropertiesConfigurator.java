@@ -43,6 +43,7 @@ public class PropertiesConfigurator {
         SconeConstants.BOOTSTRAP_NODE_NUMBER = getInt(properties, "BOOTSTRAP_NODE_NUMBER");
         SconeConstants.MURMUR3_SEED = getInt(properties, "MURMUR3_SEED");
         SconeConstants.SERVER_REQUEST_PORT = getInt(properties, "SERVER_REQUEST_PORT");
+        SconeConstants.SERVER_INTERNAL_PORT = getInt(properties, "SERVER_INTERNAL_PORT");
     }
 
     private static void configurePSS(Properties properties) {

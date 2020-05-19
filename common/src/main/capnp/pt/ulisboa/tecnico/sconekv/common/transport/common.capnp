@@ -5,6 +5,16 @@ using Java = import "/java.capnp";
 $Java.package("pt.ulisboa.tecnico.sconekv.common.transport");
 $Java.outerClassname("Common");
 
+struct Node {
+    id @0: ID;
+    address @1: Data;
+}
+
+struct ViewNumber {
+    timestamp @0: UInt64;
+    messageId @1: ID;
+}
+
 struct ID {
     mostSignificant @0: UInt64;
     leastSignificant @1: UInt64;

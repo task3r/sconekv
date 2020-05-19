@@ -3,14 +3,12 @@
 using Java = import "/java.capnp";
 using Request = import "external.capnp".Request;
 using ID = import "common.capnp".ID;
+using Node = import "common.capnp".Node;
+using ViewNumber = import "common.capnp".ViewNumber;
 
 $Java.package("pt.ulisboa.tecnico.sconekv.common.transport");
 $Java.outerClassname("Internal");
 
-struct ViewNumber {
-    timestamp @0: UInt64;
-    messageId @1: ID;
-}
 
 struct InternalMessage {
     viewVersion @0: ViewNumber;
@@ -18,6 +16,7 @@ struct InternalMessage {
         prepare @1: Prepare;
         prepareOk @2: PrepareOK;
     }
+    node @3: Node;
 }
 
 struct Prepare {
