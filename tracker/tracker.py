@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-'''
-__author__ = "Jocelyn Thode"
-
-inspired from a script from Sebastien Vaucher
-'''
 
 import json
 import logging
@@ -26,24 +21,17 @@ logging.basicConfig(
 )
 
 
-def handle_get_view(state, client_ip, max_view_size=None):
-    state.available_peers[client_ip] = int(time.time())
-    state.seen_peers.add(client_ip)
-
+def handle_get_view(state, max_view_size=None, client_ip=None):
     to_choose = list(state.available_peers.keys())
     logging.info("View size: %d", len(to_choose))
-    to_choose.remove(client_ip)
+    if client_ip is not None:
+        to_choose.remove(client_ip)
     if max_view_size is not None and len(to_choose) > max_view_size:
         to_send = random.sample(to_choose, max_view_size)
     else:
         to_send = to_choose
 
-    logging.info("{} {} {}".format(client_ip, to_choose, state.seen_peers))
-
-    return dict(
-        view=to_send,
-        seen_peers=len(state.seen_peers),
-    )
+    return dict(view=to_send, seen_peers=len(state.seen_peers))
 
 
 class FloridaHandler(BaseHTTPRequestHandler):
@@ -51,55 +39,64 @@ class FloridaHandler(BaseHTTPRequestHandler):
         server_state = self.server.florida_state
         url = urlparse(self.path)
         params = parse_qs(url.query)
-        client_address = self.headers.get(
-            'client-address', self.client_address[0]
-        )
+        client_address = params['ip'][0] if 'ip' in params else None
+        logging.info(f"{url.path} {params}")
 
+        # returns a view but does not add the requester to the view
+        # legacy endpoint due to EpTO implementation
         if url.path == '/REST/v1/admin/get_view':
             max_view_size = None
             if 'max_size' in params:
                 max_view_size = int(params['max_size'][0])
-            response = handle_get_view(
-                server_state,
-                client_address,
-                max_view_size,
-            )
-            self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            raw_response = json.dumps(response).encode()
-            self.wfile.write(raw_response)
-        elif url.path == '/terminate':
-            available_peers = server_state.available_peers
-            if client_address in available_peers:
-                del available_peers[client_address]
-                logging.info("Removed %s", client_address)
-                logging.info("View size: %d", len(available_peers))
+            response = handle_get_view(server_state, max_view_size=max_view_size)
+            self.respond(200, "application/json", json.dumps(response).encode())
+
+        # returns a view and adds the requester to the view
+        elif url.path == '/get_view':
+            if client_address is not None:
+                server_state.available_peers[client_address] = int(time.time())
+                server_state.seen_peers.add(client_address)
+                response = handle_get_view(server_state, client_ip=client_address)
+                self.respond(200, "application/json", json.dumps(response).encode())
             else:
-                logging.error("IP already removed or was never here")
-            self.send_response(200)
-            self.send_header("Content-type", "text/plain")
-            self.end_headers()
-            self.wfile.write(b"Success")
+                logging.error("Missing IP request parameter")
+                self.respond(400, "text/plain", b"Missing ip request argument")
+
+        # removes the requester from the view
+        elif url.path == '/terminate':
+            if client_address is not None:
+                available_peers = server_state.available_peers
+                if client_address in available_peers:
+                    del available_peers[client_address]
+                    logging.info("Removed %s", client_address)
+                    logging.info("View size: %d", len(available_peers))
+                else:
+                    logging.error("IP already removed or was never here")
+                self.respond(200, "text/plain", b"Success")
+            else:
+                logging.error("Missing IP request parameter")
+                self.respond(400, "text/plain", b"Missing IP request parameter")
+
+        # returns the current view
         elif url.path == '/current':
             available_peers = server_state.available_peers
             logging.info("Sent tracker state {}", available_peers)
-            self.send_response(200)
-            self.send_header("Content-type", "text/plain")
-            self.end_headers()
-            self.wfile.write(bytes("{}".format(available_peers)))
+            self.respond(200, "application/json", json.dumps(available_peers).encode())
+
+        # clears the tracker
         elif url.path == '/clear':
             self.server.florida_state = FloridaState()
             logging.info("Cleared tracker state")
-            self.send_response(200)
-            self.send_header("Content-type", "text/plain")
-            self.end_headers()
-            self.wfile.write(b"Cleared tracker state")
+            self.respond(200, "text/plain", b"Cleared tracker state")
+
         else:
-            self.send_response(404)
-            self.send_header("Content-type", "text/plain")
-            self.end_headers()
-            self.wfile.write(b"Nothing here, content is at /REST/v1/admin/get_view\n")
+            self.respond(200, "text/plain", b"Nothing here, content is at /REST/v1/admin/get_view\n")
+
+    def respond(self, response_code, content_type, bytes_to_send):
+        self.send_response(response_code)
+        self.send_header("Content-type", content_type)
+        self.end_headers()
+        self.wfile.write(bytes_to_send)
 
 
 class FloridaState:
