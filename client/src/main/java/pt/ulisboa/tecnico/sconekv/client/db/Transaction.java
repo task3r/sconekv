@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.client.SconeClient;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.CommitFailedException;
+import pt.ulisboa.tecnico.sconekv.client.exceptions.MaxRetriesExceededException;
 import pt.ulisboa.tecnico.sconekv.common.db.*;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
 
@@ -27,7 +28,7 @@ public class Transaction extends AbstractTransaction {
         this.rwSet = new HashMap<>();
     }
 
-    public byte[] read(String key) throws IOException, InvalidTransactionStateChangeException {
+    public byte[] read(String key) throws InvalidTransactionStateChangeException, MaxRetriesExceededException {
         validate();
         if (rwSet.containsKey(key)) // repeatable reads and read-my-writes
             return rwSet.get(key).getValue();
@@ -36,7 +37,7 @@ public class Transaction extends AbstractTransaction {
         return response.getValue0();
     }
 
-    public void write(String key, byte[] value) throws IOException, InvalidTransactionStateChangeException {
+    public void write(String key, byte[] value) throws InvalidTransactionStateChangeException, MaxRetriesExceededException {
         validate();
         if (rwSet.containsKey(key)) {
             rwSet.replace(key, new WriteOperation(key, rwSet.get(key).getVersion(), value));
@@ -46,7 +47,7 @@ public class Transaction extends AbstractTransaction {
         }
     }
 
-    public void commit() throws InvalidTransactionStateChangeException, IOException, CommitFailedException {
+    public void commit() throws InvalidTransactionStateChangeException, CommitFailedException, MaxRetriesExceededException {
         validate();
         if (!client.performCommit(getId(), getRwSet()))
             throw new CommitFailedException();

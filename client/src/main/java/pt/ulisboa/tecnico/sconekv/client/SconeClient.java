@@ -15,6 +15,7 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import pt.tecnico.ulisboa.prime.network.DiscoveryResponseDto;
 import pt.ulisboa.tecnico.sconekv.client.db.Transaction;
+import pt.ulisboa.tecnico.sconekv.client.exceptions.MaxRetriesExceededException;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.UnableToGetViewException;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
@@ -34,6 +35,7 @@ import java.util.UUID;
 public class SconeClient {
     private static final Logger logger = LoggerFactory.getLogger(SconeClient.class);
     private static final int RECV_TIMEOUT = 5000;
+    private static final int MAX_REQUEST_RETRIES = 5;
 
     private UUID clientID;
     private ZContext context;
@@ -75,7 +77,7 @@ public class SconeClient {
                     byte[] rawResponse = socket.recv(0);
                     if (rawResponse != null) {
                         External.Response.Reader response = SerializationUtils.getMessageFromBytes(rawResponse)
-                                                                              .getRoot(External.Response.factory);
+                                .getRoot(External.Response.factory);
                         if (response.which() == External.Response.Which.DHT)
                             return new DHT(response.getDht());
                     }
@@ -120,31 +122,27 @@ public class SconeClient {
         return new Transaction(this, new TransactionID(this.clientID, transactionCounter++));
     }
 
-    public Pair<byte[], Short> performRead(TransactionID txID, String key) throws IOException {
+    public Pair<byte[], Short> performRead(TransactionID txID, String key) throws MaxRetriesExceededException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         External.Request.Builder builder = message.initRoot(External.Request.factory);
         txID.serialize(builder.getTxID());
         builder.setRead(key.getBytes());
 
-        External.Response.Reader response = request(message).getRoot(External.Response.factory);
-        assert response.which() == External.Response.Which.READ;
+        External.Response.Reader response = request(message, External.Response.Which.READ);
 
         return new Pair<>(response.getRead().getValue().toArray(), response.getRead().getVersion());
     }
 
-    public Short performWrite(TransactionID txID, String key) throws IOException {
+    public Short performWrite(TransactionID txID, String key) throws MaxRetriesExceededException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         External.Request.Builder builder = message.initRoot(External.Request.factory);
         txID.serialize(builder.getTxID());
         builder.setWrite(key.getBytes());
 
-        External.Response.Reader response = request(message).getRoot(External.Response.factory);
-        assert response.which() == External.Response.Which.WRITE;
-
-        return response.getWrite().getVersion();
+        return request(message, External.Response.Which.WRITE).getWrite().getVersion();
     }
 
-    public boolean performCommit(TransactionID txID, List<Operation> ops) throws IOException {
+    public boolean performCommit(TransactionID txID, List<Operation> ops) throws MaxRetriesExceededException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         External.Request.Builder rBuilder = message.initRoot(External.Request.factory);
         txID.serialize(rBuilder.getTxID());
@@ -156,18 +154,29 @@ public class SconeClient {
         }
         cBuilder.initBuckets(0); // insert buckets in message
 
-        External.Response.Reader response = request(message).getRoot(External.Response.factory);
-        assert response.which() == External.Response.Which.COMMIT;
-
-        return response.getCommit().getResult() == External.CommitResponse.Result.OK;
+        return request(message, External.Response.Which.COMMIT).getCommit().getResult() == External.CommitResponse.Result.OK;
     }
 
-    private MessageReader request(MessageBuilder message) throws IOException {
-        this.requester.sendMore(""); // delimiter
-        this.requester.send(SerializationUtils.getBytesFromMessage(message));
-        this.requester.recv(); // delimiter
-        return SerializationUtils.getMessageFromBytes(this.requester.recv(0));
-
-        // TODO falta garantir que é uma resposta à mesma mensagem que enviei
+    private External.Response.Reader request(MessageBuilder message, External.Response.Which requestType) throws MaxRetriesExceededException {
+        int retries = 0;
+        while (retries < MAX_REQUEST_RETRIES) {
+            try {
+                this.requester.sendMore(""); // delimiter
+                this.requester.send(SerializationUtils.getBytesFromMessage(message));
+                this.requester.recv(); // delimiter
+                External.Response.Reader response = SerializationUtils.getMessageFromBytes(this.requester.recv(0)).getRoot(External.Response.factory);
+                if (response.which() != requestType) {
+                    if (response.which() == External.Response.Which.DHT) // request was sent to the wrong node
+                        this.dht.applyView(response.getDht());
+                    else
+                        retries++;
+                } else {
+                    return response;
+                }
+            } catch (IOException e) {
+                retries++;
+            }
+        }
+        throw new MaxRetriesExceededException();
     }
 }

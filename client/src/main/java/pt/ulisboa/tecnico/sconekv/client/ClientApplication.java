@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.zeromq.ZContext;
 import pt.ulisboa.tecnico.sconekv.client.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.CommitFailedException;
+import pt.ulisboa.tecnico.sconekv.client.exceptions.MaxRetriesExceededException;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.UnableToGetViewException;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidBucketException;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
@@ -14,7 +15,7 @@ import java.io.IOException;
 public class ClientApplication {
     private static final Logger logger = LoggerFactory.getLogger(ClientApplication.class);
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         logger.info("Launching client application...");
 
         try {
@@ -39,7 +40,7 @@ public class ClientApplication {
 
             tx2.commit();
 
-        } catch (CommitFailedException | InvalidTransactionStateChangeException | UnableToGetViewException | InvalidBucketException e) {
+        } catch (CommitFailedException | InvalidTransactionStateChangeException | UnableToGetViewException | InvalidBucketException | MaxRetriesExceededException e) {
             e.printStackTrace();
         }
     }

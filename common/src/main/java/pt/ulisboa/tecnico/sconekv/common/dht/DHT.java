@@ -86,6 +86,11 @@ public class DHT {
         applyView(ring.asSet(), ring.getVersion());
     }
 
+    public synchronized void applyView(Common.DHT.Reader dht) {
+        DHT newDHT = new DHT(dht);
+        this.applyView(newDHT.nodes, newDHT.viewVersion);
+    }
+
     private void defineBuckets() {
         buckets = new Bucket[numBuckets];
         int bucketSize = nodes.size() / numBuckets;
