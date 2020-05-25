@@ -23,7 +23,7 @@ logging.basicConfig(
 
 def handle_get_view(state, max_view_size=None, client_ip=None):
     to_choose = list(state.available_peers.keys())
-    logging.info("View size: %d", len(to_choose))
+    logging.info(f"Current view {to_choose}")
     if client_ip is not None:
         to_choose.remove(client_ip)
     if max_view_size is not None and len(to_choose) > max_view_size:
@@ -79,9 +79,8 @@ class FloridaHandler(BaseHTTPRequestHandler):
 
         # returns the current view
         elif url.path == '/current':
-            available_peers = server_state.available_peers
-            logging.info("Sent tracker state {}", available_peers)
-            self.respond(200, "application/json", json.dumps(available_peers).encode())
+            response = handle_get_view(server_state)
+            self.respond(200, "application/json", json.dumps(response).encode())
 
         # clears the tracker
         elif url.path == '/clear':
