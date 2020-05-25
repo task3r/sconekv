@@ -6,6 +6,8 @@ import org.capnproto.SerializePacked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
+import pt.tecnico.ulisboa.prime.membership.ring.Version;
+import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 
 import java.io.ByteArrayInputStream;
@@ -42,5 +44,16 @@ public final class SerializationUtils {
         builder.getId().setMostSignificant(node.getId().getMostSignificantBits());
         builder.getId().setMostSignificant(node.getId().getLeastSignificantBits());
         builder.setAddress(node.getAddress().getAddress());
+    }
+
+    public static void serializeViewVersion(Common.ViewVersion.Builder builder, Version version) {
+        builder.getMessageId().setMostSignificant(version.getMessageId().getMostSignificantBits());
+        builder.getMessageId().setLeastSignificant(version.getMessageId().getLeastSignificantBits());
+        builder.setTimestamp(version.getTimestamp());
+    }
+
+    public static Version getVersionFromMesage(Common.ViewVersion.Reader version) {
+        return new Version(version.getTimestamp(), new UUID(version.getMessageId().getMostSignificant(),
+                                                            version.getMessageId().getLeastSignificant()));
     }
 }

@@ -4,5 +4,5 @@ ENV LANG C.UTF-8
 WORKDIR /usr/src/sconekv
 COPY target/client-1.0-SNAPSHOT-jar-with-dependencies.jar /usr/src/sconekv
 #COPY docker-config.properties /usr/src/sconekv/config.properties
-#COPY scripts/start-container.sh /usr/src/sconekv
-#CMD ["/bin/bash", "start-container.sh"]
+COPY scripts/start-container.sh /usr/src/sconekv
+CMD ["/bin/bash", "start-container.sh"]

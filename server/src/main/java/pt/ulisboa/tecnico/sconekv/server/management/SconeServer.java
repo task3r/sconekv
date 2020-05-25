@@ -13,10 +13,7 @@ import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.MessageType;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
-import pt.ulisboa.tecnico.sconekv.server.events.external.ClientRequest;
-import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
-import pt.ulisboa.tecnico.sconekv.server.events.external.ReadRequest;
-import pt.ulisboa.tecnico.sconekv.server.events.external.WriteRequest;
+import pt.ulisboa.tecnico.sconekv.server.events.external.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.Prepare;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.PrepareOK;
 
@@ -81,14 +78,17 @@ public class SconeServer implements Runnable {
 
         switch (request.which()) {
             case WRITE:
-                return new WriteRequest(eventId, client, txID, new String(request.getRead().toArray()), request);
+                return new WriteRequest(eventId, client, txID, new String(request.getRead().toArray()));
 
             case READ:
-                return new ReadRequest(eventId, client, txID, new String(request.getRead().toArray()), request);
+                return new ReadRequest(eventId, client, txID, new String(request.getRead().toArray()));
 
             case COMMIT:
                 Transaction tx = new Transaction(txID, request.getCommit());
                 return new CommitRequest(eventId, client, tx, request);
+
+            case GET_DHT:
+                return new GetDHTRequest(eventId, client);
 
             case _NOT_IN_SCHEMA:
                 logger.error("Received an incorrect request, ignoring...");
@@ -112,9 +112,7 @@ public class SconeServer implements Runnable {
             return;
         }
 
-        Version viewVersion = new Version(message.getViewVersion().getTimestamp(),
-                new UUID(message.getViewVersion().getMessageId().getMostSignificant(),
-                        message.getViewVersion().getMessageId().getLeastSignificant()));
+        Version viewVersion = SerializationUtils.getVersionFromMesage(message.getViewVersion());
 
         Node node = null;
         try {

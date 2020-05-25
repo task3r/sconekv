@@ -6,18 +6,25 @@ $Java.package("pt.ulisboa.tecnico.sconekv.common.transport");
 $Java.outerClassname("Common");
 
 struct Node {
-    id @0: ID;
-    address @1: Data;
+    id @0 :ID;
+    address @1 :Data;
 }
 
-struct ViewNumber {
-    timestamp @0: UInt64;
-    messageId @1: ID;
+struct ViewVersion {
+    timestamp @0 :Int64;
+    messageId @1 :ID;
+}
+
+struct DHT {
+    version @0 :ViewVersion;
+    nodes @1 :List(Node);
+    numBuckets @2 :Int16;
+    murmurSeed @3 :Int32;
 }
 
 struct ID {
-    mostSignificant @0: UInt64;
-    leastSignificant @1: UInt64;
+    mostSignificant @0 :Int64;
+    leastSignificant @1 :Int64;
 }
 
 struct Operation {
@@ -30,6 +37,6 @@ struct Operation {
 }
 
 struct TransactionID {
-    clientID @0: ID;
-    localID @1: UInt32;
+    clientID @0 :ID;
+    localID @1 :Int32;
 }

@@ -5,15 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
+import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
 import pt.ulisboa.tecnico.sconekv.server.events.*;
-import pt.ulisboa.tecnico.sconekv.server.events.external.ClientRequest;
-import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
-import pt.ulisboa.tecnico.sconekv.server.events.external.ReadRequest;
-import pt.ulisboa.tecnico.sconekv.server.events.external.WriteRequest;
+import pt.ulisboa.tecnico.sconekv.server.events.external.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.Prepare;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.PrepareOK;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
@@ -119,6 +117,15 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         // if I am the master
         if (commitRequest.getClient() != null)
             cm.replyToClient(commitRequest, response);
+    }
+
+    @Override
+    public void handle(GetDHTRequest getViewRequest) {
+        logger.info("GetView : {}", getViewRequest.getClient());
+        MessageBuilder response = new org.capnproto.MessageBuilder();
+        External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
+        dht.serialize(rBuilder.initDht());
+        cm.replyToClient(getViewRequest, response);
     }
 
     // Internal Events

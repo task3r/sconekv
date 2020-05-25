@@ -3,6 +3,7 @@
 using Java = import "/java.capnp";
 using TransactionID = import "common.capnp".TransactionID;
 using Operation = import "common.capnp".Operation;
+using DHT = import "common.capnp".DHT;
 
 $Java.package("pt.ulisboa.tecnico.sconekv.common.transport");
 $Java.outerClassname("External");
@@ -14,6 +15,7 @@ struct Request {
       write @1 :Data; # read or write simply sends the key
       read @2 :Data;
       commit @3 :Commit;
+      getDht @4 :Void;
     }
 }
 
@@ -29,7 +31,8 @@ struct Response {
         write @1 :WriteResponse;
         read @2 :ReadResponse;
         commit @3 :CommitResponse;
-        ack @4 :Void;
+        dht @4 :DHT;
+        ack @5 :Void;
     }
 }
 

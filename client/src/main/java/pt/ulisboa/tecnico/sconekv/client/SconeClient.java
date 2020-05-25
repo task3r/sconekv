@@ -1,5 +1,11 @@
 package pt.ulisboa.tecnico.sconekv.client;
 
+import com.google.gson.Gson;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.capnproto.*;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -7,43 +13,107 @@ import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+import pt.tecnico.ulisboa.prime.network.DiscoveryResponseDto;
 import pt.ulisboa.tecnico.sconekv.client.db.Transaction;
+import pt.ulisboa.tecnico.sconekv.client.exceptions.UnableToGetViewException;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
+import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
+import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidBucketException;
 import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.UUID;
 
 public class SconeClient {
     private static final Logger logger = LoggerFactory.getLogger(SconeClient.class);
+    private static final int RECV_TIMEOUT = 5000;
 
     private UUID clientID;
-    private String server;
     private ZContext context;
     private ZMQ.Socket requester;
+    private DHT dht;
     private int transactionCounter = 0;
 
-    public SconeClient(ZContext context, String server) {
-        this.context = context;
-        this.server = server;
+    public SconeClient() throws UnableToGetViewException, InvalidBucketException {
+        this.context = new ZContext();
         this.clientID = UUID.randomUUID();
+
+        this.dht = getDHT();
 
         initSockets();
 
         logger.info("Created new client {}", this.clientID);
     }
 
-    private void initSockets() {
-        this.requester = this.context.createSocket(SocketType.DEALER);
-        this.requester.setIdentity(UUID.randomUUID().toString().getBytes(ZMQ.CHARSET));
-        this.requester.connect("tcp://" + server + ":" + SconeConstants.SERVER_REQUEST_PORT);
-        logger.info("Client {} connected to {}", clientID, server);
+    private DHT getDHT() throws UnableToGetViewException {
+        try {
+            DiscoveryResponseDto discoveryResponseDto = getDiscoveryNodes();
+            if (discoveryResponseDto == null)
+                throw new UnableToGetViewException();
+
+            MessageBuilder message = new org.capnproto.MessageBuilder();
+            External.Request.Builder builder = message.initRoot(External.Request.factory);
+            builder.setGetDht(null);
+            byte[] rawRequest = SerializationUtils.getBytesFromMessage(message);
+
+            try (ZMQ.Socket socket = this.context.createSocket(SocketType.DEALER)) {
+                socket.setReceiveTimeOut(RECV_TIMEOUT);
+                socket.setIdentity(UUID.randomUUID().toString().getBytes());
+                for (String node : discoveryResponseDto.view) {
+                    String address = "tcp://" + node + ":" + SconeConstants.SERVER_REQUEST_PORT;
+                    socket.connect(address);
+                    socket.sendMore(""); // delimiter
+                    socket.send(rawRequest);
+                    socket.recv(); // delimiter
+                    byte[] rawResponse = socket.recv(0);
+                    if (rawResponse != null) {
+                        External.Response.Reader response = SerializationUtils.getMessageFromBytes(rawResponse)
+                                                                              .getRoot(External.Response.factory);
+                        if (response.which() == External.Response.Which.DHT)
+                            return new DHT(response.getDht());
+                    }
+                    socket.disconnect(address);
+                }
+            }
+        } catch (IOException e) {
+            throw new UnableToGetViewException();
+        }
+
+        throw new UnableToGetViewException(); // if it reached here then it did not receive any correct getDHT responses
+    }
+
+    private DiscoveryResponseDto getDiscoveryNodes() throws IOException {
+        HttpGet get = new HttpGet(SconeConstants.TRACKER_URL + "/current");
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            CloseableHttpResponse response = httpclient.execute(get);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                try (InputStream stream = entity.getContent()) {
+                    return new Gson().fromJson(new String(stream.readAllBytes()), DiscoveryResponseDto.class);
+                }
+            }
+        }
+        return null;
+    }
+
+    private void initSockets() throws InvalidBucketException {
+        this.requester = createSocket(dht.getMasterOfBucket((short) 0).getAddress().getHostAddress()); //FIXME
+    }
+
+    private ZMQ.Socket createSocket(String address) {
+        ZMQ.Socket socket = this.context.createSocket(SocketType.DEALER);
+        socket.setIdentity(this.clientID.toString().getBytes(ZMQ.CHARSET));
+        socket.connect("tcp://" + address + ":" + SconeConstants.SERVER_REQUEST_PORT);
+        socket.setReceiveTimeOut(RECV_TIMEOUT);
+        logger.info("Client {} connected to {}", clientID, address);
+        return socket;
     }
 
     public Transaction newTransaction() {

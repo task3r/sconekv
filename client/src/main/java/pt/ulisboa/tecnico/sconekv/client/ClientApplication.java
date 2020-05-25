@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.zeromq.ZContext;
 import pt.ulisboa.tecnico.sconekv.client.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.CommitFailedException;
+import pt.ulisboa.tecnico.sconekv.client.exceptions.UnableToGetViewException;
+import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidBucketException;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
 
 import java.io.IOException;
@@ -15,9 +17,8 @@ public class ClientApplication {
     public static void main(String[] args) throws IOException {
         logger.info("Launching client application...");
 
-        try (ZContext context = new ZContext()) {
-
-            SconeClient client = new SconeClient(context, args[0]);
+        try {
+            SconeClient client = new SconeClient();
 
             Transaction tx1 = client.newTransaction();
             tx1.write("foo", "bar".getBytes());
@@ -38,7 +39,7 @@ public class ClientApplication {
 
             tx2.commit();
 
-        } catch (CommitFailedException | InvalidTransactionStateChangeException e) {
+        } catch (CommitFailedException | InvalidTransactionStateChangeException | UnableToGetViewException | InvalidBucketException e) {
             e.printStackTrace();
         }
     }
