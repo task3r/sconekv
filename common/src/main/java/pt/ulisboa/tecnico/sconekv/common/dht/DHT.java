@@ -95,6 +95,7 @@ public class DHT {
         buckets = new Bucket[numBuckets];
         int bucketSize = nodes.size() / numBuckets;
         ArrayList<Node> aux = new ArrayList<>(nodes);
+        logger.debug("numBuckets {} nodes {}", numBuckets, nodes);
         for (short b = 0; b < numBuckets; b++) {
             buckets[b] = new Bucket(b, new TreeSet<>(aux.subList(b*bucketSize, Math.min((b+1)*bucketSize, nodes.size()))));
         }

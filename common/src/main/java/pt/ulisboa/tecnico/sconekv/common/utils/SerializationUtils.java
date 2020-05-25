@@ -24,12 +24,16 @@ public final class SerializationUtils {
     private SerializationUtils() {}
 
     public static byte[] getBytesFromMessage(MessageBuilder message) throws IOException {
+        if (message == null)
+            throw new IOException("Received null message builder");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SerializePacked.writeToUnbuffered(Channels.newChannel(baos), message);
         return baos.toByteArray();
     }
 
     public static MessageReader getMessageFromBytes(byte[] message) throws IOException {
+        if (message == null)
+            throw new IOException("Received null byte array");
         ByteArrayInputStream bais = new ByteArrayInputStream(message);
         return SerializePacked.readFromUnbuffered(Channels.newChannel(bais));
     }

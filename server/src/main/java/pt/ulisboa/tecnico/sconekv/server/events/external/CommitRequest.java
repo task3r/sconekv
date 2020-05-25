@@ -1,6 +1,8 @@
 package pt.ulisboa.tecnico.sconekv.server.events.external;
 
 import org.javatuples.Pair;
+import pt.tecnico.ulisboa.prime.membership.ring.Node;
+import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
@@ -28,4 +30,12 @@ public class CommitRequest extends ClientRequest {
     public void handledBy(SconeEventHandler handler) {
         handler.handle(this);
     }
+
+    @Override
+    public boolean checkBucket(DHT dht, Node self) {
+        // validate transaction (every key should belong to this bucket)
+        // check master
+        return true;
+    }
+
 }

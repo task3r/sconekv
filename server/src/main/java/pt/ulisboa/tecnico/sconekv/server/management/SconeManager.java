@@ -52,7 +52,7 @@ public class SconeManager implements UpdateViewCallback {
     private void start() {
         logger.info("Scone Node starting...");
         server = new Thread(new SconeServer((short)0, communicationManager));
-        worker = new Thread(new SconeWorker((short)1, communicationManager, store, dht, null)); //membershipManager.getMyself()));
+        worker = new Thread(new SconeWorker((short)1, communicationManager, store, dht, membershipManager.getMyself()));
         server.start();
         worker.start();
     }

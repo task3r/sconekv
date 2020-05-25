@@ -1,7 +1,9 @@
 package pt.ulisboa.tecnico.sconekv.server.events.external;
 
 import org.javatuples.Pair;
+import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
+import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
 
 public abstract class ClientRequest extends SconeEvent {
@@ -16,6 +18,7 @@ public abstract class ClientRequest extends SconeEvent {
         this.txID = txID;
         this.prepared = false;
     }
+
 
     public String getClient() {
         return client;
@@ -32,4 +35,6 @@ public abstract class ClientRequest extends SconeEvent {
     public void setPrepared() {
         this.prepared = true;
     }
+
+    public abstract boolean checkBucket(DHT dht, Node self);
 }

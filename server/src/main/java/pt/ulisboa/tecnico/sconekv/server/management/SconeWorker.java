@@ -41,6 +41,12 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 SconeEvent event = cm.takeEvent();
+                if (event instanceof ClientRequest) {
+                    ClientRequest request = (ClientRequest) event;
+                    if (!request.checkBucket(this.dht, self))
+                        cm.queueEvent(new GetDHTRequest(request.getId(), request.getClient())); // maybe just process it here?
+                }
+
                 event.handledBy(this);
             }
         } catch (InterruptedException e) {
