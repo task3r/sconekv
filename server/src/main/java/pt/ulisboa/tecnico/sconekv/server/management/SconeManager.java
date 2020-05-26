@@ -13,6 +13,9 @@ import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.smr.StateMachineManager;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class SconeManager implements UpdateViewCallback {
@@ -20,21 +23,17 @@ public class SconeManager implements UpdateViewCallback {
 
     private CommunicationManager communicationManager;
     private MembershipManager membershipManager;
+    private StateMachineManager stateMachineManager;
     private Store store;
     private DHT dht;
     private Bucket currentBucket;
-    private Thread worker;
-    private Thread server;
+    private List<Thread> threads;
 
     public SconeManager() throws IOException, InterruptedException {
-        this.store = new Store();
-
         joinMembership();
-
+        this.store = new Store();
         this.communicationManager = new CommunicationManager(currentBucket, membershipManager.getMyself());
-        StateMachineManager.init(communicationManager, membershipManager);
-
-        //start();
+        this.stateMachineManager = new StateMachineManager(communicationManager, membershipManager);
     }
 
     private void joinMembership() throws IOException, InterruptedException {
@@ -51,10 +50,14 @@ public class SconeManager implements UpdateViewCallback {
 
     private void start() {
         logger.info("Scone Node starting...");
-        server = new Thread(new SconeServer((short)0, communicationManager));
-        worker = new Thread(new SconeWorker((short)1, communicationManager, store, dht, membershipManager.getMyself()));
-        server.start();
-        worker.start();
+        threads = new ArrayList<>();
+        for (short i = 0; i < SconeConstants.NUM_WORKERS; i++) {
+            threads.add(new Thread(new SconeWorker(i, communicationManager, stateMachineManager, store, dht, membershipManager.getMyself())));
+        }
+        threads.add(new Thread(new SconeServer((short)0, communicationManager)));
+        for (Thread t : threads) {
+            t.start();
+        }
     }
 
     public void shutdown() throws InterruptedException {
@@ -68,16 +71,12 @@ public class SconeManager implements UpdateViewCallback {
             communicationManager.shutdown();
         }
 
-        if (worker != null) {
-            worker.interrupt();
-            worker.join();
-            logger.info("Workers terminated.");
-        }
-
-        if (server != null) {
-            server.interrupt();
-            server.join();
-            logger.info("Servers terminated.");
+        if (threads != null) {
+            for (Thread t : threads) {
+                t.interrupt();
+                t.join();
+            }
+            logger.info("Scone threads terminated.");
         }
 
         logger.info("Scone node terminated.");

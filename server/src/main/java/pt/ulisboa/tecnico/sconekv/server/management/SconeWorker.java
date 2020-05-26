@@ -27,13 +27,13 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     private DHT dht;
     private Node self;
 
-    public SconeWorker(short id, CommunicationManager cm, Store store, DHT dht, Node self) {
+    public SconeWorker(short id, CommunicationManager cm, StateMachineManager smm, Store store, DHT dht, Node self) {
         this.id = id;
         this.cm = cm;
         this.store = store;
         this.dht = dht;
         this.self = self;
-        this.smm = StateMachineManager.getInstance();
+        this.smm = smm;
     }
 
     @Override
@@ -56,16 +56,6 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     }
 
     // External Events
-
-    private boolean notReady(CommitRequest clientRequest) {
-        // testar bucket & enviar nova view caso desatualizada
-        if (clientRequest.isPrepared()) {
-            return false;
-        } else {
-            smm.prepareLogMaster(clientRequest);
-            return true;
-        }
-    }
 
     @Override
     public void handle(ReadRequest readRequest) {
@@ -102,27 +92,29 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(CommitRequest commitRequest) {
-        if (commitRequest.getClient() != null && notReady(commitRequest)) {
-            return;
-        }
-        logger.info("Commit : {}", commitRequest.getTxID());
-        MessageBuilder response = new org.capnproto.MessageBuilder();
-        External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
-        commitRequest.getTxID().serialize(rBuilder.getTxID());
-        External.CommitResponse.Builder builder = rBuilder.initCommit();
+        // if I am the master and this request was not replicated
+        if (commitRequest.getClient() != null && !commitRequest.isPrepared()) {
+            smm.prepareLogMaster(commitRequest);
+        } else {
+            logger.info("Commit : {}", commitRequest.getTxID());
+            MessageBuilder response = new org.capnproto.MessageBuilder();
+            External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
+            commitRequest.getTxID().serialize(rBuilder.getTxID());
+            External.CommitResponse.Builder builder = rBuilder.initCommit();
 
-        try {
-            store.validate(commitRequest.getTx());
-            store.perform(commitRequest.getTx());
-            store.releaseLocks(commitRequest.getTx());
-            builder.setResult(External.CommitResponse.Result.OK);
-        } catch (InvalidOperationException e) {
-            builder.setResult(External.CommitResponse.Result.NOK);
-        }
+            try {
+                store.validate(commitRequest.getTx());
+                store.perform(commitRequest.getTx());
+                store.releaseLocks(commitRequest.getTx());
+                builder.setResult(External.CommitResponse.Result.OK);
+            } catch (InvalidOperationException e) {
+                builder.setResult(External.CommitResponse.Result.NOK);
+            }
 
-        // if I am the master
-        if (commitRequest.getClient() != null)
-            cm.replyToClient(commitRequest, response);
+            // if I am the master
+            if (commitRequest.getClient() != null)
+                cm.replyToClient(commitRequest, response);
+        }
     }
 
     @Override
@@ -138,13 +130,11 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(Prepare prepare) {
-        logger.info("Received prepare message");
         smm.prepareLogReplica(prepare);
     }
 
     @Override
     public void handle(PrepareOK prepareOK) {
-        logger.info("Received prepareOK message");
         smm.prepareOK(prepareOK);
     }
 }

@@ -9,21 +9,15 @@ import java.util.Set;
 
 public class LogEntry {
     private CommitRequest request;
-    private long opNumber;
     private Set<Node> oksReceived;
 
-    public LogEntry(CommitRequest request, long opNumber) {
+    public LogEntry(CommitRequest request) {
         this.request = request;
-        this.opNumber = opNumber;
         this.oksReceived = new HashSet<>();
     }
 
     public CommitRequest getRequest() {
         return request;
-    }
-
-    public long getOpNumber() {
-        return opNumber;
     }
 
     public void addOk(Node node) {

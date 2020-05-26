@@ -18,43 +18,33 @@ import java.util.Map;
 public class StateMachineManager {
     private static final Logger logger = LoggerFactory.getLogger(StateMachineManager.class);
 
-    private static StateMachineManager instance;
-
     private CommunicationManager cm;
     private MembershipManager mm;
 
     private long opNumber;
     private long commitNumber;
 
-    private Map<Long, LogEntry> log;
+    // Map opNumber -> logEntry
+    private Map<Long, LogEntry> log; // maybe could change this map simply to a list
+    // Map opNumber -> Prepare
+    private Map<Long, Prepare> pendingEntries;
 
-    private StateMachineManager(CommunicationManager cm, MembershipManager mm) {
+    public StateMachineManager(CommunicationManager cm, MembershipManager mm) {
         this.cm = cm;
         this.mm = mm;
         this.log = new HashMap<>();
-    }
-
-    public static StateMachineManager getInstance() {
-        if (instance == null) {
-            logger.error("State machine was not initialized");
-            return null;
-        }
-        return instance;
-    }
-
-    public static void init(CommunicationManager cm, MembershipManager mm) {
-        if (instance == null)
-            instance = new StateMachineManager(cm, mm);
+        this.pendingEntries = new HashMap<>();
     }
 
     private synchronized long newOpNumber() {
-        return opNumber++;
+        opNumber++;
+        return opNumber;
     }
 
     public void prepareLogMaster(CommitRequest request) {
-        logger.debug("Master logging request...");
+        logger.debug("Master replicating request...");
         long requestOpNumber = newOpNumber();
-        log.put(requestOpNumber, new LogEntry(request, opNumber));
+        log.put(requestOpNumber, new LogEntry(request));
 
         MessageBuilder message = new MessageBuilder();
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
@@ -72,11 +62,29 @@ public class StateMachineManager {
         }
     }
 
-    public void prepareLogReplica(Prepare prepare) {
-        // garantir que vem do master
-        // garantir que tem as entries anteriores
-        // fazer commit das entries com opNumber <= prepare.commitNumber
+    public synchronized void prepareLogReplica(Prepare prepare) {
+        logger.debug("Replica received prepare message");
+        // guarantee it comes from the master of the bucket
+
+        // if this replica does not have all earlier entries, wait
+        if (opNumber + 1 != prepare.getOpNumber()) {
+            pendingEntries.put(prepare.getOpNumber(), prepare);
+            return;
+        }
         this.opNumber = prepare.getOpNumber();
+        log.put(this.opNumber, new LogEntry(prepare.getClientRequest()));
+
+        // if the next entry is pending, queue it
+        if (pendingEntries.containsKey(this.opNumber + 1))
+            cm.queueEvent(pendingEntries.remove(this.opNumber + 1));
+        // TODO could save the queued opNumber and only send prepareOK to the highest value to reduce traffic
+
+        // commit all entries with opNumber <= prepare.commitNumber
+        for (long i = commitNumber + 1; i <= prepare.getCommitNumber(); i++) {
+            LogEntry entry = log.get(i);
+            entry.getRequest().setPrepared();
+            cm.queueEvent(entry.getRequest());
+        }
         this.commitNumber = prepare.getCommitNumber();
 
         MessageBuilder message = new MessageBuilder();
@@ -91,18 +99,21 @@ public class StateMachineManager {
             logger.error("Error serializing prepareOK message");
             e.printStackTrace();
         }
-        cm.queueEvent(prepare.getClientRequest()); //FIXME
     }
 
-    public void prepareOK(PrepareOK prepareOK) {
-        // in for loop from committed to prepareOk.opNum
-        LogEntry entry = log.get(prepareOK.getOpNumber());
-        entry.addOk(prepareOK.getNode());
-        if (entry.isReady()) {
-            entry.getRequest().setPrepared();
-            cm.queueEvent(entry.getRequest());
+    public synchronized void prepareOK(PrepareOK prepareOK) {
+        logger.debug("Master received prepareOK from {} with opNum: {}", prepareOK.getNode(), prepareOK.getOpNumber());
+        // maybe check bucket first
+        for (long i = commitNumber + 1; i <= prepareOK.getOpNumber(); i++) {
+            LogEntry entry = log.get(i);
+            entry.addOk(prepareOK.getNode());
+            if (entry.isReady()) {
+                commitNumber = i;
+                entry.getRequest().setPrepared();
+                cm.queueEvent(entry.getRequest());
+            }
         }
     }
 
-
+    //state transfer / recovery
 }

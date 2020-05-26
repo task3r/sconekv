@@ -8,6 +8,7 @@ public class SconeConstants {
     public static int REPLICATION = 1;
     public static int BOOTSTRAP_NODE_NUMBER = NUM_BUCKETS * REPLICATION;
     public static int MURMUR3_SEED = 42;
+    public static short NUM_WORKERS = 1;
     public static String TRACKER_URL = "http://tracker:4321";
 
 

@@ -19,7 +19,6 @@ import pt.ulisboa.tecnico.sconekv.server.events.internal.PrepareOK;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.UUID;
 
 public class SconeServer implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(SconeServer.class);
@@ -126,8 +125,15 @@ public class SconeServer implements Runnable {
 
         switch (message.which()) {
             case PREPARE:
-                cm.queueEvent(new Prepare(eventId, node, viewVersion, message.getPrepare().getOpNumber(), message.getPrepare().getCommitNumber(),
-                        message.getPrepare().getBucket(), getClientRequest(message.getPrepare().getMessage(), null, generateId())));
+                // prepare events have the client as null because using ZMQ only the master can respond to the client
+                // if really needed, the client needs to be listening to requests as well, ans then this string could represent the address
+                ClientRequest clientRequest = getClientRequest(message.getPrepare().getMessage(), null, generateId());
+                if (clientRequest instanceof CommitRequest) {
+                    cm.queueEvent(new Prepare(eventId, node, viewVersion, message.getPrepare().getOpNumber(), message.getPrepare().getCommitNumber(),
+                            message.getPrepare().getBucket(), (CommitRequest) clientRequest));
+                } else {
+                    logger.error("Received incorrect replicated request of type {}", clientRequest != null ? clientRequest.getClass() : "NULL");
+                }
                 break;
             case PREPARE_OK:
                 cm.queueEvent(new PrepareOK(eventId, node, viewVersion, message.getPrepareOk().getOpNumber(), message.getPrepareOk().getBucket()));
