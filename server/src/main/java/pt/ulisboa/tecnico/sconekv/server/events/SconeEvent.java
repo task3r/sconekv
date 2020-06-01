@@ -4,7 +4,7 @@ import org.javatuples.Pair;
 
 public abstract class SconeEvent {
 
-    private Pair<Short, Integer> id;
+    private Pair<Short, Integer> id; // ids are used for debugging, could possibly be removed in the future
 
     public SconeEvent(Pair<Short,Integer> id) {
         this.id = id;
@@ -14,5 +14,11 @@ public abstract class SconeEvent {
 
     public Pair<Short, Integer> getId() {
         return id;
+    }
+
+    public void setId(Pair<Short, Integer> id) {
+        if (this.id == null) {
+            this.id = id;
+        }
     }
 }

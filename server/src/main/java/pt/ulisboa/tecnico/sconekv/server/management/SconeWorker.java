@@ -1,11 +1,11 @@
 package pt.ulisboa.tecnico.sconekv.server.management;
 
 import org.capnproto.MessageBuilder;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
-import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
@@ -25,6 +25,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     private StateMachineManager smm;
     private DHT dht;
     private Node self;
+    private int eventCounter;
 
     public SconeWorker(short id, CommunicationManager cm, StateMachineManager smm, Store store, DHT dht, Node self) {
         this.id = id;
@@ -40,18 +41,25 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 SconeEvent event = cm.takeEvent();
+                if (event.getId() == null)
+                    event.setId(generateId());
                 if (event instanceof ClientRequest) {
                     ClientRequest request = (ClientRequest) event;
-                    if (!request.checkBucket(this.dht, self))
+                    if (!request.checkBucket(this.dht, self)) {
                         cm.queueEvent(new GetDHTRequest(request.getId(), request.getClient())); // maybe just process it here?
+                        continue; // do not process this event as it is not in the correct bucket
+                    }
                 }
-
                 event.handledBy(this);
             }
         } catch (InterruptedException e) {
             logger.info("Worker {} interrupted.", id);
             Thread.currentThread().interrupt();
         }
+    }
+
+    private Pair<Short, Integer> generateId() {
+        return new Pair<>(id, eventCounter++);
     }
 
     // External Events
