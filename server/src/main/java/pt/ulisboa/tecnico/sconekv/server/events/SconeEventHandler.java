@@ -4,8 +4,7 @@ import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.external.GetDHTRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.external.ReadRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.external.WriteRequest;
-import pt.ulisboa.tecnico.sconekv.server.events.internal.Prepare;
-import pt.ulisboa.tecnico.sconekv.server.events.internal.PrepareOK;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
 
 public interface SconeEventHandler {
 
@@ -18,4 +17,7 @@ public interface SconeEventHandler {
     // Internal Events
     void handle(Prepare prepare);
     void handle(PrepareOK prepareOK);
+    void handle(StartViewChange startViewChange);
+    void handle(DoViewChange doViewChange);
+    void handle(StartView startView);
 }

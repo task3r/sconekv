@@ -8,13 +8,13 @@ import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
 
 public class Prepare extends InternalMessage {
 
-    private long opNumber;
-    private long commitNumber;
+    private int opNumber;
+    private int commitNumber;
     private short bucket;
     // at this moment only commit requests are replicated
     private CommitRequest clientRequest;
 
-    public Prepare(Pair<Short, Integer> id, Node node, Version viewNumber, long opNumber, long commitNumber, short bucket, CommitRequest clientRequest) {
+    public Prepare(Pair<Short, Integer> id, Node node, Version viewNumber, int opNumber, int commitNumber, short bucket, CommitRequest clientRequest) {
         super(id, node, viewNumber);
         this.opNumber = opNumber;
         this.commitNumber = commitNumber;
@@ -22,11 +22,11 @@ public class Prepare extends InternalMessage {
         this.clientRequest = clientRequest;
     }
 
-    public long getOpNumber() {
+    public int getOpNumber() {
         return opNumber;
     }
 
-    public long getCommitNumber() {
+    public int getCommitNumber() {
         return commitNumber;
     }
 
