@@ -46,7 +46,7 @@ public final class SerializationUtils {
 
     public static void serializeNode(Common.Node.Builder builder, Node node) {
         builder.getId().setMostSignificant(node.getId().getMostSignificantBits());
-        builder.getId().setMostSignificant(node.getId().getLeastSignificantBits());
+        builder.getId().setLeastSignificant(node.getId().getLeastSignificantBits());
         builder.setAddress(node.getAddress().getAddress());
     }
 

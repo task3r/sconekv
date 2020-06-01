@@ -60,6 +60,7 @@ public class StateMachineManager {
     public synchronized void prepareLogReplica(Prepare prepare) {
         logger.debug("Replica received prepare message");
 
+        logger.debug("{} {} - {} {}", prepare.getBucket(), currentBucket.getId(), prepare.getNode(), currentMaster);
         if (prepare.getBucket() != currentBucket.getId() || !prepare.getNode().equals(currentMaster)) {
             logger.error("Received incorrect prepare request, ignoring");
             return;
@@ -119,12 +120,14 @@ public class StateMachineManager {
             this.log.clear();
             this.commitNumber = 0;
         }
-        if (newVersion.isGreater(this.futureVersion)) {
+        if (this.futureVersion == null || newVersion.isGreater(this.futureVersion)) {
             this.futureVersion = newVersion;
             this.startViews = 0;
             this.doViews.clear();
         }
         Node newMaster = currentBucket.getMaster();
+        if (currentMaster == null)
+            currentMaster = newMaster;
         if (newVersion.isEqual(this.futureVersion) && !newMaster.equals(this.currentMaster)) {
             MessageBuilder message = CommunicationUtils.generateStartViewChange(mm.getMyself(), currentVersion);
             cm.broadcastBucket(message);

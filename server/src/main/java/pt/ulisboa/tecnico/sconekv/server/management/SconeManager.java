@@ -29,7 +29,10 @@ public class SconeManager implements UpdateViewCallback {
     private List<Thread> threads;
 
     public SconeManager() throws IOException, InterruptedException {
+        this.store = new Store();
         joinMembership();
+        this.communicationManager = new CommunicationManager(membershipManager.getMyself());
+        this.stateMachineManager = new StateMachineManager(communicationManager, membershipManager);
     }
 
     private void joinMembership() throws IOException, InterruptedException {
@@ -46,9 +49,6 @@ public class SconeManager implements UpdateViewCallback {
 
     private void start() {
         logger.info("Scone Node starting...");
-        this.store = new Store();
-        this.communicationManager = new CommunicationManager(membershipManager.getMyself());
-        this.stateMachineManager = new StateMachineManager(communicationManager, membershipManager);
         threads = new ArrayList<>();
         for (short i = 0; i < SconeConstants.NUM_WORKERS; i++) {
             threads.add(new Thread(new SconeWorker(i, communicationManager, stateMachineManager, store, dht, membershipManager.getMyself())));

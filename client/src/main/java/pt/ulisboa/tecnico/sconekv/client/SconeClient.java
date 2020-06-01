@@ -148,9 +148,8 @@ public class SconeClient {
         txID.serialize(rBuilder.getTxID());
         External.Commit.Builder cBuilder = rBuilder.initCommit();
         StructList.Builder<Common.Operation.Builder> opsBuilder = cBuilder.initOps(ops.size());
-        ListIterator<Operation> it = ops.listIterator();
-        while (it.hasNext()) {
-            it.next().serialize(opsBuilder.get(it.nextIndex() - 1));
+        for (int i = 0; i < ops.size(); i++) {
+            ops.get(i).serialize(opsBuilder.get(i));
         }
         cBuilder.initBuckets(0); // insert buckets in message
 
