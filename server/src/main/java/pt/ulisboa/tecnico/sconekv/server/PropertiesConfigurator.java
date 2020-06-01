@@ -7,6 +7,7 @@ import pt.tecnico.ulisboa.prime.constants.EpTOConstants;
 import pt.tecnico.ulisboa.prime.constants.PSSConstants;
 import pt.tecnico.ulisboa.prime.constants.PrimeConstants;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidConfigurationException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,7 +20,7 @@ public class PropertiesConfigurator {
     private PropertiesConfigurator() {
     }
 
-    public static void loadProperties(String filename) throws IOException {
+    public static void loadProperties(String filename) throws IOException, InvalidConfigurationException {
         Properties properties = new Properties();
 
         try (InputStream input = new FileInputStream(filename)) {
@@ -37,13 +38,22 @@ public class PropertiesConfigurator {
         }
     }
 
-    private static void configureScone(Properties properties) {
+    private static void configureScone(Properties properties) throws InvalidConfigurationException {
         SconeConstants.NUM_BUCKETS = getShort(properties, "NUM_BUCKETS");
-        SconeConstants.REPLICATION = getInt(properties, "REPLICATION");
+        SconeConstants.BUCKET_SIZE = getInt(properties, "BUCKET_SIZE");
+        SconeConstants.FAILURES_PER_BUCKET = getInt(properties, "FAILURES_PER_BUCKET");
         SconeConstants.BOOTSTRAP_NODE_NUMBER = getInt(properties, "BOOTSTRAP_NODE_NUMBER");
         SconeConstants.MURMUR3_SEED = getInt(properties, "MURMUR3_SEED");
         SconeConstants.SERVER_REQUEST_PORT = getInt(properties, "SERVER_REQUEST_PORT");
         SconeConstants.SERVER_INTERNAL_PORT = getInt(properties, "SERVER_INTERNAL_PORT");
+        SconeConstants.NUM_WORKERS = getShort(properties, "NUM_WORKERS");
+        SconeConstants.TRACKER_URL = getString(properties, "TRACKER_URL");
+        validateSconeConfiguration();
+    }
+
+    private static void validateSconeConfiguration() throws InvalidConfigurationException {
+        if (SconeConstants.BUCKET_SIZE <= 2 * SconeConstants.FAILURES_PER_BUCKET)
+            throw new InvalidConfigurationException("BUCKET_SIZE must be greater than 2 * F");
     }
 
     private static void configurePSS(Properties properties) {
