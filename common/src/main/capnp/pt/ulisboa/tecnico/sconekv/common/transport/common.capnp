@@ -40,3 +40,9 @@ struct TransactionID {
     clientID @0 :ID;
     localID @1 :Int32;
 }
+
+struct Transaction {
+    txID @0 :TransactionID;
+    buckets @1 :List(Int16);
+    ops @2 :List(Operation);
+}
