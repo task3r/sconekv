@@ -26,14 +26,10 @@ public class SconeManager implements UpdateViewCallback {
     private StateMachineManager stateMachineManager;
     private Store store;
     private DHT dht;
-    private Bucket currentBucket;
     private List<Thread> threads;
 
     public SconeManager() throws IOException, InterruptedException {
         joinMembership();
-        this.store = new Store();
-        this.communicationManager = new CommunicationManager(currentBucket, membershipManager.getMyself());
-        this.stateMachineManager = new StateMachineManager(communicationManager, membershipManager);
     }
 
     private void joinMembership() throws IOException, InterruptedException {
@@ -50,6 +46,9 @@ public class SconeManager implements UpdateViewCallback {
 
     private void start() {
         logger.info("Scone Node starting...");
+        this.store = new Store();
+        this.communicationManager = new CommunicationManager(membershipManager.getMyself());
+        this.stateMachineManager = new StateMachineManager(communicationManager, membershipManager);
         threads = new ArrayList<>();
         for (short i = 0; i < SconeConstants.NUM_WORKERS; i++) {
             threads.add(new Thread(new SconeWorker(i, communicationManager, stateMachineManager, store, dht, membershipManager.getMyself())));
@@ -88,16 +87,18 @@ public class SconeManager implements UpdateViewCallback {
         if (dht == null && ring.size() >= SconeConstants.BOOTSTRAP_NODE_NUMBER) {
             logger.debug("Constructing DHT...");
             dht = new DHT(ring, SconeConstants.NUM_BUCKETS, SconeConstants.MURMUR3_SEED);
-            currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
+            Bucket currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
             logger.info("Belong to bucket {}, master: {}", currentBucket.getId(), currentBucket.getMaster());
             communicationManager.updateBucket(currentBucket);
+            stateMachineManager.updateBucket(currentBucket, ring.getVersion());
             start();
         } else if (dht != null) {
             logger.debug("Applying new view...");
             dht.applyView(ring);
-            currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
+            Bucket currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
             logger.info("Belong to bucket {}, master: {}", currentBucket.getId(), currentBucket.getMaster());
             communicationManager.updateBucket(currentBucket);
+            stateMachineManager.updateBucket(currentBucket, ring.getVersion());
         }
     }
 

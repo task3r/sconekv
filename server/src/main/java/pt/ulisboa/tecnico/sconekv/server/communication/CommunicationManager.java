@@ -36,8 +36,7 @@ public class CommunicationManager {
     private BlockingQueue<SconeEvent> eventQueue;
     private boolean running;
 
-    public CommunicationManager(Bucket currentBucket, Node self) {
-        this.currentBucket = currentBucket;
+    public CommunicationManager(Node self) {
         this.self = self;
         this.context = new ZContext();
         this.eventQueue = new LinkedBlockingQueue<>();
@@ -129,7 +128,7 @@ public class CommunicationManager {
         }
     }
 
-    public void sendPrepare(byte[] message) {
+    public void broadcastBucket(byte[] message) {
         for (Node n : currentBucket.getNodesExceptSelf(self)) { // should guarantee that I am the master and they are all replicas
             ZMQ.Socket socket = bucketSockets.get(n);
             socket.sendMore(""); // delimiter
@@ -137,7 +136,7 @@ public class CommunicationManager {
         }
     }
 
-    public void sendPrepareOK(byte[] message) {
+    public void sendMaster(byte[] message) {
         ZMQ.Socket socket = bucketSockets.get(currentBucket.getMaster());
         socket.sendMore(""); // delimiter
         socket.send(message);

@@ -5,7 +5,6 @@ using Request = import "external.capnp".Request;
 using ID = import "common.capnp".ID;
 using Node = import "common.capnp".Node;
 using ViewVersion = import "common.capnp".ViewVersion;
-using Transaction = import "common.capnp".Transaction;
 
 $Java.package("pt.ulisboa.tecnico.sconekv.common.transport");
 $Java.outerClassname("Internal");
@@ -37,12 +36,16 @@ struct PrepareOK {
 }
 
 struct DoViewChange {
-    log @0 :List(Transaction);
+    log @0 :List(LoggedRequest);
     term @1 :ViewVersion;
     commitNumber @2 :Int32;
 }
 
 struct StartView {
-    log @0 :List(Transaction);
+    log @0 :List(LoggedRequest);
     commitNumber @1 :Int32;
+}
+
+struct LoggedRequest {
+    request @0: Request; # I don't like this, but capnproto is picky with lists and I couldn't set an index to an existing reader, this is the work around
 }

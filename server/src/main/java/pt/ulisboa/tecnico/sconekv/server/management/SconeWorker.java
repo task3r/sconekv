@@ -12,8 +12,7 @@ import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
 import pt.ulisboa.tecnico.sconekv.server.events.*;
 import pt.ulisboa.tecnico.sconekv.server.events.external.*;
-import pt.ulisboa.tecnico.sconekv.server.events.internal.Prepare;
-import pt.ulisboa.tecnico.sconekv.server.events.internal.PrepareOK;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
 import pt.ulisboa.tecnico.sconekv.server.smr.StateMachineManager;
 
@@ -136,5 +135,20 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(PrepareOK prepareOK) {
         smm.prepareOK(prepareOK);
+    }
+
+    @Override
+    public void handle(StartViewChange startViewChange) {
+        smm.startViewChange(startViewChange);
+    }
+
+    @Override
+    public void handle(DoViewChange doViewChange) {
+        smm.doViewChange(doViewChange);
+    }
+
+    @Override
+    public void handle(StartView startView) {
+        smm.startView(startView);
     }
 }

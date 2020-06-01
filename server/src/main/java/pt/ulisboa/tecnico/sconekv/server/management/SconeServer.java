@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.sconekv.server.management;
 
+import org.capnproto.StructList;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.slf4j.Logger;
@@ -14,11 +15,13 @@ import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.MessageType;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.events.external.*;
-import pt.ulisboa.tecnico.sconekv.server.events.internal.Prepare;
-import pt.ulisboa.tecnico.sconekv.server.events.internal.PrepareOK;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
+import pt.ulisboa.tecnico.sconekv.server.smr.LogEntry;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SconeServer implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(SconeServer.class);
@@ -138,9 +141,29 @@ public class SconeServer implements Runnable {
             case PREPARE_OK:
                 cm.queueEvent(new PrepareOK(eventId, node, viewVersion, message.getPrepareOk().getOpNumber(), message.getPrepareOk().getBucket()));
                 break;
+            case START_VIEW_CHANGE:
+                cm.queueEvent(new StartViewChange(eventId, node, viewVersion));
+                break;
+            case DO_VIEW_CHANGE:
+                cm.queueEvent(new DoViewChange(eventId, node, viewVersion, getLogFromMessage(message.getDoViewChange().getLog()),
+                        SerializationUtils.getVersionFromMesage(message.getDoViewChange().getTerm()), message.getDoViewChange().getCommitNumber()));
+                break;
+            case START_VIEW:
+                cm.queueEvent(new StartView(eventId, node, viewVersion, getLogFromMessage(message.getStartView().getLog()), message.getStartView().getCommitNumber()));
+                break;
             case _NOT_IN_SCHEMA:
                 logger.error("Received an incorrect internal message, ignoring...");
                 break;
         }
+    }
+
+    private List<LogEntry> getLogFromMessage(StructList.Reader<Internal.LoggedRequest.Reader> logReader) {
+        List<LogEntry> log = new ArrayList<>();
+        for (int i = 0; i < logReader.size(); i++) {
+            log.add(new LogEntry(new CommitRequest(null, null,
+                    new Transaction(new TransactionID(logReader.get(i).getRequest().getTxID()),
+                            logReader.get(i).getRequest().getCommit()), logReader.get(i).getRequest())));
+        }
+        return log;
     }
 }

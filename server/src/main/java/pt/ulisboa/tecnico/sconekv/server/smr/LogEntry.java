@@ -2,6 +2,8 @@ package pt.ulisboa.tecnico.sconekv.server.smr;
 
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
+import pt.ulisboa.tecnico.sconekv.common.transport.Common;
+import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
 
 import java.util.HashSet;
@@ -25,8 +27,6 @@ public class LogEntry {
     }
 
     public boolean isReady() {
-        return oksReceived.size() >= SconeConstants.REPLICATION;
+        return oksReceived.size() >= SconeConstants.FAILURES_PER_BUCKET;
     }
-
-
 }
