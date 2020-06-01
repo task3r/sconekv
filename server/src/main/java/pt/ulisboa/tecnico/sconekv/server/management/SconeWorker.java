@@ -5,9 +5,11 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
+import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
+import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
 import pt.ulisboa.tecnico.sconekv.server.events.*;
@@ -67,33 +69,16 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(ReadRequest readRequest) {
         logger.info("Read {} : {}", readRequest.getKey(), readRequest.getTxID());
-        MessageBuilder response = new org.capnproto.MessageBuilder();
-        External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
-        readRequest.getTxID().serialize(rBuilder.getTxID());
-
         Value value = store.get(readRequest.getKey());
-
-        External.ReadResponse.Builder builder = rBuilder.initRead();
-        builder.setKey(readRequest.getKey().getBytes());
-        builder.setValue(value.getContent());
-        builder.setVersion(value.getVersion());
-
+        MessageBuilder response = CommunicationUtils.generateReadResponse(readRequest.getTxID(), readRequest.getKey().getBytes(), value);
         cm.replyToClient(readRequest, response);
     }
 
     @Override
     public void handle(WriteRequest writeRequest) {
         logger.info("Write {} : {}", writeRequest.getKey(), writeRequest.getTxID());
-        MessageBuilder response = new org.capnproto.MessageBuilder();
-        External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
-        writeRequest.getTxID().serialize(rBuilder.getTxID());
-
         Value value = store.get(writeRequest.getKey());
-
-        External.WriteResponse.Builder builder = rBuilder.initWrite();
-        builder.setKey(writeRequest.getKey().getBytes());
-        builder.setVersion(value.getVersion());
-
+        MessageBuilder response = CommunicationUtils.generateWriteResponse(writeRequest.getTxID(), writeRequest.getKey().getBytes(), value.getVersion());
         cm.replyToClient(writeRequest, response);
     }
 
@@ -104,32 +89,27 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             smm.prepareLogMaster(commitRequest);
         } else {
             logger.info("Commit : {}", commitRequest.getTxID());
-            MessageBuilder response = new org.capnproto.MessageBuilder();
-            External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
-            commitRequest.getTxID().serialize(rBuilder.getTxID());
-            External.CommitResponse.Builder builder = rBuilder.initCommit();
-
+            boolean wasSuccessful;
             try {
                 store.validate(commitRequest.getTx());
                 store.perform(commitRequest.getTx());
                 store.releaseLocks(commitRequest.getTx());
-                builder.setResult(External.CommitResponse.Result.OK);
+                wasSuccessful = true;
             } catch (InvalidOperationException e) {
-                builder.setResult(External.CommitResponse.Result.NOK);
+                wasSuccessful = false;
             }
-
             // if I am the master
-            if (commitRequest.getClient() != null)
+            if (commitRequest.getClient() != null) {
+                MessageBuilder response = CommunicationUtils.generateCommitResponse(commitRequest.getTxID(), wasSuccessful);
                 cm.replyToClient(commitRequest, response);
+            }
         }
     }
 
     @Override
     public void handle(GetDHTRequest getViewRequest) {
         logger.info("GetView : {}", getViewRequest.getClient());
-        MessageBuilder response = new org.capnproto.MessageBuilder();
-        External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
-        dht.serialize(rBuilder.initDht());
+        MessageBuilder response = CommunicationUtils.generateGetDHTResponse(this.dht);
         cm.replyToClient(getViewRequest, response);
     }
 

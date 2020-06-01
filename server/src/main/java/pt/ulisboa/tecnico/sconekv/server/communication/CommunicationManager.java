@@ -66,7 +66,7 @@ public class CommunicationManager {
                     logger.debug("New socket for {}", n.getAddress().getHostAddress());
                     ZMQ.Socket socket = context.createSocket(SocketType.DEALER);
                     socket.setIdentity(UUID.randomUUID().toString().getBytes(ZMQ.CHARSET));
-                    socket.connect(String.format("tcp://%s:%s",n.getAddress().getHostAddress(), SconeConstants.SERVER_INTERNAL_PORT));
+                    socket.connect(String.format("tcp://%s:%s", n.getAddress().getHostAddress(), SconeConstants.SERVER_INTERNAL_PORT));
                     bucketSockets.put(n, socket);
                 }
             }
@@ -128,18 +128,28 @@ public class CommunicationManager {
         }
     }
 
-    public void broadcastBucket(byte[] message) {
-        for (Node n : currentBucket.getNodesExceptSelf(self)) { // should guarantee that I am the master and they are all replicas
-            ZMQ.Socket socket = bucketSockets.get(n);
-            socket.sendMore(""); // delimiter
-            socket.send(message);
+    public void broadcastBucket(MessageBuilder message) {
+        try {
+            byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
+            for (Node n : currentBucket.getNodesExceptSelf(self)) { // should guarantee that I am the master and they are all replicas
+                ZMQ.Socket socket = bucketSockets.get(n);
+                socket.sendMore(""); // delimiter
+                socket.send(messageBytes);
+            }
+        } catch (IOException e) {
+            logger.error("IOException serializing internal message");
         }
     }
 
-    public void sendMaster(byte[] message) {
-        ZMQ.Socket socket = bucketSockets.get(currentBucket.getMaster());
-        socket.sendMore(""); // delimiter
-        socket.send(message);
+    public void send(MessageBuilder message, Node node) {
+        try {
+            byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
+            ZMQ.Socket socket = bucketSockets.get(node);
+            socket.sendMore(""); // delimiter
+            socket.send(messageBytes);
+        } catch (IOException e) {
+            logger.error("IOException serializing internal message");
+        }
     }
 
     public SconeEvent takeEvent() throws InterruptedException {

@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.sconekv.server.smr;
 
 import org.capnproto.MessageBuilder;
-import org.capnproto.StructList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.MembershipManager;
@@ -9,13 +8,11 @@ import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
-import pt.ulisboa.tecnico.sconekv.common.transport.Internal;
-import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
+import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
 import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
 
-import java.io.IOException;
 import java.util.*;
 
 public class StateMachineManager {
@@ -55,21 +52,9 @@ public class StateMachineManager {
         logger.debug("Master replicating request...");
         log.add(new LogEntry(request));
 
-        MessageBuilder message = new MessageBuilder();
-        Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
-        SerializationUtils.serializeNode(mBuilder.getNode(), mm.getMyself());
-        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
-        Internal.Prepare.Builder builder = mBuilder.initPrepare();
-        builder.setMessage(request.getRequest());
-        builder.setBucket(currentBucket.getId());
-        builder.setCommitNumber(commitNumber);
-        builder.setOpNumber(log.size() - 1);
-        try {
-            cm.broadcastBucket(SerializationUtils.getBytesFromMessage(message));
-        } catch (IOException e) {
-            logger.error("Error serializing prepare message");
-            e.printStackTrace();
-        }
+        MessageBuilder message = CommunicationUtils.generatePrepare(request.getRequest(), mm.getMyself(), currentVersion,
+                currentBucket.getId(), commitNumber, log.size() - 1);
+        cm.broadcastBucket(message);
     }
 
     public synchronized void prepareLogReplica(Prepare prepare) {
@@ -101,19 +86,8 @@ public class StateMachineManager {
         }
         this.commitNumber = prepare.getCommitNumber();
 
-        MessageBuilder message = new MessageBuilder();
-        Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
-        SerializationUtils.serializeNode(mBuilder.getNode(), mm.getMyself());
-        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
-        Internal.PrepareOK.Builder builder = mBuilder.initPrepareOk();
-        builder.setBucket(currentBucket.getId());
-        builder.setOpNumber(this.log.size() - 1);
-        try {
-            cm.sendMaster(SerializationUtils.getBytesFromMessage(message));
-        } catch (IOException e) {
-            logger.error("Error serializing prepareOK message");
-            e.printStackTrace();
-        }
+        MessageBuilder message = CommunicationUtils.generatePrepareOK(mm.getMyself(), currentVersion, currentBucket.getId(), log.size() - 1);
+        cm.send(message, currentMaster);
     }
 
     public synchronized void prepareOK(PrepareOK prepareOK) {
@@ -152,17 +126,8 @@ public class StateMachineManager {
         }
         Node newMaster = currentBucket.getMaster();
         if (newVersion.isEqual(this.futureVersion) && !newMaster.equals(this.currentMaster)) {
-            MessageBuilder message = new MessageBuilder();
-            Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
-            SerializationUtils.serializeNode(mBuilder.getNode(), mm.getMyself());
-            SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
-            mBuilder.setStartViewChange(null);
-            try {
-                cm.broadcastBucket(SerializationUtils.getBytesFromMessage(message));
-            } catch (IOException e) {
-                logger.error("Error serializing startViewChange message");
-                e.printStackTrace();
-            }
+            MessageBuilder message = CommunicationUtils.generateStartViewChange(mm.getMyself(), currentVersion);
+            cm.broadcastBucket(message);
             // send to self
             cm.queueEvent(new StartViewChange(null, mm.getMyself(), currentVersion));
         }
@@ -183,23 +148,8 @@ public class StateMachineManager {
                 // send to self
                 cm.queueEvent(new DoViewChange(null, mm.getMyself(), currentVersion, log, term, commitNumber));
             } else {
-                MessageBuilder message = new MessageBuilder();
-                Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
-                SerializationUtils.serializeNode(mBuilder.getNode(), mm.getMyself());
-                SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
-                Internal.DoViewChange.Builder builder = mBuilder.initDoViewChange();
-                builder.setCommitNumber(this.commitNumber);
-                SerializationUtils.serializeViewVersion(builder.getTerm(), currentVersion);
-                StructList.Builder<Internal.LoggedRequest.Builder> logBuilder = builder.initLog(log.size());
-                for (int i = 0; i < log.size(); i++) {
-                    logBuilder.get(i).setRequest(log.get(i).getRequest().getRequest());
-                }
-                try {
-                    cm.sendMaster(SerializationUtils.getBytesFromMessage(message));
-                } catch (IOException e) {
-                    logger.error("Error serializing doViewChange message");
-                    e.printStackTrace();
-                }
+                MessageBuilder message = CommunicationUtils.generateDoViewChange(mm.getMyself(), currentVersion, commitNumber, log);
+                cm.send(message, currentBucket.getMaster());
             }
         }
     }
@@ -221,21 +171,9 @@ public class StateMachineManager {
                 this.log = doViews.stream().max(Comparator.comparing(InternalMessage::getViewVersion)).get().getLog();
                 //Sets the commitNum to the largest one received.
                 this.commitNumber = doViews.stream().max(Comparator.comparing(DoViewChange::getCommitNumber)).get().getCommitNumber();
-                MessageBuilder message = new MessageBuilder();
-                Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
-                SerializationUtils.serializeNode(mBuilder.getNode(), mm.getMyself());
-                Internal.StartView.Builder builder = mBuilder.initStartView();
-                builder.setCommitNumber(this.commitNumber);
-                StructList.Builder<Internal.LoggedRequest.Builder> logBuilder = builder.initLog(log.size());
-                for (int i = 0; i < log.size(); i++) {
-                    logBuilder.get(i).setRequest(log.get(i).getRequest().getRequest());
-                }
-                try {
-                    cm.broadcastBucket(SerializationUtils.getBytesFromMessage(message));
-                } catch (IOException e) {
-                    logger.error("Error serializing startViewChange message");
-                    e.printStackTrace();
-                }
+                MessageBuilder message = CommunicationUtils.generateStartView(mm.getMyself(), commitNumber, log);
+                cm.broadcastBucket(message);
+                // send to self
                 cm.queueEvent(new StartView(null, mm.getMyself(), currentVersion, log, commitNumber));
             }
         }
