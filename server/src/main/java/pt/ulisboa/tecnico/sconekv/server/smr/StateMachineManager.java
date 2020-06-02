@@ -48,10 +48,43 @@ public class StateMachineManager {
         this.pendingEntries = new HashMap<>();
         this.doViews = new ArrayList<>();
         this.status = Status.NORMAL;
+        this.commitNumber = -1;
     }
 
     public Node getCurrentMaster() {
         return currentMaster;
+    }
+
+    private int getOpNumber() {
+        return log.size() - 1;
+    }
+
+    public synchronized void updateBucket(Bucket newBucket, Version newVersion) {
+        logger.debug("Update bucket");
+        this.currentVersion = newVersion;
+        Node newMaster = newBucket.getMaster();
+        if (this.currentBucket == null) { // first view
+            this.futureVersion = newVersion;
+            this.currentMaster = newMaster;
+        } else if (newBucket.getId() != this.currentBucket.getId()) {
+            this.currentMaster = null;
+            this.term = null;
+            this.log.clear();
+            this.commitNumber = -1;
+        }
+        this.currentBucket = newBucket;
+        if (newVersion.isGreater(this.futureVersion)) {
+            this.futureVersion = newVersion;
+            this.startViews = 0;
+            this.doViews.clear();
+        }
+        if (newVersion.isEqual(this.futureVersion) && !newMaster.equals(this.currentMaster)) {
+            this.status = Status.VIEW_CHANGE;
+            MessageBuilder message = CommunicationUtils.generateStartViewChange(mm.getMyself(), currentVersion);
+            cm.broadcastBucket(message);
+            // send to self
+            cm.queueEvent(new StartViewChange(null, mm.getMyself(), currentVersion));
+        }
     }
 
     public synchronized void prepareLogMaster(CommitRequest request) {
@@ -64,7 +97,7 @@ public class StateMachineManager {
         log.add(new LogEntry(request));
 
         MessageBuilder message = CommunicationUtils.generatePrepare(request.getRequest(), mm.getMyself(), currentVersion,
-                currentBucket.getId(), commitNumber, log.size() - 1);
+                currentBucket.getId(), commitNumber, getOpNumber());
         cm.broadcastBucket(message);
     }
 
@@ -102,7 +135,7 @@ public class StateMachineManager {
         }
         this.commitNumber = prepare.getCommitNumber();
 
-        MessageBuilder message = CommunicationUtils.generatePrepareOK(mm.getMyself(), currentVersion, currentBucket.getId(), log.size() - 1);
+        MessageBuilder message = CommunicationUtils.generatePrepareOK(mm.getMyself(), currentVersion, currentBucket.getId(), getOpNumber());
         cm.send(message, currentMaster);
     }
 
@@ -130,33 +163,6 @@ public class StateMachineManager {
         }
     }
 
-    public synchronized void updateBucket(Bucket newBucket, Version newVersion) {
-        logger.debug("Update bucket");
-        this.currentVersion = newVersion;
-        if (!newBucket.equals(this.currentBucket)) {
-            this.currentBucket = newBucket;
-            this.currentMaster = null;
-            this.term = null;
-            this.log.clear();
-            this.commitNumber = 0;
-        }
-        if (this.futureVersion == null || newVersion.isGreater(this.futureVersion)) {
-            this.futureVersion = newVersion;
-            this.startViews = 0;
-            this.doViews.clear();
-        }
-        Node newMaster = currentBucket.getMaster();
-        if (currentMaster == null)
-            currentMaster = newMaster;
-        if (newVersion.isEqual(this.futureVersion) && !newMaster.equals(this.currentMaster)) {
-            this.status = Status.VIEW_CHANGE;
-            MessageBuilder message = CommunicationUtils.generateStartViewChange(mm.getMyself(), currentVersion);
-            cm.broadcastBucket(message);
-            // send to self
-            cm.queueEvent(new StartViewChange(null, mm.getMyself(), currentVersion));
-        }
-    }
-
     public synchronized void startViewChange(StartViewChange event) {
         logger.debug("Received startViewChange");
         if (event.getViewVersion().isGreater(this.futureVersion)) {
@@ -168,6 +174,7 @@ public class StateMachineManager {
         }
 
         if (event.getViewVersion().equals(this.currentVersion) && startViews == SconeConstants.FAILURES_PER_BUCKET + 1) {
+            this.status = Status.VIEW_CHANGE; // in case it didn't detect in the update bucket
             if (currentBucket.getMaster().equals(mm.getMyself())) {
                 // send to self
                 cm.queueEvent(new DoViewChange(null, mm.getMyself(), currentVersion, log, term, commitNumber));
@@ -194,11 +201,16 @@ public class StateMachineManager {
                 //Selects as the new log the one with the largest term (largest opNum in case of tie).
                 this.log = doViews.stream().max(Comparator.comparing(InternalMessage::getViewVersion)).get().getLog();
                 //Sets the commitNum to the largest one received.
+                int oldCommitNumber = this.commitNumber;
                 this.commitNumber = doViews.stream().max(Comparator.comparing(DoViewChange::getCommitNumber)).get().getCommitNumber();
+                // set master up to date (execute requests that were committed but not here)
+                for (int i = oldCommitNumber + 1; i <= commitNumber; i++) {
+                    LogEntry entry = log.get(i);
+                    entry.getRequest().setPrepared();
+                    cm.queueEvent(entry.getRequest());
+                }
                 MessageBuilder message = CommunicationUtils.generateStartView(mm.getMyself(), commitNumber, log);
                 cm.broadcastBucket(message);
-                // send to self
-                cm.queueEvent(new StartView(null, mm.getMyself(), currentVersion, log, commitNumber));
             }
         }
     }
