@@ -1,4 +1,4 @@
 package pt.ulisboa.tecnico.sconekv.client.exceptions;
 
-public class CommitFailedException extends Exception {
+public class CommitFailedException extends RequestFailedException {
 }

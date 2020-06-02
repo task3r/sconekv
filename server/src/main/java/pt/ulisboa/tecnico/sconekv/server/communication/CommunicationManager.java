@@ -59,7 +59,7 @@ public class CommunicationManager {
             logger.debug("Updating bucket");
             Map<Node, ZMQ.Socket> oldBucketSockets = bucketSockets;
             bucketSockets = new HashMap<>();
-            for (Node n : newBucket.getNodesExceptSelf(self)) {
+            for (Node n : newBucket.getNodesExcept(self)) {
                 if (oldBucketSockets.containsKey(n)) {
                     bucketSockets.put(n, oldBucketSockets.remove(n));
                 } else {
@@ -131,7 +131,7 @@ public class CommunicationManager {
     public void broadcastBucket(MessageBuilder message) {
         try {
             byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
-            for (Node n : currentBucket.getNodesExceptSelf(self)) { // should guarantee that I am the master and they are all replicas
+            for (Node n : currentBucket.getNodesExcept(self)) { // should guarantee that I am the master and they are all replicas
                 ZMQ.Socket socket = bucketSockets.get(n);
                 socket.sendMore(""); // delimiter
                 socket.send(messageBytes);

@@ -13,9 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.network.DiscoveryResponseDto;
 import pt.ulisboa.tecnico.sconekv.client.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.MaxRetriesExceededException;
+import pt.ulisboa.tecnico.sconekv.client.exceptions.RequestFailedException;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.UnableToGetViewException;
 import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
@@ -28,28 +30,43 @@ import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.UUID;
+import java.util.*;
 
 public class SconeClient {
+    enum RequestMode {
+        MASTER_ONLY,
+        REPLICA_ONLY,
+        RANDOM
+    }
     private static final Logger logger = LoggerFactory.getLogger(SconeClient.class);
     private static final int RECV_TIMEOUT = 5000;
     private static final int MAX_REQUEST_RETRIES = 5;
 
     private UUID clientID;
     private ZContext context;
-    private ZMQ.Socket requester;
+    private Map<Node, ZMQ.Socket> sockets;
     private DHT dht;
     private int transactionCounter = 0;
+    private RequestMode mode;
+    private Random random;
 
-    public SconeClient() throws UnableToGetViewException, InvalidBucketException {
+    public SconeClient() throws UnableToGetViewException {
+        this.mode = RequestMode.MASTER_ONLY;
         this.context = new ZContext();
         this.clientID = UUID.randomUUID();
+        this.sockets = new HashMap<>();
+        this.random = new Random();
 
         this.dht = getDHT();
 
-        initSockets();
+        logger.info("Created new client {}", this.clientID);
+    }
+
+    public SconeClient(RequestMode mode) throws UnableToGetViewException {
+        this.mode = mode;
+        this.context = new ZContext();
+        this.clientID = UUID.randomUUID();
+        this.dht = getDHT();
 
         logger.info("Created new client {}", this.clientID);
     }
@@ -105,8 +122,10 @@ public class SconeClient {
         return null;
     }
 
-    private void initSockets() throws InvalidBucketException {
-        this.requester = createSocket(dht.getMasterOfBucket((short) 0).getAddress().getHostAddress()); //FIXME
+    private ZMQ.Socket getSocket(Node node) {
+        if (!sockets.containsKey(node))
+            sockets.put(node, createSocket(node.getAddress().getHostAddress()));
+        return sockets.get(node);
     }
 
     private ZMQ.Socket createSocket(String address) {
@@ -122,27 +141,27 @@ public class SconeClient {
         return new Transaction(this, new TransactionID(this.clientID, transactionCounter++));
     }
 
-    public Pair<byte[], Short> performRead(TransactionID txID, String key) throws MaxRetriesExceededException {
+    public Pair<byte[], Short> performRead(TransactionID txID, String key) throws RequestFailedException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         External.Request.Builder builder = message.initRoot(External.Request.factory);
         txID.serialize(builder.getTxID());
         builder.setRead(key.getBytes());
 
-        External.Response.Reader response = request(message, External.Response.Which.READ);
+        External.Response.Reader response = request(this.dht.getBucketForKey(key.getBytes()), message, External.Response.Which.READ);
 
         return new Pair<>(response.getRead().getValue().toArray(), response.getRead().getVersion());
     }
 
-    public Short performWrite(TransactionID txID, String key) throws MaxRetriesExceededException {
+    public Short performWrite(TransactionID txID, String key) throws RequestFailedException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         External.Request.Builder builder = message.initRoot(External.Request.factory);
         txID.serialize(builder.getTxID());
         builder.setWrite(key.getBytes());
 
-        return request(message, External.Response.Which.WRITE).getWrite().getVersion();
+        return request(this.dht.getBucketForKey(key.getBytes()), message, External.Response.Which.WRITE).getWrite().getVersion();
     }
 
-    public boolean performCommit(TransactionID txID, List<Operation> ops) throws MaxRetriesExceededException {
+    public boolean performCommit(TransactionID txID, List<Operation> ops) throws RequestFailedException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         External.Request.Builder rBuilder = message.initRoot(External.Request.factory);
         txID.serialize(rBuilder.getTxID());
@@ -153,17 +172,42 @@ public class SconeClient {
         }
         cBuilder.initBuckets(0); // insert buckets in message
 
-        return request(message, External.Response.Which.COMMIT).getCommit().getResult() == External.CommitResponse.Result.OK;
+        return request((short) 0, message, External.Response.Which.COMMIT).getCommit().getResult() == External.CommitResponse.Result.OK;
     }
 
-    private External.Response.Reader request(MessageBuilder message, External.Response.Which requestType) throws MaxRetriesExceededException {
+    private ZMQ.Socket getSocketForRequest(short bucket) throws InvalidBucketException {
+        List<Node> candidates;
+        Node selected;
+        Node masterOfBucket = this.dht.getMasterOfBucket(bucket);
+        switch (this.mode) {
+            case MASTER_ONLY:
+                selected = masterOfBucket;
+                break;
+            case REPLICA_ONLY:
+                candidates = new ArrayList<>(this.dht.getBucket(bucket).getNodesExcept(masterOfBucket));
+                selected = candidates.get(random.nextInt(candidates.size()));
+                break;
+            case RANDOM:
+                candidates = new ArrayList<>(this.dht.getBucket(bucket).getNodes());
+                selected = candidates.get(random.nextInt(candidates.size()));
+                break;
+            default:
+                //shouldn't reach here
+                throw new InvalidBucketException();
+        }
+        return getSocket(selected);
+    }
+
+    private External.Response.Reader request(short bucket, MessageBuilder message, External.Response.Which requestType) throws RequestFailedException {
         int retries = 0;
+        ZMQ.Socket requester;
         while (retries < MAX_REQUEST_RETRIES) {
             try {
-                this.requester.sendMore(""); // delimiter
-                this.requester.send(SerializationUtils.getBytesFromMessage(message));
-                this.requester.recv(); // delimiter
-                External.Response.Reader response = SerializationUtils.getMessageFromBytes(this.requester.recv(0)).getRoot(External.Response.factory);
+                requester = getSocketForRequest(bucket);
+                requester.sendMore(""); // delimiter
+                requester.send(SerializationUtils.getBytesFromMessage(message));
+                requester.recv(); // delimiter
+                External.Response.Reader response = SerializationUtils.getMessageFromBytes(requester.recv(0)).getRoot(External.Response.factory);
                 if (response.which() != requestType) {
                     if (response.which() == External.Response.Which.DHT) // request was sent to the wrong node
                         this.dht.applyView(response.getDht());
@@ -172,7 +216,12 @@ public class SconeClient {
                 } else {
                     return response;
                 }
-            } catch (IOException e) {
+            } catch (IOException | InvalidBucketException e) {
+                try {
+                    this.dht = getDHT();
+                } catch (UnableToGetViewException ex) {
+                    logger.error("Request failed, getDHT also failed. Is the system down? Retrying...");
+                }
                 retries++;
             }
         }

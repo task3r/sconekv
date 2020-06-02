@@ -6,10 +6,8 @@ import asg.cliche.ShellFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.client.db.Transaction;
-import pt.ulisboa.tecnico.sconekv.client.exceptions.CommitFailedException;
-import pt.ulisboa.tecnico.sconekv.client.exceptions.MaxRetriesExceededException;
+import pt.ulisboa.tecnico.sconekv.client.exceptions.RequestFailedException;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.UnableToGetViewException;
-import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidBucketException;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
 
 import java.io.IOException;
@@ -22,12 +20,12 @@ public class ClientApplication {
     SconeClient client;
     Map<String, Transaction> transactions;
 
-    public ClientApplication() throws InvalidBucketException, UnableToGetViewException {
+    public ClientApplication() throws UnableToGetViewException {
         client = new SconeClient();
         transactions = new HashMap();
     }
 
-    public static void main(String[] args) throws IOException, InvalidBucketException, UnableToGetViewException {
+    public static void main(String[] args) throws IOException, UnableToGetViewException {
         logger.info("Launching client application...");
 
         String shell = System.getenv("USE_SHELL");
@@ -57,7 +55,7 @@ public class ClientApplication {
 
                 tx2.commit();
 
-            } catch (CommitFailedException | InvalidTransactionStateChangeException | UnableToGetViewException | InvalidBucketException | MaxRetriesExceededException e) {
+            } catch (InvalidTransactionStateChangeException | UnableToGetViewException | RequestFailedException e) {
                 e.printStackTrace();
             }
         }
@@ -74,7 +72,7 @@ public class ClientApplication {
     }
 
     @Command
-    public void write(@Param(name = "txID") String id, @Param(name = "key") String key, @Param(name = "value") String value) throws MaxRetriesExceededException, InvalidTransactionStateChangeException {
+    public void write(@Param(name = "txID") String id, @Param(name = "key") String key, @Param(name = "value") String value) throws RequestFailedException, InvalidTransactionStateChangeException {
         if (!transactions.containsKey(id)) {
             logger.error("Transaction identifier {} does not exist", id);
         } else {
@@ -84,7 +82,7 @@ public class ClientApplication {
     }
 
     @Command
-    public void read(@Param(name = "txID") String id, @Param(name = "key") String key) throws MaxRetriesExceededException, InvalidTransactionStateChangeException {
+    public void read(@Param(name = "txID") String id, @Param(name = "key") String key) throws RequestFailedException, InvalidTransactionStateChangeException {
         if (!transactions.containsKey(id)) {
             logger.error("Transaction identifier {} does not exist", id);
         } else {
@@ -94,7 +92,7 @@ public class ClientApplication {
     }
 
     @Command
-    public void commit(@Param(name = "txID") String id) throws MaxRetriesExceededException, InvalidTransactionStateChangeException, CommitFailedException {
+    public void commit(@Param(name = "txID") String id) throws RequestFailedException, InvalidTransactionStateChangeException {
         if (!transactions.containsKey(id)) {
             logger.error("Transaction identifier {} does not exist", id);
         } else {

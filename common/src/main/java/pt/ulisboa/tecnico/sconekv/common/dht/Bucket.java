@@ -22,7 +22,7 @@ public class Bucket {
         return nodes;
     }
 
-    public TreeSet<Node> getNodesExceptSelf(Node self) {
+    public TreeSet<Node> getNodesExcept(Node self) {
         TreeSet<Node> withoutSelf = new TreeSet<>(nodes);
         withoutSelf.remove(self);
         return withoutSelf;

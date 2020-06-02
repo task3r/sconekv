@@ -126,4 +126,10 @@ public class DHT {
         }
         return null; //maybe raise exception?
     }
+
+    public Bucket getBucket(short bucketID) throws InvalidBucketException {
+        if (bucketID > buckets.length)
+            throw new InvalidBucketException();
+        return buckets[bucketID];
+    }
 }
