@@ -5,9 +5,7 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
-import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
-import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
@@ -138,5 +136,15 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(StartView startView) {
         smm.startView(startView);
+    }
+
+    @Override
+    public void handle(GetState getState) {
+        smm.getState(getState);
+    }
+
+    @Override
+    public void handle(NewState newState) {
+        smm.newState(newState);
     }
 }

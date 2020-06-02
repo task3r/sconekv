@@ -220,7 +220,7 @@ public class StateMachineManager {
         }
     }
 
-    public void startView(StartView event) {
+    public synchronized void startView(StartView event) {
         logger.debug("Received startView");
         this.term = event.getViewVersion();
         this.log = event.getLog();
@@ -242,5 +242,42 @@ public class StateMachineManager {
         }
     }
 
-    //state transfer / recovery
+    public synchronized void getState(GetState event) {
+        logger.debug("Received getState");
+        if (status != Status.NORMAL) {
+            this.pendingEvents.add(event);
+            logger.info("GetState event from {} was not processed as status is {}", event.getNode(), status);
+            return;
+        }
+        if (currentVersion.equals(event.getViewVersion())) {
+            MessageBuilder message = CommunicationUtils.generateNewState(mm.getMyself(), getOpNumber(), commitNumber, log.subList(event.getOpNumber(), log.size()));
+            cm.send(message, event.getNode());
+            logger.info("Responded to GetState from {}", event.getNode());
+        } else {
+            logger.info("Received GetState with version {} but I am on {} so I am not responding", event.getViewVersion(), currentVersion);
+        }
+    }
+
+    public synchronized void newState(NewState event) {
+        logger.debug("Received newState");
+        if (event.getViewVersion().equals(this.currentVersion)) {
+            // newState might be slightly outdated, should ignore those entries
+            int missingEntriesCount = Math.max(event.getOpNumber() - getOpNumber(), 0); // avoid invalidIndex
+            List<LogEntry> missingEntries = event.getLogSegment()
+                    .subList(event.getLogSegment().size() - missingEntriesCount, event.getLogSegment().size());
+            log.addAll(missingEntries);
+            for (int i = this.commitNumber + 1; i <= event.getCommitNumber(); i++) {
+                LogEntry entry = log.get(i);
+                entry.getRequest().setPrepared();
+                cm.queueEvent(entry.getRequest());
+            }
+            this.commitNumber = event.getCommitNumber();
+        } else if (event.getViewVersion().isGreater(this.currentVersion)) {
+            logger.info("Received newState from future view version, delaying...");
+            pendingEvents.add(event);
+        } else {
+            logger.error("Received newState from older view version, discarding...");
+        }
+    }
+
 }

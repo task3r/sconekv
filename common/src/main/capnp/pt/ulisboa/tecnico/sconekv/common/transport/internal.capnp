@@ -12,14 +12,16 @@ $Java.outerClassname("Internal");
 
 struct InternalMessage {
     viewVersion @0 :ViewVersion;
+    node @1 :Node;
     union {
-        prepare @1 :Prepare;
-        prepareOk @2 :PrepareOK;
-        startViewChange @3 :Void;
-        doViewChange @4 :DoViewChange;
-        startView @5 :StartView;
+        prepare @2 :Prepare;
+        prepareOk @3 :PrepareOK;
+        startViewChange @4 :Void;
+        doViewChange @5 :DoViewChange;
+        startView @6 :StartView;
+        getState @7 :GetState;
+        newState @8 :NewState;
     }
-    node @6 :Node;
 }
 
 struct Prepare {
@@ -44,6 +46,16 @@ struct DoViewChange {
 struct StartView {
     log @0 :List(LoggedRequest);
     commitNumber @1 :Int32;
+}
+
+struct GetState {
+    opNumber @0 :Int32;
+}
+
+struct NewState {
+    logSegment @0 :List(LoggedRequest);
+    opNumber @1 :Int32;
+    commitNumber @2 :Int32;
 }
 
 struct LoggedRequest {

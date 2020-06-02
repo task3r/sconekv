@@ -151,6 +151,12 @@ public class SconeServer implements Runnable {
             case START_VIEW:
                 cm.queueEvent(new StartView(eventId, node, viewVersion, getLogFromMessage(message.getStartView().getLog()), message.getStartView().getCommitNumber()));
                 break;
+            case GET_STATE:
+                cm.queueEvent(new GetState(eventId, node, viewVersion, message.getGetState().getOpNumber()));
+                break;
+            case NEW_STATE:
+                cm.queueEvent(new NewState(eventId, node, viewVersion, getLogFromMessage(message.getNewState().getLogSegment()), message.getNewState().getOpNumber(), message.getNewState().getCommitNumber()));
+                break;
             case _NOT_IN_SCHEMA:
                 logger.error("Received an incorrect internal message, ignoring...");
                 break;

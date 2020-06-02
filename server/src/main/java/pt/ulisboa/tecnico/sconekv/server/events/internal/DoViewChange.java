@@ -10,9 +10,9 @@ import java.util.List;
 
 public class DoViewChange extends InternalMessage {
 
-    List<LogEntry> log;
-    Version term;
-    int commitNumber;
+    private List<LogEntry> log;
+    private Version term;
+    private int commitNumber;
 
     public DoViewChange(Pair<Short, Integer> id, Node node, Version newVersion, List<LogEntry> log, Version term,
                         int commitNumber) {

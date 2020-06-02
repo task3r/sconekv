@@ -20,4 +20,6 @@ public interface SconeEventHandler {
     void handle(StartViewChange startViewChange);
     void handle(DoViewChange doViewChange);
     void handle(StartView startView);
+    void handle(GetState getState);
+    void handle(NewState newState);
 }

@@ -112,6 +112,26 @@ public class CommunicationUtils {
         return message;
     }
 
+    public static MessageBuilder generateGetState(Node sender, int opNumber) {
+        MessageBuilder message = new MessageBuilder();
+        Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
+        SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        Internal.GetState.Builder builder = mBuilder.initGetState();
+        builder.setOpNumber(opNumber);
+        return message;
+    }
+
+    public static MessageBuilder generateNewState(Node sender, int opNumber, int commitNumber, List<LogEntry> logSegment) {
+        MessageBuilder message = new MessageBuilder();
+        Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
+        SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        Internal.NewState.Builder builder = mBuilder.initNewState();
+        builder.setCommitNumber(commitNumber);
+        builder.setOpNumber(opNumber);
+        serializeLog(logSegment, builder.initLogSegment(logSegment.size()));
+        return message;
+    }
+
     private static void serializeLog(List<LogEntry> log, StructList.Builder<Internal.LoggedRequest.Builder> logBuilder) {
         for (int i = 0; i < log.size(); i++) {
             logBuilder.get(i).setRequest(log.get(i).getRequest().getRequest());
