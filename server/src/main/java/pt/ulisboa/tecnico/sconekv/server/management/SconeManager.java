@@ -37,7 +37,7 @@ public class SconeManager implements UpdateViewCallback {
     private void joinMembership() throws IOException, InterruptedException {
         membershipManager = new MembershipManager(this);
         if (!membershipManager.isFirstNode()) {
-            int sleepMs = ThreadLocalRandom.current().nextInt(10000);
+            int sleepMs = ThreadLocalRandom.current().nextInt(15000);
             logger.info("[{}] - Sleeping {} ms", MembershipManager.myself, sleepMs);
             Thread.sleep(sleepMs);
         } else {

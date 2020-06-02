@@ -10,6 +10,7 @@ import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
+import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
 import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
 
@@ -20,6 +21,7 @@ public class StateMachineManager {
         NORMAL,
         VIEW_CHANGE
     }
+
     private static final Logger logger = LoggerFactory.getLogger(StateMachineManager.class);
 
     private CommunicationManager cm;
@@ -40,12 +42,14 @@ public class StateMachineManager {
     private List<LogEntry> log;
     // Map opNumber -> Prepare
     private Map<Integer, Prepare> pendingEntries;
+    private List<SconeEvent> pendingEvents;
 
     public StateMachineManager(CommunicationManager cm, MembershipManager mm) {
         this.cm = cm;
         this.mm = mm;
         this.log = new ArrayList<>();
         this.pendingEntries = new HashMap<>();
+        this.pendingEvents = new ArrayList<>();
         this.doViews = new ArrayList<>();
         this.status = Status.NORMAL;
         this.commitNumber = -1;
@@ -79,7 +83,7 @@ public class StateMachineManager {
             this.doViews.clear();
         }
         if (newVersion.isEqual(this.futureVersion) && !newMaster.equals(this.currentMaster)) {
-            this.status = Status.VIEW_CHANGE;
+            setStatus(Status.VIEW_CHANGE);
             MessageBuilder message = CommunicationUtils.generateStartViewChange(mm.getMyself(), currentVersion);
             cm.broadcastBucket(message);
             // send to self
@@ -89,7 +93,7 @@ public class StateMachineManager {
 
     public synchronized void prepareLogMaster(CommitRequest request) {
         if (status != Status.NORMAL) {
-            cm.queueEvent(request);
+            this.pendingEvents.add(request);
             logger.info("CommitRequest event {} was not processed as status is {}", request.getTx().getId(), status);
             return;
         }
@@ -103,7 +107,7 @@ public class StateMachineManager {
 
     public synchronized void prepareLogReplica(Prepare prepare) {
         if (status != Status.NORMAL) {
-            cm.queueEvent(prepare);
+            this.pendingEvents.add(prepare);
             logger.info("Prepare event {} was not processed as status is {}", prepare.getClientRequest().getTx().getId(), status);
             return;
         }
@@ -141,7 +145,7 @@ public class StateMachineManager {
 
     public synchronized void prepareOK(PrepareOK prepareOK) {
         if (status != Status.NORMAL) {
-            cm.queueEvent(prepareOK);
+            this.pendingEvents.add(prepareOK);
             logger.info("PrepareOK event from {} was not processed as status is {}", prepareOK.getNode(), status);
             return;
         }
@@ -174,7 +178,7 @@ public class StateMachineManager {
         }
 
         if (event.getViewVersion().equals(this.currentVersion) && startViews == SconeConstants.FAILURES_PER_BUCKET + 1) {
-            this.status = Status.VIEW_CHANGE; // in case it didn't detect in the update bucket
+            setStatus(Status.VIEW_CHANGE); // in case it didn't detect in the update bucket
             if (currentBucket.getMaster().equals(mm.getMyself())) {
                 // send to self
                 cm.queueEvent(new DoViewChange(null, mm.getMyself(), currentVersion, log, term, commitNumber));
@@ -192,10 +196,10 @@ public class StateMachineManager {
             this.startViews = 0;
             this.doViews.clear();
             this.doViews.add(event);
-        } else if (event.getViewVersion().equals(this.futureVersion)) {
+        } else if (event.getViewVersion().equals(this.futureVersion) && !event.getViewVersion().equals(term)) { // ignore old doViewChange i.e. after it is already done
             this.doViews.add(event);
 
-            if (event.getViewVersion().equals(this.currentVersion) && doViews.size() == SconeConstants.FAILURES_PER_BUCKET + 1) {
+            if (event.getViewVersion().equals(this.currentVersion) && doViews.size() >= SconeConstants.FAILURES_PER_BUCKET + 1) {
                 this.currentMaster = mm.getMyself();
                 this.term = new Version(this.currentVersion);
                 //Selects as the new log the one with the largest term (largest opNum in case of tie).
@@ -211,6 +215,7 @@ public class StateMachineManager {
                 }
                 MessageBuilder message = CommunicationUtils.generateStartView(mm.getMyself(), commitNumber, log);
                 cm.broadcastBucket(message);
+                setStatus(Status.NORMAL);
             }
         }
     }
@@ -221,7 +226,20 @@ public class StateMachineManager {
         this.log = event.getLog();
         this.commitNumber = event.getCommitNumber();
         this.currentMaster = event.getNode();
-        this.status = Status.NORMAL;
+        setStatus(Status.NORMAL);
+    }
+
+    private void setStatus(Status status) {
+        this.status = status;
+        if (status == Status.NORMAL) {
+            for (SconeEvent e : pendingEvents) {
+                cm.queueEvent(e);
+            }
+            pendingEvents.clear();
+            logger.info("Normal status, accepting requests");
+        } else if (status == Status.VIEW_CHANGE) {
+            logger.info("View-change status, delaying requests");
+        }
     }
 
     //state transfer / recovery
