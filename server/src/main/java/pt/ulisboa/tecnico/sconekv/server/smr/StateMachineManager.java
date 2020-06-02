@@ -16,6 +16,10 @@ import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
 import java.util.*;
 
 public class StateMachineManager {
+    enum Status {
+        NORMAL,
+        VIEW_CHANGE
+    }
     private static final Logger logger = LoggerFactory.getLogger(StateMachineManager.class);
 
     private CommunicationManager cm;
@@ -25,6 +29,7 @@ public class StateMachineManager {
     private Version currentVersion;
     private Version futureVersion;
     private Node currentMaster;
+    private Status status;
 
     private int commitNumber;
 
@@ -42,6 +47,7 @@ public class StateMachineManager {
         this.log = new ArrayList<>();
         this.pendingEntries = new HashMap<>();
         this.doViews = new ArrayList<>();
+        this.status = Status.NORMAL;
     }
 
     public Node getCurrentMaster() {
@@ -49,6 +55,11 @@ public class StateMachineManager {
     }
 
     public synchronized void prepareLogMaster(CommitRequest request) {
+        if (status != Status.NORMAL) {
+            cm.queueEvent(request);
+            logger.info("CommitRequest event {} was not processed as status is {}", request.getTx().getId(), status);
+            return;
+        }
         logger.debug("Master replicating request...");
         log.add(new LogEntry(request));
 
@@ -58,6 +69,11 @@ public class StateMachineManager {
     }
 
     public synchronized void prepareLogReplica(Prepare prepare) {
+        if (status != Status.NORMAL) {
+            cm.queueEvent(prepare);
+            logger.info("Prepare event {} was not processed as status is {}", prepare.getClientRequest().getTx().getId(), status);
+            return;
+        }
         logger.debug("Replica received prepare message");
 
         if (prepare.getBucket() != currentBucket.getId() || !prepare.getNode().equals(currentMaster)) {
@@ -91,6 +107,11 @@ public class StateMachineManager {
     }
 
     public synchronized void prepareOK(PrepareOK prepareOK) {
+        if (status != Status.NORMAL) {
+            cm.queueEvent(prepareOK);
+            logger.info("PrepareOK event from {} was not processed as status is {}", prepareOK.getNode(), status);
+            return;
+        }
         logger.debug("Master received prepareOK from {} with opNum: {}", prepareOK.getNode(), prepareOK.getOpNumber());
 
         if (!currentMaster.equals(mm.getMyself()) || prepareOK.getBucket() != currentBucket.getId()) {
@@ -128,6 +149,7 @@ public class StateMachineManager {
         if (currentMaster == null)
             currentMaster = newMaster;
         if (newVersion.isEqual(this.futureVersion) && !newMaster.equals(this.currentMaster)) {
+            this.status = Status.VIEW_CHANGE;
             MessageBuilder message = CommunicationUtils.generateStartViewChange(mm.getMyself(), currentVersion);
             cm.broadcastBucket(message);
             // send to self
@@ -187,6 +209,7 @@ public class StateMachineManager {
         this.log = event.getLog();
         this.commitNumber = event.getCommitNumber();
         this.currentMaster = event.getNode();
+        this.status = Status.NORMAL;
     }
 
     //state transfer / recovery
