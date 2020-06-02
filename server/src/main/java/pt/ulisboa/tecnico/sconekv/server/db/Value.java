@@ -46,7 +46,6 @@ public class Value {
     }
 
     public synchronized boolean validateAndLock(TransactionID txID, Operation op) throws OutdatedVersionException {
-        logger.debug("validate {} : {} <- {}", op.getKey(), version, op.getVersion());
         if (version == op.getVersion()) {
             if (this.lockOwner == null) {
                 this.lockOwner = txID;

@@ -60,7 +60,6 @@ public class StateMachineManager {
     public synchronized void prepareLogReplica(Prepare prepare) {
         logger.debug("Replica received prepare message");
 
-        logger.debug("{} {} - {} {}", prepare.getBucket(), currentBucket.getId(), prepare.getNode(), currentMaster);
         if (prepare.getBucket() != currentBucket.getId() || !prepare.getNode().equals(currentMaster)) {
             logger.error("Received incorrect prepare request, ignoring");
             return;

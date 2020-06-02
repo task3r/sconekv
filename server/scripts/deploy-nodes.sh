@@ -28,15 +28,15 @@ tell application "iTerm"
     tell first session of current tab of current window
         write text "docker run --rm -it --network sconenet task3r/sconekv-node"
     end tell
-    delay 3
+    delay 1
     tell second session of current tab of current window
         write text "docker run --rm -it --network sconenet task3r/sconekv-node"
     end tell
-    delay 3
+    delay 1
     tell third session of current tab of current window
         write text "docker run --rm -it --network sconenet task3r/sconekv-node"
     end tell
-    delay 3
+    delay 1
     tell fourth session of current tab of current window
         write text "docker run --rm -it --network sconenet task3r/sconekv-node"
     end tell

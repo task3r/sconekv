@@ -60,7 +60,6 @@ public class ServerApplication {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            logger.debug("kill logger");
             LogManager.shutdown();
         }));
     }

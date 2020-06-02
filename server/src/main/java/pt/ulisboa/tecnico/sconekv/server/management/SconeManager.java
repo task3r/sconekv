@@ -14,7 +14,6 @@ import pt.ulisboa.tecnico.sconekv.server.smr.StateMachineManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -50,10 +49,10 @@ public class SconeManager implements UpdateViewCallback {
     private void start() {
         logger.info("Scone Node starting...");
         threads = new ArrayList<>();
-        for (short i = 0; i < SconeConstants.NUM_WORKERS; i++) {
+        threads.add(new Thread(new SconeServer((short)0, communicationManager)));
+        for (short i = 1; i <= SconeConstants.NUM_WORKERS; i++) {
             threads.add(new Thread(new SconeWorker(i, communicationManager, stateMachineManager, store, dht, membershipManager.getMyself())));
         }
-        threads.add(new Thread(new SconeServer((short)0, communicationManager)));
         for (Thread t : threads) {
             t.start();
         }
