@@ -102,29 +102,32 @@ public class CommunicationUtils {
         return message;
     }
 
-    public static MessageBuilder generateStartView(Node sender, int commitNumber, List<LogEntry> log) {
+    public static MessageBuilder generateStartView(Node sender, Version currentVersion, int commitNumber, List<LogEntry> log) {
         MessageBuilder message = new MessageBuilder();
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
         SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
         Internal.StartView.Builder builder = mBuilder.initStartView();
         builder.setCommitNumber(commitNumber);
         serializeLog(log, builder.initLog(log.size()));
         return message;
     }
 
-    public static MessageBuilder generateGetState(Node sender, int opNumber) {
+    public static MessageBuilder generateGetState(Node sender, Version currentVersion, int opNumber) {
         MessageBuilder message = new MessageBuilder();
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
         SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
         Internal.GetState.Builder builder = mBuilder.initGetState();
         builder.setOpNumber(opNumber);
         return message;
     }
 
-    public static MessageBuilder generateNewState(Node sender, int opNumber, int commitNumber, List<LogEntry> logSegment) {
+    public static MessageBuilder generateNewState(Node sender, Version currentVersion, int opNumber, int commitNumber, List<LogEntry> logSegment) {
         MessageBuilder message = new MessageBuilder();
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
         SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
         Internal.NewState.Builder builder = mBuilder.initNewState();
         builder.setCommitNumber(commitNumber);
         builder.setOpNumber(opNumber);

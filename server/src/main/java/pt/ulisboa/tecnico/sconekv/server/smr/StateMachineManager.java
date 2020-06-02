@@ -17,31 +17,26 @@ import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
 import java.util.*;
 
 public class StateMachineManager {
+    private static final Logger logger = LoggerFactory.getLogger(StateMachineManager.class);
+
     enum Status {
         NORMAL,
         VIEW_CHANGE
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(StateMachineManager.class);
-
     private CommunicationManager cm;
     private MembershipManager mm;
     private Bucket currentBucket;
-    private Version term;
     private Version currentVersion;
     private Version futureVersion;
+    private Version term;
     private Node currentMaster;
     private Status status;
-
+    private List<LogEntry> log;
     private int commitNumber;
-
     private int startViews;
     private List<DoViewChange> doViews;
-    //status
-
-    private List<LogEntry> log;
-    // Map opNumber -> Prepare
-    private Map<Integer, Prepare> pendingEntries;
+    private Map<Integer, Prepare> pendingEntries; // Map opNumber -> Prepare
     private List<SconeEvent> pendingEvents;
 
     public StateMachineManager(CommunicationManager cm, MembershipManager mm) {
@@ -67,10 +62,13 @@ public class StateMachineManager {
         logger.debug("Update bucket");
         this.currentVersion = newVersion;
         Node newMaster = newBucket.getMaster();
+        boolean requestState = false;
         if (this.currentBucket == null) { // first view
+            requestState = true;
             this.futureVersion = newVersion;
             this.currentMaster = newMaster;
         } else if (newBucket.getId() != this.currentBucket.getId()) {
+            requestState = true;
             this.currentMaster = null;
             this.term = null;
             this.log.clear();
@@ -88,6 +86,10 @@ public class StateMachineManager {
             cm.broadcastBucket(message);
             // send to self
             cm.queueEvent(new StartViewChange(null, mm.getMyself(), currentVersion));
+        } else if (requestState && !newMaster.equals(mm.getMyself())) {
+            // I must be new to the membership or at least to this bucket
+            MessageBuilder message = CommunicationUtils.generateGetState(mm.getMyself(), this.currentVersion, getOpNumber());
+            cm.send(message, newMaster);
         }
     }
 
@@ -213,7 +215,7 @@ public class StateMachineManager {
                     entry.getRequest().setPrepared();
                     cm.queueEvent(entry.getRequest());
                 }
-                MessageBuilder message = CommunicationUtils.generateStartView(mm.getMyself(), commitNumber, log);
+                MessageBuilder message = CommunicationUtils.generateStartView(mm.getMyself(), currentVersion, commitNumber, log);
                 cm.broadcastBucket(message);
                 setStatus(Status.NORMAL);
             }
@@ -231,13 +233,13 @@ public class StateMachineManager {
 
     private void setStatus(Status status) {
         this.status = status;
-        if (status == Status.NORMAL) {
+        if (this.status == Status.NORMAL) {
             for (SconeEvent e : pendingEvents) {
                 cm.queueEvent(e);
             }
             pendingEvents.clear();
             logger.info("Normal status, accepting requests");
-        } else if (status == Status.VIEW_CHANGE) {
+        } else if (this.status == Status.VIEW_CHANGE) {
             logger.info("View-change status, delaying requests");
         }
     }
@@ -246,15 +248,15 @@ public class StateMachineManager {
         logger.debug("Received getState");
         if (status != Status.NORMAL) {
             this.pendingEvents.add(event);
-            logger.info("GetState event from {} was not processed as status is {}", event.getNode(), status);
+            logger.info("GetState event from {} was not processed as status is {}", event.getNode(), this.status);
             return;
         }
         if (currentVersion.equals(event.getViewVersion())) {
-            MessageBuilder message = CommunicationUtils.generateNewState(mm.getMyself(), getOpNumber(), commitNumber, log.subList(event.getOpNumber(), log.size()));
+            MessageBuilder message = CommunicationUtils.generateNewState(mm.getMyself(), this.currentVersion, getOpNumber(), this.commitNumber, this.log.subList(Math.max(event.getOpNumber(),0), log.size()));
             cm.send(message, event.getNode());
             logger.info("Responded to GetState from {}", event.getNode());
         } else {
-            logger.info("Received GetState with version {} but I am on {} so I am not responding", event.getViewVersion(), currentVersion);
+            logger.info("Received GetState with version {} but I am on {} so I am not responding", event.getViewVersion(), this.currentVersion);
         }
     }
 
@@ -264,7 +266,7 @@ public class StateMachineManager {
             // newState might be slightly outdated, should ignore those entries
             int missingEntriesCount = Math.max(event.getOpNumber() - getOpNumber(), 0); // avoid invalidIndex
             List<LogEntry> missingEntries = event.getLogSegment()
-                    .subList(event.getLogSegment().size() - missingEntriesCount, event.getLogSegment().size());
+                    .subList(Math.max(event.getLogSegment().size() - missingEntriesCount,0), event.getLogSegment().size());
             log.addAll(missingEntries);
             for (int i = this.commitNumber + 1; i <= event.getCommitNumber(); i++) {
                 LogEntry entry = log.get(i);
