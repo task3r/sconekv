@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.common;
+package pt.ulisboa.tecnico.sconekv.server.constants;
 
 public class SconeConstants {
 

@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
-import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 
 import java.io.ByteArrayInputStream;

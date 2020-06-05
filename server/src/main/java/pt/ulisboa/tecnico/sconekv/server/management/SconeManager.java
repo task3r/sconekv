@@ -7,7 +7,7 @@ import pt.tecnico.ulisboa.prime.UpdateViewCallback;
 import pt.tecnico.ulisboa.prime.membership.ring.Ring;
 import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
-import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
+import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.smr.StateMachineManager;

@@ -19,7 +19,6 @@ import pt.ulisboa.tecnico.sconekv.client.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.MaxRetriesExceededException;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.RequestFailedException;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.UnableToGetViewException;
-import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
@@ -39,9 +38,8 @@ public class SconeClient {
         RANDOM
     }
     private static final Logger logger = LoggerFactory.getLogger(SconeClient.class);
-    private static final int RECV_TIMEOUT = 1000;
-    private static final int MAX_REQUEST_RETRIES = 5;
 
+    private SconeClientProperties properties;
     private UUID clientID;
     private ZContext context;
     private Map<Node, ZMQ.Socket> sockets;
@@ -50,20 +48,23 @@ public class SconeClient {
     private RequestMode mode;
     private Random random;
 
-    public SconeClient() throws UnableToGetViewException {
-        this.mode = RequestMode.MASTER_ONLY;
-        this.context = new ZContext();
-        this.clientID = UUID.randomUUID();
-        this.sockets = new HashMap<>();
-        this.random = new Random();
-
-        this.dht = getDHT();
-
-        logger.info("Created new client {}", this.clientID);
+    public SconeClient() throws UnableToGetViewException, IOException {
+        this(RequestMode.MASTER_ONLY, "client-config.properties");
     }
 
-    public SconeClient(RequestMode mode) throws UnableToGetViewException {
+    public SconeClient(String configFile) throws UnableToGetViewException, IOException {
+        this(RequestMode.MASTER_ONLY, configFile);
+    }
+
+    public SconeClient(RequestMode mode) throws UnableToGetViewException, IOException {
+        this(mode, "client-config.properties");
+    }
+
+    public SconeClient(RequestMode mode, String configFile) throws UnableToGetViewException, IOException {
+        this.properties = new SconeClientProperties(configFile);
         this.mode = mode;
+        this.sockets = new HashMap<>();
+        this.random = new Random();
         this.context = new ZContext();
         this.clientID = UUID.randomUUID();
         this.dht = getDHT();
@@ -83,10 +84,10 @@ public class SconeClient {
             byte[] rawRequest = SerializationUtils.getBytesFromMessage(message);
 
             try (ZMQ.Socket socket = this.context.createSocket(SocketType.DEALER)) {
-                socket.setReceiveTimeOut(RECV_TIMEOUT);
+                socket.setReceiveTimeOut(properties.RECV_TIMEOUT);
                 socket.setIdentity(UUID.randomUUID().toString().getBytes());
                 for (String node : discoveryResponseDto.view) {
-                    String address = "tcp://" + node + ":" + SconeConstants.SERVER_REQUEST_PORT;
+                    String address = "tcp://" + node + ":" + properties.SERVER_REQUEST_PORT;
                     socket.connect(address);
                     socket.sendMore(""); // delimiter
                     socket.send(rawRequest);
@@ -109,7 +110,7 @@ public class SconeClient {
     }
 
     private DiscoveryResponseDto getDiscoveryNodes() throws IOException {
-        HttpGet get = new HttpGet(SconeConstants.TRACKER_URL + "/current");
+        HttpGet get = new HttpGet(properties.TRACKER_URL + "/current");
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             CloseableHttpResponse response = httpclient.execute(get);
             HttpEntity entity = response.getEntity();
@@ -131,8 +132,8 @@ public class SconeClient {
     private ZMQ.Socket createSocket(String address) {
         ZMQ.Socket socket = this.context.createSocket(SocketType.DEALER);
         socket.setIdentity(this.clientID.toString().getBytes(ZMQ.CHARSET));
-        socket.connect("tcp://" + address + ":" + SconeConstants.SERVER_REQUEST_PORT);
-        socket.setReceiveTimeOut(RECV_TIMEOUT);
+        socket.connect("tcp://" + address + ":" + properties.SERVER_REQUEST_PORT);
+        socket.setReceiveTimeOut(properties.RECV_TIMEOUT);
         logger.info("Client {} connected to {}", clientID, address);
         return socket;
     }
@@ -201,7 +202,7 @@ public class SconeClient {
     private External.Response.Reader request(short bucket, MessageBuilder message, External.Response.Which requestType) throws RequestFailedException {
         int retries = 0;
         ZMQ.Socket requester;
-        while (retries < MAX_REQUEST_RETRIES) {
+        while (retries < properties.MAX_REQUEST_RETRIES) {
             try {
                 requester = getSocketForRequest(bucket);
                 requester.sendMore(""); // delimiter

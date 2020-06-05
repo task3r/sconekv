@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.MembershipManager;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
-import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
+import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;

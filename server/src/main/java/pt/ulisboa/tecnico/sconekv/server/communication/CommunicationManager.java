@@ -9,7 +9,7 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQException;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
-import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
+import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;

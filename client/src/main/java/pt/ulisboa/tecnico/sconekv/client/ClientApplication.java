@@ -20,7 +20,7 @@ public class ClientApplication {
     SconeClient client;
     Map<String, Transaction> transactions;
 
-    public ClientApplication() throws UnableToGetViewException {
+    public ClientApplication() throws UnableToGetViewException, IOException {
         client = new SconeClient();
         transactions = new HashMap();
     }

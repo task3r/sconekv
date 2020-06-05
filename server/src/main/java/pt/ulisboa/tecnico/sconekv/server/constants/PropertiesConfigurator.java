@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.sconekv.server;
+package pt.ulisboa.tecnico.sconekv.server.constants;
 
 import epto.PSSParams;
 import org.slf4j.Logger;
@@ -6,13 +6,14 @@ import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.constants.EpTOConstants;
 import pt.tecnico.ulisboa.prime.constants.PSSConstants;
 import pt.tecnico.ulisboa.prime.constants.PrimeConstants;
-import pt.ulisboa.tecnico.sconekv.common.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidConfigurationException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
+import static pt.ulisboa.tecnico.sconekv.common.utils.PropertiesUtils.*;
 
 public class PropertiesConfigurator {
     private static final Logger logger = LoggerFactory.getLogger(PropertiesConfigurator.class);
@@ -117,23 +118,4 @@ public class PropertiesConfigurator {
         PrimeConstants.INTERVAL_BETWEEN_MONITOR_TRIES = getLong(properties, "INTERVAL_BETWEEN_MONITOR_TRIES");
     }
 
-    private static int getInt(Properties properties, String key) {
-        return Integer.parseInt(properties.getProperty(key));
-    }
-
-    private static short getShort(Properties properties, String key) {
-        return Short.parseShort(properties.getProperty(key));
-    }
-
-    private static float getFloat(Properties properties, String key) {
-        return Float.parseFloat(properties.getProperty(key));
-    }
-
-    private static long getLong(Properties properties, String key) {
-        return Long.parseLong(properties.getProperty(key));
-    }
-
-    private static String getString(Properties properties, String key) {
-        return properties.getProperty(key);
-    }
 }
