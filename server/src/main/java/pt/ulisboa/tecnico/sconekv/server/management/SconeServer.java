@@ -15,7 +15,7 @@ import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.MessageType;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.events.external.*;
-import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 import pt.ulisboa.tecnico.sconekv.server.smr.LogEntry;
 
 import java.io.IOException;

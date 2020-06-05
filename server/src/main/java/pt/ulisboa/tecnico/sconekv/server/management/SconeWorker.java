@@ -12,7 +12,8 @@ import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
 import pt.ulisboa.tecnico.sconekv.server.events.*;
 import pt.ulisboa.tecnico.sconekv.server.events.external.*;
-import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
 import pt.ulisboa.tecnico.sconekv.server.smr.StateMachineManager;
 
@@ -112,6 +113,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     }
 
     // Internal Events
+    // State Machine Replication
 
     @Override
     public void handle(Prepare prepare) {
@@ -146,5 +148,32 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(NewState newState) {
         smm.newState(newState);
+    }
+
+    // Distributed Transactions
+
+    @Override
+    public void handle(CommitLocalDecision commitLocalDecision) {
+
+    }
+
+    @Override
+    public void handle(RequestRollbackLocalDecision requestRollbackLocalDecision) {
+
+    }
+
+    @Override
+    public void handle(RollbackLocalDecisionResponse rollbackLocalDecisionResponse) {
+
+    }
+
+    @Override
+    public void handle(CommitTransaction commitTransaction) {
+
+    }
+
+    @Override
+    public void handle(AbortTransaction abortTransaction) {
+
     }
 }

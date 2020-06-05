@@ -1,11 +1,12 @@
-package pt.ulisboa.tecnico.sconekv.server.events.internal;
+package pt.ulisboa.tecnico.sconekv.server.events.internal.smr;
 
 import org.javatuples.Pair;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.InternalEvent;
 
-public class GetState extends InternalMessage {
+public class GetState extends InternalEvent {
 
     private int opNumber;
 

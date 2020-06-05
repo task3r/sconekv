@@ -1,14 +1,15 @@
-package pt.ulisboa.tecnico.sconekv.server.events.internal;
+package pt.ulisboa.tecnico.sconekv.server.events.internal.smr;
 
 import org.javatuples.Pair;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.InternalEvent;
 import pt.ulisboa.tecnico.sconekv.server.smr.LogEntry;
 
 import java.util.List;
 
-public class DoViewChange extends InternalMessage {
+public class DoViewChange extends InternalEvent {
 
     private List<LogEntry> log;
     private Version term;

@@ -1,36 +1,32 @@
-package pt.ulisboa.tecnico.sconekv.server.events.internal;
+package pt.ulisboa.tecnico.sconekv.server.events.internal.smr;
 
 import org.javatuples.Pair;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.InternalEvent;
 import pt.ulisboa.tecnico.sconekv.server.smr.LogEntry;
 
 import java.util.List;
 
-public class NewState extends InternalMessage {
 
-    private List<LogEntry> logSegment;
+public class StartView extends InternalEvent {
+
+    private List<LogEntry> log;
     private int commitNumber;
-    private int opNumber;
 
-    public NewState(Pair<Short, Integer> id, Node node, Version viewVersion, List<LogEntry> logSegment, int opNumber, int commitNumber) {
+    public StartView(Pair<Short, Integer> id, Node node, Version viewVersion, List<LogEntry> log, int commitNumber) {
         super(id, node, viewVersion);
-        this.logSegment = logSegment;
+        this.log = log;
         this.commitNumber = commitNumber;
-        this.opNumber = opNumber;
     }
 
-    public List<LogEntry> getLogSegment() {
-        return logSegment;
+    public List<LogEntry> getLog() {
+        return log;
     }
 
     public int getCommitNumber() {
         return commitNumber;
-    }
-
-    public int getOpNumber() {
-        return opNumber;
     }
 
     @Override

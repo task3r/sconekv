@@ -13,6 +13,7 @@ import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
 import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 
 import java.util.*;
 
@@ -204,7 +205,7 @@ public class StateMachineManager {
                 this.currentMaster = mm.getMyself();
                 this.term = new Version(this.currentVersion);
                 //Selects as the new log the one with the largest term (largest opNum in case of tie).
-                this.log = doViews.stream().max(Comparator.comparing(InternalMessage::getViewVersion)).get().getLog();
+                this.log = doViews.stream().max(Comparator.comparing(InternalEvent::getViewVersion)).get().getLog();
                 //Sets the commitNum to the largest one received.
                 int oldCommitNumber = this.commitNumber;
                 this.commitNumber = doViews.stream().max(Comparator.comparing(DoViewChange::getCommitNumber)).get().getCommitNumber();
