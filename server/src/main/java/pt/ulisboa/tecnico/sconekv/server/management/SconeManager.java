@@ -95,6 +95,11 @@ public class SconeManager implements UpdateViewCallback {
             logger.debug("Applying new view...");
             dht.applyView(ring);
             Bucket currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
+            if (currentBucket == null) {
+                logger.error("Was I removed from the membership? I do not belong to the new view");
+                logger.debug("Ring contains myself: {}", ring.contains(membershipManager.getMyself()));
+                System.exit(-1);
+            }
             logger.info("Belong to bucket {}, master: {}", currentBucket.getId(), currentBucket.getMaster());
             communicationManager.updateBucket(currentBucket);
             stateMachineManager.updateBucket(currentBucket, ring.getVersion());
