@@ -9,6 +9,7 @@ public class SconeConstants {
     public static int FAILURES_PER_BUCKET = 1;
     public static int BOOTSTRAP_NODE_NUMBER = NUM_BUCKETS * BUCKET_SIZE;
     public static int MURMUR3_SEED = 42;
+    public static int MAX_OP_NUMBER_HOLE = 1;
     public static short NUM_WORKERS = 1;
     public static String TRACKER_URL = "http://tracker:4321";
 

@@ -39,7 +39,7 @@ public class SconeClient {
         RANDOM
     }
     private static final Logger logger = LoggerFactory.getLogger(SconeClient.class);
-    private static final int RECV_TIMEOUT = 5000;
+    private static final int RECV_TIMEOUT = 1000;
     private static final int MAX_REQUEST_RETRIES = 5;
 
     private UUID clientID;

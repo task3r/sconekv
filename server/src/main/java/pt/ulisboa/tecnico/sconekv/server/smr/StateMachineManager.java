@@ -62,13 +62,10 @@ public class StateMachineManager {
         logger.debug("Update bucket");
         this.currentVersion = newVersion;
         Node newMaster = newBucket.getMaster();
-        boolean requestState = false;
         if (this.currentBucket == null) { // first view
-            requestState = true;
             this.futureVersion = newVersion;
             this.currentMaster = newMaster;
         } else if (newBucket.getId() != this.currentBucket.getId()) {
-            requestState = true;
             this.currentMaster = null;
             this.term = null;
             this.log.clear();
@@ -86,10 +83,6 @@ public class StateMachineManager {
             cm.broadcastBucket(message);
             // send to self
             cm.queueEvent(new StartViewChange(null, mm.getMyself(), currentVersion));
-        } else if (requestState && !newMaster.equals(mm.getMyself())) {
-            // I must be new to the membership or at least to this bucket
-            MessageBuilder message = CommunicationUtils.generateGetState(mm.getMyself(), this.currentVersion, getOpNumber());
-            cm.send(message, newMaster);
         }
     }
 
@@ -123,13 +116,19 @@ public class StateMachineManager {
         // if this entry is not the immediately consecutive in the log, wait
         if (this.log.size() != prepare.getOpNumber()) {
             this.pendingEntries.put(prepare.getOpNumber(), prepare);
+            if (prepare.getOpNumber() - this.getOpNumber() >= SconeConstants.MAX_OP_NUMBER_HOLE) {
+                logger.info("Detected op number hole, requesting state update");
+                MessageBuilder message = CommunicationUtils.generateGetState(mm.getMyself(), this.currentVersion, getOpNumber());
+                cm.send(message, currentMaster);
+            }
             return;
         }
         this.log.add(new LogEntry(prepare.getClientRequest()));
 
         // if the next entry is pending, queue it
-        if (pendingEntries.containsKey(this.log.size()))
+        if (pendingEntries.containsKey(this.log.size())) {
             cm.queueEvent(pendingEntries.remove(this.log.size()));
+        }
 
         // could save the queued opNumber and only send prepareOK to the highest value to reduce traffic
 
@@ -274,6 +273,12 @@ public class StateMachineManager {
                 cm.queueEvent(entry.getRequest());
             }
             this.commitNumber = event.getCommitNumber();
+            // remove pending entries that were added to the log with this update
+            TreeSet<Integer> pendingOpNumbers = new TreeSet<>(pendingEntries.keySet());
+            pendingOpNumbers.tailSet(getOpNumber()).clear();
+            for (Integer entryKey: pendingOpNumbers) {
+                pendingEntries.remove(entryKey);
+            }
         } else if (event.getViewVersion().isGreater(this.currentVersion)) {
             logger.info("Received newState from future view version, delaying...");
             pendingEvents.add(event);

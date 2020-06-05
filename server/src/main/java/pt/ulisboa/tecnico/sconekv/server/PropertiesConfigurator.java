@@ -48,6 +48,7 @@ public class PropertiesConfigurator {
         SconeConstants.SERVER_INTERNAL_PORT = getInt(properties, "SERVER_INTERNAL_PORT");
         SconeConstants.NUM_WORKERS = getShort(properties, "NUM_WORKERS");
         SconeConstants.TRACKER_URL = getString(properties, "TRACKER_URL");
+        SconeConstants.MAX_OP_NUMBER_HOLE = getInt(properties, "MAX_OP_NUMBER_HOLE");
         validateSconeConfiguration();
     }
 
