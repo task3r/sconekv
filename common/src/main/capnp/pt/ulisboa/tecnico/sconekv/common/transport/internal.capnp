@@ -3,6 +3,7 @@
 using Java = import "/java.capnp";
 using Request = import "external.capnp".Request;
 using ID = import "common.capnp".ID;
+using TransactionID = import "common.capnp".TransactionID;
 using Node = import "common.capnp".Node;
 using ViewVersion = import "common.capnp".ViewVersion;
 
@@ -21,6 +22,11 @@ struct InternalMessage {
         startView @6 :StartView;
         getState @7 :GetState;
         newState @8 :NewState;
+        commitLocalDecision @9 :CommitLocalDecision;
+        requestRollbackLocalDecision @10 :TransactionID;
+        rollbackLocalDecisionResponse @11 :TransactionID;
+        commitTransaction @12 :TransactionID;
+        abortTransaction @13 :TransactionID;
     }
 }
 
@@ -59,5 +65,10 @@ struct NewState {
 }
 
 struct LoggedRequest {
-    request @0: Request; # I don't like this, but capnproto is picky with lists and I couldn't set an index to an existing reader, this is the work around
+    request @0 :Request; # I don't like this, but capnproto is picky with lists and I couldn't set an index to an existing reader, this is the work around
+}
+
+struct CommitLocalDecision {
+    txID @0 :TransactionID;
+    toCommit @1 :Bool;
 }

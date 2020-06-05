@@ -16,6 +16,7 @@ import pt.ulisboa.tecnico.sconekv.server.communication.MessageType;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.events.external.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
 import pt.ulisboa.tecnico.sconekv.server.smr.LogEntry;
 
 import java.io.IOException;
@@ -81,23 +82,18 @@ public class SconeServer implements Runnable {
         switch (request.which()) {
             case WRITE:
                 return new WriteRequest(eventId, client, txID, new String(request.getRead().toArray()));
-
             case READ:
                 return new ReadRequest(eventId, client, txID, new String(request.getRead().toArray()));
-
             case COMMIT:
                 Transaction tx = new Transaction(txID, request.getCommit());
                 return new CommitRequest(eventId, client, tx, request);
-
             case GET_DHT:
                 return new GetDHTRequest(eventId, client);
-
             case _NOT_IN_SCHEMA:
+            default:
                 logger.error("Received an incorrect request, ignoring...");
                 return null;
         }
-
-        return null; // shouldn't reach here
     }
 
     private void recvInternalComm(byte[] messageBytes) {
@@ -157,7 +153,23 @@ public class SconeServer implements Runnable {
             case NEW_STATE:
                 cm.queueEvent(new NewState(eventId, node, viewVersion, getLogFromMessage(message.getNewState().getLogSegment()), message.getNewState().getOpNumber(), message.getNewState().getCommitNumber()));
                 break;
+            case COMMIT_LOCAL_DECISION:
+                cm.queueEvent(new CommitLocalDecision(eventId, node, viewVersion, new TransactionID(message.getCommitLocalDecision().getTxID()), message.getCommitLocalDecision().getToCommit()));
+                break;
+            case REQUEST_ROLLBACK_LOCAL_DECISION:
+                cm.queueEvent(new RequestRollbackLocalDecision(eventId, node, viewVersion, new TransactionID(message.getRequestRollbackLocalDecision())));
+                break;
+            case ROLLBACK_LOCAL_DECISION_RESPONSE:
+                cm.queueEvent(new RollbackLocalDecisionResponse(eventId, node, viewVersion, new TransactionID(message.getRollbackLocalDecisionResponse())));
+                break;
+            case COMMIT_TRANSACTION:
+                cm.queueEvent(new CommitTransaction(eventId, node, viewVersion, new TransactionID(message.getCommitTransaction())));
+                break;
+            case ABORT_TRANSACTION:
+                cm.queueEvent(new AbortTransaction(eventId, node, viewVersion, new TransactionID(message.getAbortTransaction())));
+                break;
             case _NOT_IN_SCHEMA:
+            default:
                 logger.error("Received an incorrect internal message, ignoring...");
                 break;
         }
