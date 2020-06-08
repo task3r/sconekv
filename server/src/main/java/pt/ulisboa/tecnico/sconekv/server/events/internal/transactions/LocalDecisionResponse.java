@@ -6,7 +6,7 @@ import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
 
-public class CommitLocalDecision extends DistributedTransactionEvent {
+public class LocalDecisionResponse extends DistributedTransactionEvent {
     enum Decision {
         COMMIT,
         ABORT
@@ -14,13 +14,17 @@ public class CommitLocalDecision extends DistributedTransactionEvent {
 
     private Decision localDecision;
 
-    public CommitLocalDecision(Pair<Short, Integer> id, Node node, Version viewVersion, TransactionID txID, boolean toCommit) {
+    public LocalDecisionResponse(Pair<Short, Integer> id, Node node, Version viewVersion, TransactionID txID, boolean toCommit) {
         super(id, node, viewVersion, txID);
         this.localDecision = toCommit? Decision.COMMIT : Decision.ABORT;
     }
 
     public Decision getLocalDecision() {
         return localDecision;
+    }
+
+    public boolean shouldAbort() {
+        return localDecision == Decision.ABORT;
     }
 
     @Override

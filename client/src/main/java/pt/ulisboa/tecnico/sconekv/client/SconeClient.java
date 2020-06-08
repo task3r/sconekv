@@ -171,7 +171,8 @@ public class SconeClient {
         for (int i = 0; i < ops.size(); i++) {
             ops.get(i).serialize(opsBuilder.get(i));
         }
-        cBuilder.initBuckets(0); // insert buckets in message
+        cBuilder.initBuckets(1); // insert buckets in message
+        cBuilder.getBuckets().set(0, (short) 0);
 
         return request((short) 0, message, External.Response.Which.COMMIT).getCommit().getResult() == External.CommitResponse.Result.OK;
     }

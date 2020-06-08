@@ -6,18 +6,14 @@ import java.util.List;
 
 public abstract class AbstractTransaction {
 
-    protected enum State {
-        COMMITTED,
-        ABORTED,
-        NONE
-    }
+
 
     private TransactionID id;
-    private State state;
+    private TransactionState state;
 
     public AbstractTransaction(TransactionID id) {
         this.id = id;
-        this.state = State.NONE;
+        this.state = TransactionState.NONE;
     }
 
     protected abstract void addOperation(Operation op);
@@ -28,12 +24,12 @@ public abstract class AbstractTransaction {
 
     public abstract List<Operation> getRwSet();
 
-    public State getState() {
+    public TransactionState getState() {
         return state;
     }
 
-    protected void setState(State state) throws InvalidTransactionStateChangeException {
-        if (this.state != State.NONE)
+    public void setState(TransactionState state) throws InvalidTransactionStateChangeException {
+        if (this.state == TransactionState.COMMITTED || this.state == TransactionState.ABORTED)
             throw new InvalidTransactionStateChangeException();
         this.state = state;
     }

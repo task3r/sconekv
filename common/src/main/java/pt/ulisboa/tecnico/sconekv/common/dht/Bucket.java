@@ -3,13 +3,14 @@ package pt.ulisboa.tecnico.sconekv.common.dht;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 
 import java.util.Objects;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class Bucket {
     private short id;
-    private TreeSet<Node> nodes;
+    private SortedSet<Node> nodes;
 
-    public Bucket(short id, TreeSet<Node> nodes) {
+    public Bucket(short id, SortedSet<Node> nodes) {
         this.id = id;
         this.nodes = nodes;
     }
@@ -18,12 +19,12 @@ public class Bucket {
         return id;
     }
 
-    public TreeSet<Node> getNodes() {
+    public SortedSet<Node> getNodes() {
         return nodes;
     }
 
-    public TreeSet<Node> getNodesExcept(Node self) {
-        TreeSet<Node> withoutSelf = new TreeSet<>(nodes);
+    public SortedSet<Node> getNodesExcept(Node self) {
+        SortedSet<Node> withoutSelf = new TreeSet<>(nodes);
         withoutSelf.remove(self);
         return withoutSelf;
     }

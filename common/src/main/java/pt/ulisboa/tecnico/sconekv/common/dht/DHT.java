@@ -14,12 +14,13 @@ import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class DHT {
     private static final Logger logger = LoggerFactory.getLogger(DHT.class);
 
-    private TreeSet<Node> nodes;
+    private SortedSet<Node> nodes;
     private Version viewVersion;
     private short numBuckets;
     private HashFunction hashFunction;
@@ -35,7 +36,7 @@ public class DHT {
         defineBuckets();
     }
 
-    public DHT(TreeSet<Node> nodes, Version version, short numBuckets, int murmurSeed) {
+    public DHT(SortedSet<Node> nodes, Version version, short numBuckets, int murmurSeed) {
         this.nodes = nodes;
         this.viewVersion = version;
         this.numBuckets = numBuckets;
@@ -72,7 +73,7 @@ public class DHT {
         builder.setMurmurSeed(this.murmurSeed);
     }
 
-    public synchronized void applyView(TreeSet<Node> newView, Version newVersion) {
+    public synchronized void applyView(SortedSet<Node> newView, Version newVersion) {
         if (this.viewVersion.isLesser(newVersion)) {
             this.nodes = newView;
             this.viewVersion = newVersion;

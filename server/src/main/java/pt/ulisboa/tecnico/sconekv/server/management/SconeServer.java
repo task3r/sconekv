@@ -85,7 +85,7 @@ public class SconeServer implements Runnable {
             case READ:
                 return new ReadRequest(eventId, client, txID, new String(request.getRead().toArray()));
             case COMMIT:
-                Transaction tx = new Transaction(txID, request.getCommit());
+                Transaction tx = new Transaction(txID, client, request.getCommit());
                 return new CommitRequest(eventId, client, tx, request);
             case GET_DHT:
                 return new GetDHTRequest(eventId, client);
@@ -153,8 +153,8 @@ public class SconeServer implements Runnable {
             case NEW_STATE:
                 cm.queueEvent(new NewState(eventId, node, viewVersion, getLogFromMessage(message.getNewState().getLogSegment()), message.getNewState().getOpNumber(), message.getNewState().getCommitNumber()));
                 break;
-            case COMMIT_LOCAL_DECISION:
-                cm.queueEvent(new CommitLocalDecision(eventId, node, viewVersion, new TransactionID(message.getCommitLocalDecision().getTxID()), message.getCommitLocalDecision().getToCommit()));
+            case LOCAL_DECISION_RESPONSE:
+                cm.queueEvent(new LocalDecisionResponse(eventId, node, viewVersion, new TransactionID(message.getLocalDecisionResponse().getTxID()), message.getLocalDecisionResponse().getToCommit()));
                 break;
             case REQUEST_ROLLBACK_LOCAL_DECISION:
                 cm.queueEvent(new RequestRollbackLocalDecision(eventId, node, viewVersion, new TransactionID(message.getRequestRollbackLocalDecision())));
@@ -179,7 +179,7 @@ public class SconeServer implements Runnable {
         List<LogEntry> log = new ArrayList<>();
         for (int i = 0; i < logReader.size(); i++) {
             log.add(new LogEntry(new CommitRequest(null, null,
-                    new Transaction(new TransactionID(logReader.get(i).getRequest().getTxID()),
+                    new Transaction(new TransactionID(logReader.get(i).getRequest().getTxID()), null,
                             logReader.get(i).getRequest().getCommit()), logReader.get(i).getRequest())));
         }
         return log;

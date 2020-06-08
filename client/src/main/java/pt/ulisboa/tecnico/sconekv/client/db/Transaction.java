@@ -50,15 +50,15 @@ public class Transaction extends AbstractTransaction {
         validate();
         if (!client.performCommit(getId(), getRwSet()))
             throw new CommitFailedException();
-        setState(State.COMMITTED);
+        setState(TransactionState.COMMITTED);
     }
 
     public void abort() throws InvalidTransactionStateChangeException { //Specific client side exceptions?
-        setState(State.ABORTED);
+        setState(TransactionState.ABORTED);
     }
 
     private void validate() throws InvalidTransactionStateChangeException {
-        if (getState() != State.NONE)
+        if (getState() != TransactionState.NONE)
             throw new InvalidTransactionStateChangeException();
     }
 

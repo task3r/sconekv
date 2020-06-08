@@ -26,9 +26,10 @@ public interface SconeEventHandler {
     void handle(NewState newState);
 
     // Distributed Transactions
-    void handle(CommitLocalDecision commitLocalDecision);
+    void handle(LocalDecisionResponse localDecisionResponse);
     void handle(RequestRollbackLocalDecision requestRollbackLocalDecision);
     void handle(RollbackLocalDecisionResponse rollbackLocalDecisionResponse);
     void handle(CommitTransaction commitTransaction);
     void handle(AbortTransaction abortTransaction);
+    void handle(MakeLocalDecision makeLocalDecision);
 }

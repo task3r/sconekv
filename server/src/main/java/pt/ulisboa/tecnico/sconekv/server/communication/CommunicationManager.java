@@ -116,14 +116,14 @@ public class CommunicationManager {
         return null;
     }
 
-    public void replyToClient(ClientRequest request, MessageBuilder response) {
+    public void replyToClient(String client, MessageBuilder response) {
         if (running) {
             try {
-                clientRequestSocket.sendMore(request.getClient());
+                clientRequestSocket.sendMore(client);
                 clientRequestSocket.sendMore("");
                 clientRequestSocket.send(SerializationUtils.getBytesFromMessage(response), 0);
             } catch (IOException e) {
-                logger.error("IOException serializing response to {}", request);
+                logger.error("IOException serializing response to {}", client);
             }
         }
     }

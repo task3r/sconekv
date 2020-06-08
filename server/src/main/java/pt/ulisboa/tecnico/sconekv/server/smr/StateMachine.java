@@ -17,8 +17,8 @@ import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 
 import java.util.*;
 
-public class StateMachineManager {
-    private static final Logger logger = LoggerFactory.getLogger(StateMachineManager.class);
+public class StateMachine {
+    private static final Logger logger = LoggerFactory.getLogger(StateMachine.class);
 
     enum Status {
         NORMAL,
@@ -40,7 +40,7 @@ public class StateMachineManager {
     private Map<Integer, Prepare> pendingEntries; // Map opNumber -> Prepare
     private List<SconeEvent> pendingEvents;
 
-    public StateMachineManager(CommunicationManager cm, MembershipManager mm) {
+    public StateMachine(CommunicationManager cm, MembershipManager mm) {
         this.cm = cm;
         this.mm = mm;
         this.log = new ArrayList<>();
@@ -53,6 +53,14 @@ public class StateMachineManager {
 
     public Node getCurrentMaster() {
         return currentMaster;
+    }
+
+    public boolean isMaster() {
+        return mm.getMyself().equals(currentMaster);
+    }
+
+    public Version getCurrentVersion() {
+        return currentVersion;
     }
 
     private int getOpNumber() {

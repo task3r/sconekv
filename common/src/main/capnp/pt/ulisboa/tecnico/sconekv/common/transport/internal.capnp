@@ -22,7 +22,7 @@ struct InternalMessage {
         startView @6 :StartView;
         getState @7 :GetState;
         newState @8 :NewState;
-        commitLocalDecision @9 :CommitLocalDecision;
+        localDecisionResponse @9 :LocalDecisionResponse;
         requestRollbackLocalDecision @10 :TransactionID;
         rollbackLocalDecisionResponse @11 :TransactionID;
         commitTransaction @12 :TransactionID;
@@ -68,7 +68,7 @@ struct LoggedRequest {
     request @0 :Request; # I don't like this, but capnproto is picky with lists and I couldn't set an index to an existing reader, this is the work around
 }
 
-struct CommitLocalDecision {
+struct LocalDecisionResponse {
     txID @0 :TransactionID;
     toCommit @1 :Bool;
 }

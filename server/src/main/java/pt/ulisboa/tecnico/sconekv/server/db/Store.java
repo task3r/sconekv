@@ -1,44 +1,49 @@
 package pt.ulisboa.tecnico.sconekv.server.db;
 
-import kotlin.reflect.jvm.internal.ReflectProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.ulisboa.tecnico.sconekv.common.db.Operation;
-import pt.ulisboa.tecnico.sconekv.common.db.ReadOperation;
-import pt.ulisboa.tecnico.sconekv.common.db.WriteOperation;
+import pt.ulisboa.tecnico.sconekv.common.db.*;
+import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.OutdatedVersionException;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Store {
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
 
     private final Map<String, Value> values;
+    private final Map<TransactionID, Transaction> transactions;
 
     public Store() {
-        this.values = new HashMap<>();
+        this.values = new ConcurrentHashMap<>();
+        this.transactions = new ConcurrentHashMap<>();
     }
 
-    public Value get(String key) {
-        synchronized (values) {
-            if (!values.containsKey(key))
-                values.put(key, new Value());
-            return values.get(key);
-        }
+    public synchronized Value get(String key) {
+        if (!values.containsKey(key))
+            values.put(key, new Value());
+        return values.get(key);
     }
 
-    private void put(String key, byte[] value, short version) throws OutdatedVersionException {
-        synchronized (values) {
-            if (values.containsKey(key))
-                values.get(key).update(value, version);
-            else
-                values.put(key, new Value(value, version));
-        }
+    private synchronized void put(String key, byte[] value, short version) throws OutdatedVersionException {
+        if (values.containsKey(key))
+            values.get(key).update(value, version);
+        else
+            values.put(key, new Value(value, version));
     }
 
-    public boolean validate(Transaction tx) throws OutdatedVersionException {
+    public void addTransaction(Transaction tx) {
+        this.transactions.put(tx.getId(), tx);
+    }
+
+    public Transaction getTransaction(TransactionID txID) {
+        return transactions.get(txID);
+    }
+
+    public synchronized boolean validate(TransactionID txID) throws OutdatedVersionException {
+        Transaction tx = transactions.get(txID);
         try {
             boolean lockable = true;
             for (Operation op : tx.getRwSet()) {
@@ -53,17 +58,19 @@ public class Store {
             return lockable;
 
         } catch (OutdatedVersionException e) {
-            releaseLocks(tx);
+            releaseLocks(txID);
             throw e;
         }
     }
 
-    public void releaseLocks(Transaction tx) {
+    public synchronized void releaseLocks(TransactionID txID) {
+        Transaction tx = transactions.get(txID);
         for (Operation op : tx.getRwSet())
             this.get(op.getKey()).releaseLock(tx.getId());
     }
 
-    public void perform(Transaction tx) throws InvalidOperationException {
+    public synchronized void perform(TransactionID txID) throws InvalidOperationException, InvalidTransactionStateChangeException {
+        Transaction tx = transactions.get(txID);
         for (Operation op : tx.getRwSet()) {
             if (op instanceof WriteOperation) {
                 perform((WriteOperation) op);
@@ -74,6 +81,7 @@ public class Store {
                 throw new InvalidOperationException();
             }
         }
+        tx.setState(TransactionState.COMMITTED);
     }
 
     private void perform(WriteOperation op) throws OutdatedVersionException {
@@ -82,5 +90,16 @@ public class Store {
 
     private void perform(ReadOperation op) {
         // do nothing?
+    }
+
+    public synchronized void abort(TransactionID txID) {
+        Transaction tx = transactions.get(txID);
+        if (tx.getState() != TransactionState.ABORTED) {
+            try {
+                tx.setState(TransactionState.ABORTED);
+            } catch (InvalidTransactionStateChangeException e) {
+                logger.error("Error aborting transaction {}, state is {}", txID, tx.getState());
+            }
+        }
     }
 }

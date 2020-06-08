@@ -10,7 +10,7 @@ import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
-import pt.ulisboa.tecnico.sconekv.server.smr.StateMachineManager;
+import pt.ulisboa.tecnico.sconekv.server.smr.StateMachine;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public class SconeManager implements UpdateViewCallback {
 
     private CommunicationManager communicationManager;
     private MembershipManager membershipManager;
-    private StateMachineManager stateMachineManager;
+    private StateMachine stateMachine;
     private Store store;
     private DHT dht;
     private List<Thread> threads;
@@ -31,7 +31,7 @@ public class SconeManager implements UpdateViewCallback {
         this.store = new Store();
         joinMembership();
         this.communicationManager = new CommunicationManager(membershipManager.getMyself());
-        this.stateMachineManager = new StateMachineManager(communicationManager, membershipManager);
+        this.stateMachine = new StateMachine(communicationManager, membershipManager);
     }
 
     private void joinMembership() throws IOException, InterruptedException {
@@ -51,7 +51,7 @@ public class SconeManager implements UpdateViewCallback {
         threads = new ArrayList<>();
         threads.add(new Thread(new SconeServer((short)0, communicationManager)));
         for (short i = 1; i <= SconeConstants.NUM_WORKERS; i++) {
-            threads.add(new Thread(new SconeWorker(i, communicationManager, stateMachineManager, store, dht, membershipManager.getMyself())));
+            threads.add(new Thread(new SconeWorker(i, communicationManager, stateMachine, store, dht, membershipManager.getMyself())));
         }
         for (Thread t : threads) {
             t.start();
@@ -89,7 +89,7 @@ public class SconeManager implements UpdateViewCallback {
             Bucket currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
             logger.info("Belong to bucket {}, master: {}", currentBucket.getId(), currentBucket.getMaster());
             communicationManager.updateBucket(currentBucket);
-            stateMachineManager.updateBucket(currentBucket, ring.getVersion());
+            stateMachine.updateBucket(currentBucket, ring.getVersion());
             start();
         } else if (dht != null) {
             logger.debug("Applying new view...");
@@ -102,7 +102,7 @@ public class SconeManager implements UpdateViewCallback {
             }
             logger.info("Belong to bucket {}, master: {}", currentBucket.getId(), currentBucket.getMaster());
             communicationManager.updateBucket(currentBucket);
-            stateMachineManager.updateBucket(currentBucket, ring.getVersion());
+            stateMachine.updateBucket(currentBucket, ring.getVersion());
         }
     }
 
