@@ -13,9 +13,7 @@ import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 public class DHT {
     private static final Logger logger = LoggerFactory.getLogger(DHT.class);
@@ -132,5 +130,21 @@ public class DHT {
         if (bucketID > buckets.length)
             throw new InvalidBucketException();
         return buckets[bucketID];
+    }
+
+    public Set<Node> getMasters() {
+        HashSet<Node> masters = new HashSet<>();
+        for (Bucket b : this.buckets) {
+            masters.add(b.getMaster());
+        }
+        return masters;
+    }
+
+    public Set<Node> getMastersOfBuckets(short[] buckets) throws InvalidBucketException {
+        HashSet<Node> masters = new HashSet<>();
+        for (short b : buckets) {
+            masters.add(getMasterOfBucket(b));
+        }
+        return masters;
     }
 }

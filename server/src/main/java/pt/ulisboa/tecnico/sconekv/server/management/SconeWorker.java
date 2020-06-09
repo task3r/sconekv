@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionState;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
+import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidBucketException;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
@@ -19,6 +20,8 @@ import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.SMRStatusException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 import pt.ulisboa.tecnico.sconekv.server.smr.StateMachine;
+
+import java.util.Set;
 
 public class SconeWorker implements Runnable, SconeEventHandler {
     private static final Logger logger = LoggerFactory.getLogger(SconeWorker.class);
@@ -107,8 +110,18 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(LogTransaction logTransaction) {
         if (sm.isMaster()) {
-            cm.queueEvent(new LocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), logTransaction.getTxID(),
-                    store.getTransaction(logTransaction.getTxID()).getState() == TransactionState.PREPARED));
+            try {
+                Node coordinator = dht.getMasterOfBucket(store.getTransaction(logTransaction.getTxID()).getCoordinatorBucket());
+                if (coordinator.equals(self)) {
+                    cm.queueEvent(new LocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), logTransaction.getTxID(),
+                            store.getTransaction(logTransaction.getTxID()).getState() == TransactionState.PREPARED));
+                } else {
+                    cm.send(CommunicationUtils.generateLocalDecisionResponse(self, sm.getCurrentVersion(), logTransaction.getTxID(),
+                            store.getTransaction(logTransaction.getTxID()).getState()), coordinator);
+                }
+            } catch (InvalidBucketException e) {
+                logger.error("Invalid buckets in transaction {}, ignoring", logTransaction.getTxID());
+            }
         } else {
             store.addTransaction(logTransaction.getTx());
         }
@@ -172,16 +185,30 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     public void handle(LocalDecisionResponse localDecisionResponse) {
         // if I'm not the coordinator -> error
         Transaction tx = store.getTransaction(localDecisionResponse.getTxID());
-        if (tx.getState() == TransactionState.PREPARED) { // not yet committed nor aborted
-            if (localDecisionResponse.shouldAbort()) {
-                cm.queueEvent(new AbortTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+        try {
+            if (!dht.getMasterOfBucket(tx.getCoordinatorBucket()).equals(self)) {
+                logger.error("Received incorrect LocalDecisionResponse for tx {}, i am not the coordinator", tx.getId());
             } else {
-                tx.addResponse(dht.getBucketOfNode(localDecisionResponse.getNode()).getId());
-                if (tx.isReady()) {
-                    cm.queueEvent(new CommitTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
-                }
+                if (tx.getState() == TransactionState.PREPARED) { // not yet committed nor aborted
+                    if (localDecisionResponse.shouldAbort()) {
+                        Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
+                        masters.remove(self);
+                        cm.broadcast(CommunicationUtils.generateAbortTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
+                        cm.queueEvent(new AbortTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+                    } else {
+                        tx.addResponse(dht.getBucketOfNode(localDecisionResponse.getNode()).getId());
+                        if (tx.isReady()) {
+                            Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
+                            masters.remove(self);
+                            cm.broadcast(CommunicationUtils.generateCommitTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
+                            cm.queueEvent(new CommitTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+                        }
+                    }
+                } // else maybe inform once more the sender about the global decision
             }
-        } // else maybe inform once more the sender about the global decision
+        } catch (InvalidBucketException e) {
+            logger.error("Invalid buckets in transaction {}, ignoring", tx.getId());
+        }
     }
 
     @Override

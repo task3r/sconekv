@@ -13,12 +13,12 @@ import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
-import pt.ulisboa.tecnico.sconekv.server.events.external.ClientRequest;
 import zmq.ZError;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,7 +32,7 @@ public class CommunicationManager {
     private ZMQ.Socket clientRequestSocket;
     private ZMQ.Socket internalCommSocket;
     private ZMQ.Poller poller;
-    private Map<Node, ZMQ.Socket> bucketSockets;
+    private Map<Node, ZMQ.Socket> sockets;
     private BlockingQueue<SconeEvent> eventQueue;
     private boolean running;
 
@@ -40,7 +40,7 @@ public class CommunicationManager {
         this.self = self;
         this.context = new ZContext();
         this.eventQueue = new LinkedBlockingQueue<>();
-        this.bucketSockets = new HashMap<>();
+        this.sockets = new HashMap<>();
 
         this.clientRequestSocket = context.createSocket(SocketType.ROUTER);
         this.clientRequestSocket.bind("tcp://*:" + SconeConstants.SERVER_REQUEST_PORT);
@@ -57,26 +57,18 @@ public class CommunicationManager {
     public void updateBucket(Bucket newBucket) {
         if (newBucket != null && !newBucket.equals(currentBucket)) {
             logger.debug("Updating bucket");
-            Map<Node, ZMQ.Socket> oldBucketSockets = bucketSockets;
-            bucketSockets = new HashMap<>();
-            for (Node n : newBucket.getNodesExcept(self)) {
-                if (oldBucketSockets.containsKey(n)) {
-                    bucketSockets.put(n, oldBucketSockets.remove(n));
-                } else {
-                    logger.debug("New socket for {}", n.getAddress().getHostAddress());
-                    ZMQ.Socket socket = context.createSocket(SocketType.DEALER);
-                    socket.setIdentity(UUID.randomUUID().toString().getBytes(ZMQ.CHARSET));
-                    socket.connect(String.format("tcp://%s:%s", n.getAddress().getHostAddress(), SconeConstants.SERVER_INTERNAL_PORT));
-                    bucketSockets.put(n, socket);
-                }
-            }
-            // closing unused sockets
-            for (ZMQ.Socket left : oldBucketSockets.values()) {
-                left.setLinger(0);
-                left.close();
-            }
             currentBucket = newBucket;
         }
+    }
+
+    private ZMQ.Socket getSocket(Node node) {
+        if (!sockets.containsKey(node)) {
+            ZMQ.Socket socket = context.createSocket(SocketType.DEALER);
+            socket.setIdentity(UUID.randomUUID().toString().getBytes(ZMQ.CHARSET));
+            socket.connect(String.format("tcp://%s:%s", node.getAddress().getHostAddress(), SconeConstants.SERVER_INTERNAL_PORT));
+            sockets.put(node, socket);
+        }
+        return sockets.get(node);
     }
 
     public void shutdown() {
@@ -132,9 +124,20 @@ public class CommunicationManager {
         try {
             byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
             for (Node n : currentBucket.getNodesExcept(self)) { // should guarantee that I am the master and they are all replicas
-                ZMQ.Socket socket = bucketSockets.get(n);
+                ZMQ.Socket socket = getSocket(n);
                 socket.sendMore(""); // delimiter
                 socket.send(messageBytes);
+            }
+        } catch (IOException e) {
+            logger.error("IOException serializing internal message");
+        }
+    }
+
+    public void broadcast(MessageBuilder message, Set<Node> recipients) {
+        try {
+            byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
+            for (Node node : recipients) {
+                send(messageBytes, node);
             }
         } catch (IOException e) {
             logger.error("IOException serializing internal message");
@@ -144,12 +147,16 @@ public class CommunicationManager {
     public void send(MessageBuilder message, Node node) {
         try {
             byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
-            ZMQ.Socket socket = bucketSockets.get(node);
-            socket.sendMore(""); // delimiter
-            socket.send(messageBytes);
+            send(messageBytes, node);
         } catch (IOException e) {
             logger.error("IOException serializing internal message");
         }
+    }
+
+    public void send(byte[] message, Node node) {
+        ZMQ.Socket socket = getSocket(node);
+        socket.sendMore(""); // delimiter
+        socket.send(message);
     }
 
     public SconeEvent takeEvent() throws InterruptedException {

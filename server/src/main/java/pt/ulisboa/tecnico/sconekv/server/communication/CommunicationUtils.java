@@ -61,6 +61,35 @@ public class CommunicationUtils {
         return response;
     }
 
+    public static MessageBuilder generateLocalDecisionResponse(Node sender, Version currentVersion, TransactionID txID, TransactionState state) {
+        MessageBuilder message = new MessageBuilder();
+        Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
+        SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
+        Internal.LocalDecisionResponse.Builder builder = mBuilder.initLocalDecisionResponse();
+        txID.serialize(builder.getTxID());
+        builder.setToCommit(state != TransactionState.ABORTED);
+        return message;
+    }
+
+    public static MessageBuilder generateCommitTransaction(Node sender, Version currentVersion, TransactionID txID) {
+        MessageBuilder message = new MessageBuilder();
+        Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
+        SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
+        txID.serialize(mBuilder.getCommitTransaction());
+        return message;
+    }
+
+    public static MessageBuilder generateAbortTransaction(Node sender, Version currentVersion, TransactionID txID) {
+        MessageBuilder message = new MessageBuilder();
+        Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
+        SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
+        txID.serialize(mBuilder.getAbortTransaction());
+        return message;
+    }
+
     public static MessageBuilder generatePrepare(LogEvent event, Node sender, Version currentVersion, short bucketId, int commitNumber, int opNumber) {
         MessageBuilder message = new MessageBuilder();
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
