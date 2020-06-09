@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
+import pt.ulisboa.tecnico.sconekv.common.db.TransactionState;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.common.transport.Internal;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
@@ -187,9 +188,10 @@ public class SconeServer implements Runnable {
         LogEvent event = null;
         switch (logReader.which()) {
             case TRANSACTION:
-                event = new LogTransaction(generateId(),
-                        new Transaction(new TransactionID(logReader.getTxID()), null,
-                                logReader.getTransaction()), logReader);
+                Transaction tx = new Transaction(new TransactionID(logReader.getTxID()), null,
+                        logReader.getTransaction().getTransaction());
+                tx.setState(logReader.getTransaction().getPrepared()? TransactionState.PREPARED : TransactionState.ABORTED);
+                event = new LogTransaction(generateId(), tx, logReader);
                 break;
             case DECISION:
                 event = new LogTransactionDecision(generateId(),

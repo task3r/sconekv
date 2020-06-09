@@ -78,16 +78,18 @@ public class Store {
 
     public synchronized void commit(TransactionID txID) {
         Transaction tx = transactions.get(txID);
-        for (Operation op : tx.getRwSet()) {
-            if (op instanceof WriteOperation) {
-                commit((WriteOperation) op);
-            } else if (op instanceof ReadOperation) {
-                commit((ReadOperation) op);
-            } else {
-                logger.error("Received invalid operation, ignoring...");
+        if (tx.getState() != TransactionState.COMMITTED) {
+            for (Operation op : tx.getRwSet()) {
+                if (op instanceof WriteOperation) {
+                    commit((WriteOperation) op);
+                } else if (op instanceof ReadOperation) {
+                    commit((ReadOperation) op);
+                } else {
+                    logger.error("Received invalid operation, ignoring...");
+                }
             }
+            tx.setState(TransactionState.COMMITTED);
         }
-        tx.setState(TransactionState.COMMITTED);
     }
 
     private void commit(WriteOperation op) {
@@ -100,7 +102,9 @@ public class Store {
 
     public synchronized void abort(TransactionID txID) {
         Transaction tx = transactions.get(txID);
-        tx.setState(TransactionState.ABORTED);
+        if (tx.getState() != TransactionState.ABORTED) {
+            tx.setState(TransactionState.ABORTED);
+        }
     }
 
     public synchronized void resetTx(TransactionID txID) {

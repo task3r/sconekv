@@ -33,9 +33,14 @@ struct InternalMessage {
 struct LogEvent {
     txID @0 :TransactionID;
     union {
-        transaction @1 :Transaction;
+        transaction @1 :LoggedTransaction;
         decision @2 :Bool;
     }
+}
+
+struct LoggedTransaction {
+    transaction @0 : Transaction;
+    prepared @1 :Bool;
 }
 
 struct Prepare {

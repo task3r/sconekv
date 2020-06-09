@@ -155,7 +155,10 @@ public class CommunicationUtils {
     private static void serializeEvent(LogEvent event, Internal.LogEvent.Builder eBuilder) {
         event.getTxID().serialize(eBuilder.getTxID());
         if (event instanceof LogTransaction) {
-            eBuilder.setTransaction(((LogTransaction) event).getTx().getReader());
+            LogTransaction logTransaction = (LogTransaction) event;
+            Internal.LoggedTransaction.Builder tBuilder = eBuilder.initTransaction();
+            tBuilder.setTransaction(logTransaction.getTx().getReader());
+            tBuilder.setPrepared(logTransaction.getTx().getState() != TransactionState.ABORTED);
         } else {
             eBuilder.setDecision(((LogTransactionDecision) event).getDecision() == TransactionState.COMMITTED);
         }
