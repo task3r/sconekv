@@ -10,15 +10,12 @@ public abstract class ClientRequest extends SconeEvent {
 
     private String client;
     private TransactionID txID;
-    private boolean prepared;
 
     public ClientRequest(Pair<Short, Integer> id, String client, TransactionID txID) {
         super(id);
         this.client = client;
         this.txID = txID;
-        this.prepared = false;
     }
-
 
     public String getClient() {
         return client;
@@ -26,14 +23,6 @@ public abstract class ClientRequest extends SconeEvent {
 
     public TransactionID getTxID() {
         return txID;
-    }
-
-    public boolean isPrepared() {
-        return prepared;
-    }
-
-    public void setPrepared() {
-        this.prepared = true;
     }
 
     public abstract boolean checkBucket(DHT dht, Node self);
