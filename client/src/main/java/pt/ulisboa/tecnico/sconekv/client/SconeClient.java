@@ -166,7 +166,7 @@ public class SconeClient {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         External.Request.Builder rBuilder = message.initRoot(External.Request.factory);
         txID.serialize(rBuilder.getTxID());
-        External.Commit.Builder cBuilder = rBuilder.initCommit();
+        Common.Transaction.Builder cBuilder = rBuilder.initCommit();
         StructList.Builder<Common.Operation.Builder> opsBuilder = cBuilder.initOps(ops.size());
         for (int i = 0; i < ops.size(); i++) {
             ops.get(i).serialize(opsBuilder.get(i));

@@ -10,10 +10,12 @@ import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
+import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
 import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.SMRStatusException;
 
 import java.util.*;
 
@@ -53,6 +55,10 @@ public class StateMachine {
 
     public Node getCurrentMaster() {
         return currentMaster;
+    }
+
+    public short getCurrentBucketId() {
+        return currentBucket.getId();
     }
 
     public boolean isMaster() {
@@ -95,16 +101,16 @@ public class StateMachine {
         }
     }
 
-    public synchronized void prepareLogMaster(CommitRequest request) {
+    public synchronized void prepareLogMaster(LogEvent event) throws SMRStatusException {
         if (status != Status.NORMAL) {
-            this.pendingEvents.add(request);
-            logger.info("CommitRequest event {} was not processed as status is {}", request.getTx().getId(), status);
-            return;
+            this.pendingEvents.add(event);
+            logger.info("CommitRequest event {} was not processed as status is {}", event.getTxID(), status);
+            throw new SMRStatusException();
         }
         logger.debug("Master replicating request...");
-        log.add(new LogEntry(request));
+        log.add(new LogEntry(event));
 
-        MessageBuilder message = CommunicationUtils.generatePrepare(request.getRequest(), mm.getMyself(), currentVersion,
+        MessageBuilder message = CommunicationUtils.generatePrepare(event, mm.getMyself(), currentVersion,
                 currentBucket.getId(), commitNumber, getOpNumber());
         cm.broadcastBucket(message);
     }
@@ -112,7 +118,7 @@ public class StateMachine {
     public synchronized void prepareLogReplica(Prepare prepare) {
         if (status != Status.NORMAL) {
             this.pendingEvents.add(prepare);
-            logger.info("Prepare event {} was not processed as status is {}", prepare.getClientRequest().getTx().getId(), status);
+            logger.info("Prepare event {} was not processed as status is {}", prepare.getEvent().getTxID(), status);
             return;
         }
         logger.debug("Replica received prepare message");
@@ -132,7 +138,7 @@ public class StateMachine {
             }
             return;
         }
-        this.log.add(new LogEntry(prepare.getClientRequest()));
+        this.log.add(new LogEntry(prepare.getEvent()));
 
         // if the next entry is pending, queue it
         if (pendingEntries.containsKey(this.log.size())) {
@@ -144,8 +150,7 @@ public class StateMachine {
         // commit all entries with opNumber <= prepare.commitNumber
         for (int i = commitNumber + 1; i <= prepare.getCommitNumber(); i++) {
             LogEntry entry = log.get(i);
-            entry.getRequest().setPrepared();
-            cm.queueEvent(entry.getRequest());
+            cm.queueEvent(entry.getEvent());
         }
         this.commitNumber = prepare.getCommitNumber();
 
@@ -171,8 +176,7 @@ public class StateMachine {
             entry.addOk(prepareOK.getNode());
             if (entry.isReady()) {
                 commitNumber = i;
-                entry.getRequest().setPrepared();
-                cm.queueEvent(entry.getRequest());
+                cm.queueEvent(entry.getEvent());
             }
         }
     }
@@ -220,8 +224,7 @@ public class StateMachine {
                 // set master up to date (execute requests that were committed but not here)
                 for (int i = oldCommitNumber + 1; i <= commitNumber; i++) {
                     LogEntry entry = log.get(i);
-                    entry.getRequest().setPrepared();
-                    cm.queueEvent(entry.getRequest());
+                    cm.queueEvent(entry.getEvent());
                 }
                 MessageBuilder message = CommunicationUtils.generateStartView(mm.getMyself(), currentVersion, commitNumber, log);
                 cm.broadcastBucket(message);
@@ -278,8 +281,7 @@ public class StateMachine {
             log.addAll(missingEntries);
             for (int i = this.commitNumber + 1; i <= event.getCommitNumber(); i++) {
                 LogEntry entry = log.get(i);
-                entry.getRequest().setPrepared();
-                cm.queueEvent(entry.getRequest());
+                cm.queueEvent(entry.getEvent());
             }
             this.commitNumber = event.getCommitNumber();
             // remove pending entries that were added to the log with this update

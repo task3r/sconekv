@@ -71,4 +71,10 @@ public class Transaction extends AbstractTransaction {
     public List<Operation> getRwSet() {
         return new ArrayList<>(rwSet.values());
     }
+
+    public void setState(TransactionState state) throws InvalidTransactionStateChangeException {
+        if (getState() == TransactionState.COMMITTED || getState() == TransactionState.ABORTED)
+            throw new InvalidTransactionStateChangeException();
+        applyState(state);
+    }
 }

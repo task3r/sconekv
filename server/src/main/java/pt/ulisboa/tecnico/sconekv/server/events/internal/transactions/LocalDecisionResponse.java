@@ -4,27 +4,23 @@ import org.javatuples.Pair;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
+import pt.ulisboa.tecnico.sconekv.server.db.CommitDecision;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
 
 public class LocalDecisionResponse extends DistributedTransactionEvent {
-    enum Decision {
-        COMMIT,
-        ABORT
-    }
-
-    private Decision localDecision;
+    private CommitDecision localDecision;
 
     public LocalDecisionResponse(Pair<Short, Integer> id, Node node, Version viewVersion, TransactionID txID, boolean toCommit) {
         super(id, node, viewVersion, txID);
-        this.localDecision = toCommit? Decision.COMMIT : Decision.ABORT;
+        this.localDecision = toCommit? CommitDecision.COMMIT : CommitDecision.ABORT;
     }
 
-    public Decision getLocalDecision() {
+    public CommitDecision getLocalDecision() {
         return localDecision;
     }
 
     public boolean shouldAbort() {
-        return localDecision == Decision.ABORT;
+        return localDecision == CommitDecision.ABORT;
     }
 
     @Override

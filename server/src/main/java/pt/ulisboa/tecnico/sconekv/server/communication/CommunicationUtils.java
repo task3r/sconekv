@@ -9,7 +9,12 @@ import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.common.transport.Internal;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
+import pt.ulisboa.tecnico.sconekv.server.db.CommitDecision;
+import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.LogEvent;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.LogTransaction;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.LogTransactionDecision;
 import pt.ulisboa.tecnico.sconekv.server.smr.LogEntry;
 
 import java.util.List;
@@ -57,16 +62,18 @@ public class CommunicationUtils {
         return response;
     }
 
-    public static MessageBuilder generatePrepare(External.Request.Reader request, Node sender, Version currentVersion, short bucketId, int commitNumber, int opNumber) {
+    public static MessageBuilder generatePrepare(LogEvent event, Node sender, Version currentVersion, short bucketId, int commitNumber, int opNumber) {
         MessageBuilder message = new MessageBuilder();
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
         SerializationUtils.serializeNode(mBuilder.getNode(), sender);
         SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
         Internal.Prepare.Builder builder = mBuilder.initPrepare();
-        builder.setMessage(request);
         builder.setBucket(bucketId);
         builder.setCommitNumber(commitNumber);
         builder.setOpNumber(opNumber);
+        Internal.LogEvent.Builder eBuilder = builder.initEvent();
+        serializeEvent(event, eBuilder);
+        event.setReader(eBuilder.asReader());
         return message;
     }
 
@@ -135,9 +142,23 @@ public class CommunicationUtils {
         return message;
     }
 
-    private static void serializeLog(List<LogEntry> log, StructList.Builder<Internal.LoggedRequest.Builder> logBuilder) {
+    private static void serializeLog(List<LogEntry> log, StructList.Builder<Internal.LoggedEvent.Builder> logBuilder) {
         for (int i = 0; i < log.size(); i++) {
-            logBuilder.get(i).setRequest(log.get(i).getRequest().getRequest());
+            LogEvent entry = log.get(i).getEvent();
+            if (entry.getReader() != null) {
+                logBuilder.get(i).setEvent(entry.getReader());
+            } else {
+                serializeEvent(entry, logBuilder.get(i).initEvent());
+            }
+        }
+    }
+
+    private static void serializeEvent(LogEvent event, Internal.LogEvent.Builder eBuilder) {
+        event.getTxID().serialize(eBuilder.getTxID());
+        if (event instanceof LogTransaction) {
+            eBuilder.setTransaction(((LogTransaction) event).getTx().getReader());
+        } else {
+            eBuilder.setDecision(((LogTransactionDecision) event).getDecision() == CommitDecision.COMMIT);
         }
     }
 }

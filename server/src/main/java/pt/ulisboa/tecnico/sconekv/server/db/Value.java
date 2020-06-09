@@ -37,12 +37,12 @@ public class Value {
         return lockOwner;
     }
 
-    public synchronized void update(byte[] content, short version) throws OutdatedVersionException {
+    public synchronized void update(byte[] content, short version) {
         if (version > this.version) {
             this.content = content;
             this.version = version;
         } else
-            throw new OutdatedVersionException();
+            logger.error("Tried applying previous version {} with content {} for object with version {}", version, content, this.version);
     }
 
     public synchronized boolean validateAndLock(TransactionID txID, Operation op) throws OutdatedVersionException {

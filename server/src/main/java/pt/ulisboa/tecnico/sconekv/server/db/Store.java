@@ -6,6 +6,7 @@ import pt.ulisboa.tecnico.sconekv.common.db.*;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.OutdatedVersionException;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +28,7 @@ public class Store {
         return values.get(key);
     }
 
-    private synchronized void put(String key, byte[] value, short version) throws OutdatedVersionException {
+    private synchronized void put(String key, byte[] value, short version) {
         if (values.containsKey(key))
             values.get(key).update(value, version);
         else
@@ -35,14 +36,17 @@ public class Store {
     }
 
     public void addTransaction(Transaction tx) {
-        this.transactions.put(tx.getId(), tx);
+        if (transactions.containsKey(tx.getId()))
+            logger.error("TxID {} was already added to the store", tx.getId());
+        else
+            this.transactions.put(tx.getId(), tx);
     }
 
     public Transaction getTransaction(TransactionID txID) {
         return transactions.get(txID);
     }
 
-    public synchronized boolean validate(TransactionID txID) throws OutdatedVersionException {
+    public synchronized void validate(TransactionID txID) throws ValidTransactionNotLockableException {
         Transaction tx = transactions.get(txID);
         try {
             boolean lockable = true;
@@ -55,11 +59,14 @@ public class Store {
 
             // here maybe queue the locks?
 
-            return lockable;
+            if (lockable)
+                tx.setState(TransactionState.PREPARED);
+            else
+                throw new ValidTransactionNotLockableException();
 
         } catch (OutdatedVersionException e) {
             releaseLocks(txID);
-            throw e;
+            tx.setState(TransactionState.ABORTED);
         }
     }
 
@@ -69,37 +76,35 @@ public class Store {
             this.get(op.getKey()).releaseLock(tx.getId());
     }
 
-    public synchronized void perform(TransactionID txID) throws InvalidOperationException, InvalidTransactionStateChangeException {
+    public synchronized void commit(TransactionID txID) {
         Transaction tx = transactions.get(txID);
         for (Operation op : tx.getRwSet()) {
             if (op instanceof WriteOperation) {
-                perform((WriteOperation) op);
+                commit((WriteOperation) op);
             } else if (op instanceof ReadOperation) {
-                perform((ReadOperation) op);
+                commit((ReadOperation) op);
             } else {
-                logger.error("Received invalid operation, aborting...");
-                throw new InvalidOperationException();
+                logger.error("Received invalid operation, ignoring...");
             }
         }
         tx.setState(TransactionState.COMMITTED);
     }
 
-    private void perform(WriteOperation op) throws OutdatedVersionException {
+    private void commit(WriteOperation op) {
         this.put(op.getKey(), op.getValue(), (short) (op.getVersion() + 1));
     }
 
-    private void perform(ReadOperation op) {
+    private void commit(ReadOperation op) {
         // do nothing?
     }
 
     public synchronized void abort(TransactionID txID) {
         Transaction tx = transactions.get(txID);
-        if (tx.getState() != TransactionState.ABORTED) {
-            try {
-                tx.setState(TransactionState.ABORTED);
-            } catch (InvalidTransactionStateChangeException e) {
-                logger.error("Error aborting transaction {}, state is {}", txID, tx.getState());
-            }
-        }
+        tx.setState(TransactionState.ABORTED);
+    }
+
+    public synchronized void resetTx(TransactionID txID) {
+        releaseLocks(txID);
+        transactions.get(txID).setState(TransactionState.NONE);
     }
 }

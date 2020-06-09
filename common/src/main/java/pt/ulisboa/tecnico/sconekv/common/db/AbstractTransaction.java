@@ -1,12 +1,8 @@
 package pt.ulisboa.tecnico.sconekv.common.db;
 
-import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
-
 import java.util.List;
 
 public abstract class AbstractTransaction {
-
-
 
     private TransactionID id;
     private TransactionState state;
@@ -28,9 +24,7 @@ public abstract class AbstractTransaction {
         return state;
     }
 
-    public void setState(TransactionState state) throws InvalidTransactionStateChangeException {
-        if (this.state == TransactionState.COMMITTED || this.state == TransactionState.ABORTED)
-            throw new InvalidTransactionStateChangeException();
+    public void applyState(TransactionState state) {
         this.state = state;
     }
 }

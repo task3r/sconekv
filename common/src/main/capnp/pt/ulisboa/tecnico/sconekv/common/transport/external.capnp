@@ -3,6 +3,7 @@
 using Java = import "/java.capnp";
 using TransactionID = import "common.capnp".TransactionID;
 using Operation = import "common.capnp".Operation;
+using Transaction = import "common.capnp".Transaction;
 using DHT = import "common.capnp".DHT;
 
 $Java.package("pt.ulisboa.tecnico.sconekv.common.transport");
@@ -14,14 +15,9 @@ struct Request {
     union {
       write @1 :Data; # read or write simply sends the key
       read @2 :Data;
-      commit @3 :Commit;
+      commit @3 :Transaction;
       getDht @4 :Void;
     }
-}
-
-struct Commit {
-    buckets @0 :List(Int16);
-    ops @1 :List(Operation);
 }
 
 struct Response {

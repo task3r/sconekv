@@ -1,9 +1,9 @@
 @0xea3d74889c517ffa;
 
 using Java = import "/java.capnp";
-using Request = import "external.capnp".Request;
 using ID = import "common.capnp".ID;
 using TransactionID = import "common.capnp".TransactionID;
+using Transaction = import "common.capnp".Transaction;
 using Node = import "common.capnp".Node;
 using ViewVersion = import "common.capnp".ViewVersion;
 
@@ -30,8 +30,16 @@ struct InternalMessage {
     }
 }
 
+struct LogEvent {
+    txID @0 :TransactionID;
+    union {
+        transaction @1 :Transaction;
+        decision @2 :Bool;
+    }
+}
+
 struct Prepare {
-    message @0 :Request;
+    event @0 :LogEvent;
     opNumber @1 :Int32;
     commitNumber @2 :Int32;
     bucket @3 :Int16;
@@ -44,13 +52,13 @@ struct PrepareOK {
 }
 
 struct DoViewChange {
-    log @0 :List(LoggedRequest);
+    log @0 :List(LoggedEvent);
     term @1 :ViewVersion;
     commitNumber @2 :Int32;
 }
 
 struct StartView {
-    log @0 :List(LoggedRequest);
+    log @0 :List(LoggedEvent);
     commitNumber @1 :Int32;
 }
 
@@ -59,13 +67,13 @@ struct GetState {
 }
 
 struct NewState {
-    logSegment @0 :List(LoggedRequest);
+    logSegment @0 :List(LoggedEvent);
     opNumber @1 :Int32;
     commitNumber @2 :Int32;
 }
 
-struct LoggedRequest {
-    request @0 :Request; # I don't like this, but capnproto is picky with lists and I couldn't set an index to an existing reader, this is the work around
+struct LoggedEvent {
+    event @0 :LogEvent; # I don't like this, but capnproto is picky with lists and I couldn't set an index to an existing reader, this is the work around
 }
 
 struct LocalDecisionResponse {

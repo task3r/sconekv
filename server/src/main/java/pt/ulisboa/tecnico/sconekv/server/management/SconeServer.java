@@ -126,12 +126,10 @@ public class SconeServer implements Runnable {
             case PREPARE:
                 // prepare events have the client as null because using ZMQ only the master can respond to the client
                 // if really needed, the client needs to be listening to requests as well, ans then this string could represent the address
-                ClientRequest clientRequest = getClientRequest(message.getPrepare().getMessage(), null, generateId());
-                if (clientRequest instanceof CommitRequest) {
+                LogEvent logEvent = getLogEvent(message.getPrepare().getEvent());
+                if (logEvent != null) {
                     cm.queueEvent(new Prepare(eventId, node, viewVersion, message.getPrepare().getOpNumber(), message.getPrepare().getCommitNumber(),
-                            message.getPrepare().getBucket(), (CommitRequest) clientRequest));
-                } else {
-                    logger.error("Received incorrect replicated request of type {}", clientRequest != null ? clientRequest.getClass() : "NULL");
+                            message.getPrepare().getBucket(), logEvent));
                 }
                 break;
             case PREPARE_OK:
@@ -175,13 +173,32 @@ public class SconeServer implements Runnable {
         }
     }
 
-    private List<LogEntry> getLogFromMessage(StructList.Reader<Internal.LoggedRequest.Reader> logReader) {
+    private List<LogEntry> getLogFromMessage(StructList.Reader<Internal.LoggedEvent.Reader> logReader) {
         List<LogEntry> log = new ArrayList<>();
         for (int i = 0; i < logReader.size(); i++) {
-            log.add(new LogEntry(new CommitRequest(null, null,
-                    new Transaction(new TransactionID(logReader.get(i).getRequest().getTxID()), null,
-                            logReader.get(i).getRequest().getCommit()), logReader.get(i).getRequest())));
+            LogEvent event = getLogEvent(logReader.get(i).getEvent());
+            if (event != null)
+                log.add(new LogEntry(event));
         }
         return log;
+    }
+
+    private LogEvent getLogEvent(Internal.LogEvent.Reader logReader) {
+        LogEvent event = null;
+        switch (logReader.which()) {
+            case TRANSACTION:
+                event = new LogTransaction(generateId(),
+                        new Transaction(new TransactionID(logReader.getTxID()), null,
+                                logReader.getTransaction()), logReader);
+                break;
+            case DECISION:
+                event = new LogTransactionDecision(generateId(),
+                        new TransactionID(logReader.getTxID()), logReader.getDecision(), logReader);
+                break;
+            case _NOT_IN_SCHEMA:
+                logger.error("Received incorrect LoggedEvent, ignoring...");
+                break;
+        }
+        return event;
     }
 }

@@ -5,10 +5,11 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
+import pt.ulisboa.tecnico.sconekv.common.db.TransactionState;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
-import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
+import pt.ulisboa.tecnico.sconekv.server.db.CommitDecision;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
@@ -16,7 +17,9 @@ import pt.ulisboa.tecnico.sconekv.server.events.*;
 import pt.ulisboa.tecnico.sconekv.server.events.external.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
-import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.OutdatedVersionException;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.SMRStatusException;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 import pt.ulisboa.tecnico.sconekv.server.smr.StateMachine;
 
 public class SconeWorker implements Runnable, SconeEventHandler {
@@ -85,12 +88,11 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(CommitRequest commitRequest) {
-        // if I am the master and this request was not replicated
-        if (sm.isMaster() && !commitRequest.isPrepared()) {
-            sm.prepareLogMaster(commitRequest);
-        } else {
+        if (sm.isMaster()) {
             store.addTransaction(commitRequest.getTx());
             cm.queueEvent(new MakeLocalDecision(generateId(), commitRequest.getTxID()));
+        } else {
+            logger.error("Received commit request {} but I am not the master of bucket {}", commitRequest.getId(), sm.getCurrentBucketId());
         }
     }
 
@@ -103,6 +105,31 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     // Internal Events
     // State Machine Replication
+
+    @Override
+    public void handle(LogTransaction logTransaction) {
+        if (sm.isMaster()) {
+            cm.queueEvent(new LocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), logTransaction.getTxID(),
+                    store.getTransaction(logTransaction.getTxID()).getState() == TransactionState.PREPARED));
+        } else {
+            store.addTransaction(logTransaction.getTx());
+        }
+    }
+
+    @Override
+    public void handle(LogTransactionDecision logTransactionDecision) {
+        if (logTransactionDecision.getDecision() == CommitDecision.COMMIT) {
+            store.commit(logTransactionDecision.getTxID());
+        } else {
+            store.abort(logTransactionDecision.getTxID());
+        }
+        if (sm.isMaster()) {
+            store.releaseLocks(logTransactionDecision.getTxID());
+            MessageBuilder response = CommunicationUtils.generateCommitResponse(logTransactionDecision.getTxID(),
+                    logTransactionDecision.getDecision() == CommitDecision.COMMIT);
+            cm.replyToClient(store.getTransaction(logTransactionDecision.getTxID()).getClient(), response);
+        }
+    }
 
     @Override
     public void handle(Prepare prepare) {
@@ -167,38 +194,33 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(CommitTransaction commitTransaction) {
+        // log decision
         try {
-            store.perform(commitTransaction.getTxID());
-            store.releaseLocks(commitTransaction.getTxID());
-        } catch (InvalidOperationException | InvalidTransactionStateChangeException e) {
-            logger.error("Transaction failed after being validated {}", commitTransaction.getTxID());
-        }
-        if (sm.isMaster()) {
-            MessageBuilder response = CommunicationUtils.generateCommitResponse(commitTransaction.getTxID(), true);
-            cm.replyToClient(store.getTransaction(commitTransaction.getTxID()).getClient(), response);
+            sm.prepareLogMaster(new LogTransactionDecision(generateId(), commitTransaction.getTxID(), true, null));
+        } catch (SMRStatusException ignored) {
         }
     }
 
     @Override
     public void handle(AbortTransaction abortTransaction) {
-        store.abort(abortTransaction.getTxID());
-        store.releaseLocks(abortTransaction.getTxID());
-        if (sm.isMaster()) {
-            MessageBuilder response = CommunicationUtils.generateCommitResponse(abortTransaction.getTxID(), false);
-            cm.replyToClient(store.getTransaction(abortTransaction.getTxID()).getClient(), response);
+        // log decision
+        try {
+            sm.prepareLogMaster(new LogTransactionDecision(generateId(), abortTransaction.getTxID(), false, null));
+        } catch (SMRStatusException ignored) {
         }
     }
 
     @Override
     public void handle(MakeLocalDecision makeLocalDecision) {
         logger.info("Commit : {}", makeLocalDecision.getTxID());
-        boolean valid;
+        LogTransaction event = new LogTransaction(generateId(), store.getTransaction(makeLocalDecision.getTxID()), null);
         try {
             store.validate(makeLocalDecision.getTxID());
-            valid = true;
-        } catch (InvalidOperationException e) {
-            valid = false;
+            sm.prepareLogMaster(event);
+        } catch (SMRStatusException e) {
+            store.resetTx(makeLocalDecision.getTxID());
+        } catch (ValidTransactionNotLockableException ignored) {
+            // once it is lockable, the event will be queued once more
         }
-        cm.queueEvent(new LocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), makeLocalDecision.getTxID(), valid));
     }
 }

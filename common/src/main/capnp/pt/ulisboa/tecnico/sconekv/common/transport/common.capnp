@@ -42,7 +42,6 @@ struct TransactionID {
 }
 
 struct Transaction {
-    txID @0 :TransactionID;
-    buckets @1 :List(Int16);
-    ops @2 :List(Operation);
+    buckets @0 :List(Int16);
+    ops @1 :List(Operation);
 }
