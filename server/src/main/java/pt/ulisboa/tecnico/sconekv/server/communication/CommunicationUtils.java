@@ -5,12 +5,11 @@ import org.capnproto.StructList;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
+import pt.ulisboa.tecnico.sconekv.common.db.TransactionState;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.common.transport.Internal;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
-import pt.ulisboa.tecnico.sconekv.server.db.CommitDecision;
-import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.LogEvent;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.LogTransaction;
@@ -158,7 +157,7 @@ public class CommunicationUtils {
         if (event instanceof LogTransaction) {
             eBuilder.setTransaction(((LogTransaction) event).getTx().getReader());
         } else {
-            eBuilder.setDecision(((LogTransactionDecision) event).getDecision() == CommitDecision.COMMIT);
+            eBuilder.setDecision(((LogTransactionDecision) event).getDecision() == TransactionState.COMMITTED);
         }
     }
 }

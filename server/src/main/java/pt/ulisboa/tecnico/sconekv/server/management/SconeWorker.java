@@ -9,7 +9,6 @@ import pt.ulisboa.tecnico.sconekv.common.db.TransactionState;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
-import pt.ulisboa.tecnico.sconekv.server.db.CommitDecision;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
@@ -17,7 +16,6 @@ import pt.ulisboa.tecnico.sconekv.server.events.*;
 import pt.ulisboa.tecnico.sconekv.server.events.external.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
-import pt.ulisboa.tecnico.sconekv.server.exceptions.OutdatedVersionException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.SMRStatusException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 import pt.ulisboa.tecnico.sconekv.server.smr.StateMachine;
@@ -118,15 +116,17 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(LogTransactionDecision logTransactionDecision) {
-        if (logTransactionDecision.getDecision() == CommitDecision.COMMIT) {
+        if (logTransactionDecision.getDecision() == TransactionState.COMMITTED) {
+            logger.info("Commit : {}", logTransactionDecision.getTxID());
             store.commit(logTransactionDecision.getTxID());
         } else {
+            logger.info("Abort : {}", logTransactionDecision.getTxID());
             store.abort(logTransactionDecision.getTxID());
         }
         if (sm.isMaster()) {
             store.releaseLocks(logTransactionDecision.getTxID());
             MessageBuilder response = CommunicationUtils.generateCommitResponse(logTransactionDecision.getTxID(),
-                    logTransactionDecision.getDecision() == CommitDecision.COMMIT);
+                    logTransactionDecision.getDecision() == TransactionState.COMMITTED);
             cm.replyToClient(store.getTransaction(logTransactionDecision.getTxID()).getClient(), response);
         }
     }
@@ -171,48 +171,46 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(LocalDecisionResponse localDecisionResponse) {
         // if I'm not the coordinator -> error
-        if (localDecisionResponse.shouldAbort()) {
-            cm.queueEvent(new AbortTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
-        } else {
-            Transaction tx = store.getTransaction(localDecisionResponse.getTxID());
-            tx.addResponse(dht.getBucketOfNode(localDecisionResponse.getNode()).getId());
-            if (tx.isReady()) {
-                cm.queueEvent(new CommitTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+        Transaction tx = store.getTransaction(localDecisionResponse.getTxID());
+        if (tx.getState() == TransactionState.PREPARED) { // not yet committed nor aborted
+            if (localDecisionResponse.shouldAbort()) {
+                cm.queueEvent(new AbortTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+            } else {
+                tx.addResponse(dht.getBucketOfNode(localDecisionResponse.getNode()).getId());
+                if (tx.isReady()) {
+                    cm.queueEvent(new CommitTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+                }
             }
-        }
+        } // else maybe inform once more the sender about the global decision
     }
 
     @Override
     public void handle(RequestRollbackLocalDecision requestRollbackLocalDecision) {
-
+        // TODO
     }
 
     @Override
     public void handle(RollbackLocalDecisionResponse rollbackLocalDecisionResponse) {
-
+        // TODO
     }
 
     @Override
     public void handle(CommitTransaction commitTransaction) {
-        // log decision
         try {
             sm.prepareLogMaster(new LogTransactionDecision(generateId(), commitTransaction.getTxID(), true, null));
-        } catch (SMRStatusException ignored) {
-        }
+        } catch (SMRStatusException ignored) {}
     }
 
     @Override
     public void handle(AbortTransaction abortTransaction) {
-        // log decision
         try {
             sm.prepareLogMaster(new LogTransactionDecision(generateId(), abortTransaction.getTxID(), false, null));
-        } catch (SMRStatusException ignored) {
-        }
+        } catch (SMRStatusException ignored) {}
     }
 
     @Override
     public void handle(MakeLocalDecision makeLocalDecision) {
-        logger.info("Commit : {}", makeLocalDecision.getTxID());
+        logger.info("MakeLocalDecision : {}", makeLocalDecision.getTxID());
         LogTransaction event = new LogTransaction(generateId(), store.getTransaction(makeLocalDecision.getTxID()), null);
         try {
             store.validate(makeLocalDecision.getTxID());
