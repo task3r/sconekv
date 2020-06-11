@@ -226,24 +226,24 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(CommitTransaction commitTransaction) {
         try {
-            sm.prepareLogMaster(new LogTransactionDecision(generateId(), commitTransaction.getTxID(), true, null));
+            sm.prepareLogMaster(new LogTransactionDecision(generateId(), commitTransaction.getTxID(), true, null), commitTransaction);
         } catch (SMRStatusException ignored) {}
     }
 
     @Override
     public void handle(AbortTransaction abortTransaction) {
         try {
-            sm.prepareLogMaster(new LogTransactionDecision(generateId(), abortTransaction.getTxID(), false, null));
+            sm.prepareLogMaster(new LogTransactionDecision(generateId(), abortTransaction.getTxID(), false, null), abortTransaction);
         } catch (SMRStatusException ignored) {}
     }
 
     @Override
     public void handle(MakeLocalDecision makeLocalDecision) {
         logger.info("MakeLocalDecision : {}", makeLocalDecision.getTxID());
-        LogTransaction event = new LogTransaction(generateId(), store.getTransaction(makeLocalDecision.getTxID()), null);
+        LogTransaction logTransaction = new LogTransaction(generateId(), store.getTransaction(makeLocalDecision.getTxID()), null);
         try {
             store.validate(makeLocalDecision.getTxID());
-            sm.prepareLogMaster(event);
+            sm.prepareLogMaster(logTransaction, makeLocalDecision);
         } catch (SMRStatusException e) {
             store.resetTx(makeLocalDecision.getTxID());
         } catch (ValidTransactionNotLockableException ignored) {

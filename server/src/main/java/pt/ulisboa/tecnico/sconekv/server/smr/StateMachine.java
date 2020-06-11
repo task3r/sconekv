@@ -22,7 +22,8 @@ public class StateMachine {
 
     enum Status {
         NORMAL,
-        VIEW_CHANGE
+        VIEW_CHANGE,
+        MASTER_AFTER_VIEW_CHANGE
     }
 
     private CommunicationManager cm;
@@ -31,6 +32,7 @@ public class StateMachine {
     private Version currentVersion;
     private Version futureVersion;
     private Version term;
+    private Version lastDoView;
     private Node currentMaster;
     private Status status;
     private List<LogEntry> log;
@@ -94,15 +96,14 @@ public class StateMachine {
             setStatus(Status.VIEW_CHANGE);
             MessageBuilder message = CommunicationUtils.generateStartViewChange(mm.getMyself(), currentVersion);
             cm.broadcastBucket(message);
-            // send to self
-            cm.queueEvent(new StartViewChange(null, mm.getMyself(), currentVersion));
+            logger.debug("Broadcasted startViewChange for {}", currentVersion);
         }
     }
 
-    public synchronized void prepareLogMaster(LogEvent event) throws SMRStatusException {
+    public synchronized void prepareLogMaster(LogEvent event, SconeEvent cause) throws SMRStatusException {
         if (status != Status.NORMAL) {
-            this.pendingEvents.add(event);
-            logger.info("CommitRequest event {} was not processed as status is {}", event.getTxID(), status);
+            this.pendingEvents.add(cause);
+            logger.info("LogEvent {} was not processed as status is {}", event.getTxID(), status);
             throw new SMRStatusException();
         }
         logger.debug("Master replicating request...");
@@ -157,7 +158,7 @@ public class StateMachine {
     }
 
     public synchronized void prepareOK(PrepareOK prepareOK) {
-        if (status != Status.NORMAL) {
+        if (status == Status.VIEW_CHANGE) {
             this.pendingEvents.add(prepareOK);
             logger.info("PrepareOK event from {} was not processed as status is {}", prepareOK.getNode(), status);
             return;
@@ -177,11 +178,15 @@ public class StateMachine {
                 cm.queueEvent(entry.getEvent());
             }
         }
+
+        if (this.status == Status.MASTER_AFTER_VIEW_CHANGE && this.commitNumber == getOpNumber())
+            setStatus(Status.NORMAL);
     }
 
     public synchronized void startViewChange(StartViewChange event) {
-        logger.debug("Received startViewChange");
+        logger.debug("Received startViewChange from {}", event.getNode().getAddress().getHostAddress());
         if (event.getViewVersion().isGreater(this.futureVersion)) {
+            logger.debug("StartViewChange is for new futureVersion {}", event.getViewVersion());
             this.futureVersion = event.getViewVersion();
             this.startViews = 1;
             this.doViews.clear();
@@ -189,20 +194,24 @@ public class StateMachine {
             this.startViews++;
         }
 
-        if (event.getViewVersion().equals(this.currentVersion) && startViews == SconeConstants.FAILURES_PER_BUCKET + 1) {
+        if (event.getViewVersion().equals(this.currentVersion) && startViews >= SconeConstants.FAILURES_PER_BUCKET
+                && !this.currentVersion.equals(this.lastDoView)) { // avoid sending duplicate doViews
             setStatus(Status.VIEW_CHANGE); // in case it didn't detect in the update bucket
+            this.lastDoView = new Version(this.currentVersion);
             if (currentBucket.getMaster().equals(mm.getMyself())) {
                 // send to self
                 cm.queueEvent(new DoViewChange(null, mm.getMyself(), currentVersion, log, term, commitNumber));
+                logger.debug("Sent doView to myself");
             } else {
                 MessageBuilder message = CommunicationUtils.generateDoViewChange(mm.getMyself(), currentVersion, commitNumber, log);
                 cm.send(message, currentBucket.getMaster());
+                logger.debug("Sent doView to {}", currentBucket.getMaster().getAddress().getHostAddress());
             }
         }
     }
 
     public synchronized void doViewChange(DoViewChange event) {
-        logger.debug("Received doViewChange");
+        logger.debug("Received doViewChange from {}", event.getNode().getAddress().getHostAddress());
         if (event.getViewVersion().isGreater(this.futureVersion)) {
             this.futureVersion = event.getViewVersion();
             this.startViews = 0;
@@ -226,17 +235,23 @@ public class StateMachine {
                 }
                 MessageBuilder message = CommunicationUtils.generateStartView(mm.getMyself(), currentVersion, commitNumber, log);
                 cm.broadcastBucket(message);
-                setStatus(Status.NORMAL);
+                setStatus(Status.MASTER_AFTER_VIEW_CHANGE);
             }
         }
     }
 
     public synchronized void startView(StartView event) {
-        logger.debug("Received startView");
+        logger.debug("Received startView from {}", event.getNode().getAddress().getHostAddress());
         this.term = event.getViewVersion();
         this.log = event.getLog();
+        for (int i = this.commitNumber + 1; i <= event.getCommitNumber(); i++) {
+            LogEntry entry = log.get(i);
+            cm.queueEvent(entry.getEvent());
+        }
         this.commitNumber = event.getCommitNumber();
         this.currentMaster = event.getNode();
+        MessageBuilder message = CommunicationUtils.generatePrepareOK(mm.getMyself(), currentVersion, currentBucket.getId(), getOpNumber());
+        cm.send(message, currentMaster);
         setStatus(Status.NORMAL);
     }
 
@@ -250,6 +265,8 @@ public class StateMachine {
             logger.info("Normal status, accepting requests");
         } else if (this.status == Status.VIEW_CHANGE) {
             logger.info("View-change status, delaying requests");
+        } else if (this.status == Status.MASTER_AFTER_VIEW_CHANGE) {
+            logger.info("New master after view-change status, awaiting prepareOks");
         }
     }
 
