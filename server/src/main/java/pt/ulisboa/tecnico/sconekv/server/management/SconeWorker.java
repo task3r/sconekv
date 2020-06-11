@@ -138,9 +138,11 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         }
         if (sm.isMaster()) {
             store.releaseLocks(logTransactionDecision.getTxID());
-            MessageBuilder response = CommunicationUtils.generateCommitResponse(logTransactionDecision.getTxID(),
-                    logTransactionDecision.getDecision() == TransactionState.COMMITTED);
-            cm.replyToClient(store.getTransaction(logTransactionDecision.getTxID()).getClient(), response);
+            if (store.getTransaction(logTransactionDecision.getTxID()).getClient() != null) { // might be from the old master, in that case this node will not be able to reply
+                MessageBuilder response = CommunicationUtils.generateCommitResponse(logTransactionDecision.getTxID(),
+                        logTransactionDecision.getDecision() == TransactionState.COMMITTED);
+                cm.replyToClient(store.getTransaction(logTransactionDecision.getTxID()).getClient(), response);
+            }
         }
     }
 
