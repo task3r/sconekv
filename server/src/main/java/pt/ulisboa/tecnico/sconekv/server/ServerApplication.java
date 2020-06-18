@@ -55,11 +55,6 @@ public class ServerApplication {
             } else {
                 logger.info("SconeManager was not created.");
             }
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             LogManager.shutdown();
         }));
     }
