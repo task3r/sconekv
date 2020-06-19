@@ -19,6 +19,7 @@ public class Transaction extends AbstractTransaction {
     private Set<Short> responses;
     private String client;
     private Common.Transaction.Reader reader;
+    private boolean decided;
 
     public Transaction(TransactionID txID, String client, Common.Transaction.Reader transaction) {
         super(txID);
@@ -61,6 +62,14 @@ public class Transaction extends AbstractTransaction {
     public void addResponse(short bucket) {
         if (!this.responses.add(bucket))
             logger.error("Received a second response from bucket {} for transaction {}", bucket, getId());
+    }
+
+    public boolean isDecided() {
+        return decided;
+    }
+
+    public void setDecided() {
+        this.decided = true;
     }
 
     @Override

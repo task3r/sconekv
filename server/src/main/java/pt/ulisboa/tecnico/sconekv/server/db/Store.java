@@ -3,12 +3,12 @@ package pt.ulisboa.tecnico.sconekv.server.db;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.common.db.*;
-import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
-import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidOperationException;
-import pt.ulisboa.tecnico.sconekv.server.exceptions.OutdatedVersionException;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidVersionException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Store {
@@ -57,23 +57,31 @@ public class Store {
                     this.get(op.getKey()).validate(op);
             }
 
-            // here maybe queue the locks?
-
-            if (lockable)
+            if (lockable) {
                 tx.setState(TransactionState.PREPARED);
-            else
+            } else {
                 throw new ValidTransactionNotLockableException();
-
-        } catch (OutdatedVersionException e) {
-            releaseLocks(txID);
+            }
+        } catch (InvalidVersionException e) {
             tx.setState(TransactionState.ABORTED);
         }
     }
 
-    public synchronized void releaseLocks(TransactionID txID) {
+    public synchronized void queueLocks(TransactionID txID) {
         Transaction tx = transactions.get(txID);
-        for (Operation op : tx.getRwSet())
-            this.get(op.getKey()).releaseLock(tx.getId());
+        for (Operation op : tx.getRwSet()) {
+            this.get(op.getKey()).queueLock(tx.getId());
+        }
+    }
+
+    public synchronized Set<TransactionID> releaseLocks(TransactionID txID) {
+        Transaction tx = transactions.get(txID);
+        Set<TransactionID> restartTxs = new HashSet<>();
+        for (Operation op : tx.getRwSet()) {
+            restartTxs.add(this.get(op.getKey()).releaseLock(tx.getId()));
+        }
+        restartTxs.remove(null); // releaseLock might return null
+        return restartTxs;
     }
 
     public synchronized void commit(TransactionID txID) {
@@ -81,23 +89,11 @@ public class Store {
         if (tx.getState() != TransactionState.COMMITTED) {
             for (Operation op : tx.getRwSet()) {
                 if (op instanceof WriteOperation) {
-                    commit((WriteOperation) op);
-                } else if (op instanceof ReadOperation) {
-                    commit((ReadOperation) op);
-                } else {
-                    logger.error("Received invalid operation, ignoring...");
+                    this.put(op.getKey(), op.getValue(), (short) (op.getVersion() + 1));
                 }
             }
             tx.setState(TransactionState.COMMITTED);
         }
-    }
-
-    private void commit(WriteOperation op) {
-        this.put(op.getKey(), op.getValue(), (short) (op.getVersion() + 1));
-    }
-
-    private void commit(ReadOperation op) {
-        // do nothing?
     }
 
     public synchronized void abort(TransactionID txID) {
@@ -107,8 +103,8 @@ public class Store {
         }
     }
 
-    public synchronized void resetTx(TransactionID txID) {
-        releaseLocks(txID);
+    public synchronized Set<TransactionID> resetTx(TransactionID txID) {
         transactions.get(txID).setState(TransactionState.NONE);
+        return releaseLocks(txID);
     }
 }

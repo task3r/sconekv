@@ -46,10 +46,12 @@ public class Transaction extends AbstractTransaction {
         }
     }
 
-    public void commit() throws InvalidTransactionStateChangeException, RequestFailedException {
+    public void commit() throws InvalidTransactionStateChangeException, CommitFailedException, RequestFailedException {
         validate();
-        if (!client.performCommit(getId(), getRwSet()))
+        if (!client.performCommit(getId(), getRwSet())) {
+            setState(TransactionState.ABORTED);
             throw new CommitFailedException();
+        }
         setState(TransactionState.COMMITTED);
     }
 

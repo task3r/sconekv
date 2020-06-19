@@ -6,19 +6,24 @@ import asg.cliche.ShellFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.client.db.Transaction;
+import pt.ulisboa.tecnico.sconekv.client.exceptions.CommitFailedException;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.RequestFailedException;
 import pt.ulisboa.tecnico.sconekv.client.exceptions.UnableToGetViewException;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidTransactionStateChangeException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
 public class ClientApplication {
     private static final Logger logger = LoggerFactory.getLogger(ClientApplication.class);
 
     SconeClient client;
     Map<String, Transaction> transactions;
+    ExecutorService executorService;
 
     public ClientApplication() throws UnableToGetViewException, IOException {
         client = new SconeClient();
@@ -55,7 +60,7 @@ public class ClientApplication {
 
                 tx2.commit();
 
-            } catch (InvalidTransactionStateChangeException | UnableToGetViewException | RequestFailedException e) {
+            } catch (InvalidTransactionStateChangeException | UnableToGetViewException | RequestFailedException | CommitFailedException e) {
                 e.printStackTrace();
             }
         }
@@ -96,8 +101,44 @@ public class ClientApplication {
         if (!transactions.containsKey(id)) {
             logger.error("Transaction identifier {} does not exist", id);
         } else {
-            transactions.get(id).commit();
-            logger.info("[{}] Committed", id);
+            try {
+                transactions.get(id).commit();
+                logger.info("[{}] Committed", id);
+            } catch (CommitFailedException e) {
+                logger.info("[{}] Aborted", id);
+            }
+        }
+    }
+
+    @Command
+    public void concurrentCommit(@Param(name = "txIDs") String... txIds) throws InterruptedException {
+        if (executorService == null)
+            executorService = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 0L,
+                    TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        List<Callable<String>> commits = new ArrayList<>();
+        for (String id : txIds) {
+            if (!transactions.containsKey(id)) {
+                logger.error("Transaction identifier {} does not exist", id);
+            } else {
+                commits.add(() -> {
+                    try {
+                        transactions.get(id).commit();
+                        return String.format("[%s] Committed", id);
+                    } catch (CommitFailedException e) {
+                        return String.format("[%s] Aborted", id);
+                    } catch (InvalidTransactionStateChangeException e) {
+                        return String.format("[%s] ERROR: Invalid transaction state change, already is %s", id, transactions.get(id).getState());
+                    } catch (RequestFailedException e) {
+                        return String.format("[%s] ERROR: Request failed" , id);
+                    }
+                });
+            }
+        }
+        List<Future<String>> futures = executorService.invokeAll(commits);
+        for (Future<String> f : futures) {
+            try {
+                logger.info(f.get());
+            } catch (ExecutionException ignored) {}
         }
     }
 

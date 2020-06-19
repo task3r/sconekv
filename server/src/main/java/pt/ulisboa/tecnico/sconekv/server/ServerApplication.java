@@ -31,9 +31,7 @@ public class ServerApplication {
         // configure logger termination to ignore default shutdown hook
         final LoggerContextFactory factory = LogManager.getFactory();
         if (factory instanceof Log4jContextFactory) {
-            logger.info("register shutdown hook");
             Log4jContextFactory contextFactory = (Log4jContextFactory) factory;
-
             ((DefaultShutdownCallbackRegistry) contextFactory.getShutdownCallbackRegistry()).stop();
         }
 

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
-import pt.ulisboa.tecnico.sconekv.server.exceptions.OutdatedVersionException;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidVersionException;
 
 import java.util.TreeSet;
 
@@ -45,7 +45,7 @@ public class Value {
             logger.error("Tried applying previous version {} with content {} for object with version {}", version, content, this.version);
     }
 
-    public synchronized boolean validateAndLock(TransactionID txID, Operation op) throws OutdatedVersionException {
+    public synchronized boolean validateAndLock(TransactionID txID, Operation op) throws InvalidVersionException {
         if (version == op.getVersion()) {
             if (this.lockOwner == null) {
                 this.lockOwner = txID;
@@ -54,13 +54,13 @@ public class Value {
                 return false;
             }
         } else {
-            throw new OutdatedVersionException();
+            throw new InvalidVersionException();
         }
     }
 
-    public synchronized void validate(Operation op) throws OutdatedVersionException {
+    public synchronized void validate(Operation op) throws InvalidVersionException {
         if (version != op.getVersion()) {
-            throw new OutdatedVersionException();
+            throw new InvalidVersionException();
         }
     }
 

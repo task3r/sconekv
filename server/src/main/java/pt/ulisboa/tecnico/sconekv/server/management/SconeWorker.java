@@ -5,6 +5,7 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
+import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionState;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidBucketException;
@@ -191,8 +192,9 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             if (!dht.getMasterOfBucket(tx.getCoordinatorBucket()).equals(self)) {
                 logger.error("Received incorrect LocalDecisionResponse for tx {}, i am not the coordinator", tx.getId());
             } else {
-                if (tx.getState() == TransactionState.PREPARED) { // not yet committed nor aborted
+                if (!tx.isDecided()) { // not yet committed nor aborted
                     if (localDecisionResponse.shouldAbort()) {
+                        tx.setDecided();
                         Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
                         masters.remove(self);
                         cm.broadcast(CommunicationUtils.generateAbortTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
@@ -200,6 +202,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                     } else {
                         tx.addResponse(dht.getBucketOfNode(localDecisionResponse.getNode()).getId());
                         if (tx.isReady()) {
+                            tx.setDecided();
                             Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
                             masters.remove(self);
                             cm.broadcast(CommunicationUtils.generateCommitTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
@@ -245,9 +248,16 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             store.validate(makeLocalDecision.getTxID());
             sm.prepareLogMaster(logTransaction, makeLocalDecision);
         } catch (SMRStatusException e) {
-            store.resetTx(makeLocalDecision.getTxID());
+            queueMakeLocalDecisions(store.resetTx(makeLocalDecision.getTxID()));
         } catch (ValidTransactionNotLockableException ignored) {
-            // once it is lockable, the event will be queued once more
+            queueMakeLocalDecisions(store.releaseLocks(makeLocalDecision.getTxID()));
+            store.queueLocks(makeLocalDecision.getTxID());
+        }
+    }
+
+    private void queueMakeLocalDecisions(Set<TransactionID> transactions) {
+        for (TransactionID txID : transactions) {
+            cm.queueEvent(new MakeLocalDecision(generateId(), txID));
         }
     }
 }
