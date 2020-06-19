@@ -174,6 +174,8 @@ public class SconeClient {
         cBuilder.initBuckets(1); // insert buckets in message
         cBuilder.getBuckets().set(0, (short) 0);
 
+        //TODO send multiple requests, one to each master
+
         return request((short) 0, message, External.Response.Which.COMMIT).getCommit().getResult() == External.CommitResponse.Result.OK;
     }
 
