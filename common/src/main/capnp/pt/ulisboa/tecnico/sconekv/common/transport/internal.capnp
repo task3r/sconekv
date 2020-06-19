@@ -35,6 +35,7 @@ struct LogEvent {
     union {
         transaction @1 :LoggedTransaction;
         decision @2 :Bool;
+        rollback @3 :Void;
     }
 }
 

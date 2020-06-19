@@ -12,6 +12,7 @@ import pt.ulisboa.tecnico.sconekv.common.transport.Internal;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.LogEvent;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.LogRollback;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.LogTransaction;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.LogTransactionDecision;
 import pt.ulisboa.tecnico.sconekv.server.smr.LogEntry;
@@ -87,6 +88,24 @@ public class CommunicationUtils {
         SerializationUtils.serializeNode(mBuilder.getNode(), sender);
         SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
         txID.serialize(mBuilder.getAbortTransaction());
+        return message;
+    }
+
+    public static MessageBuilder generateRequestRollbackLocalDecision(Node sender, Version currentVersion, TransactionID txID) {
+        MessageBuilder message = new MessageBuilder();
+        Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
+        SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
+        txID.serialize(mBuilder.getRequestRollbackLocalDecision());
+        return message;
+    }
+
+    public static MessageBuilder generateRollbackLocalDecisionResponse(Node sender, Version currentVersion, TransactionID txID) {
+        MessageBuilder message = new MessageBuilder();
+        Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
+        SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
+        txID.serialize(mBuilder.getRollbackLocalDecisionResponse());
         return message;
     }
 
@@ -188,8 +207,11 @@ public class CommunicationUtils {
             Internal.LoggedTransaction.Builder tBuilder = eBuilder.initTransaction();
             tBuilder.setTransaction(logTransaction.getTx().getReader());
             tBuilder.setPrepared(logTransaction.getTx().getState() != TransactionState.ABORTED);
-        } else {
+        } else if (event instanceof  LogTransactionDecision){
             eBuilder.setDecision(((LogTransactionDecision) event).getDecision() == TransactionState.COMMITTED);
+        } else if (event instanceof LogRollback) {
+            eBuilder.setRollback(null);
         }
     }
+
 }

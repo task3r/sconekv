@@ -45,31 +45,38 @@ public class Value {
             logger.error("Tried applying previous version {} with content {} for object with version {}", version, content, this.version);
     }
 
-    public synchronized boolean validateAndLock(TransactionID txID, Operation op) throws InvalidVersionException {
+    public synchronized TransactionID validateAndLock(TransactionID txID, Operation op) throws InvalidVersionException {
         if (version == op.getVersion()) {
             if (this.lockOwner == null) {
                 this.lockOwner = txID;
-                return true;
-            } else {
-                return false;
             }
+            return this.lockOwner;
         } else {
             throw new InvalidVersionException();
         }
     }
 
-    public synchronized void validate(Operation op) throws InvalidVersionException {
+    public synchronized TransactionID validate(Operation op) throws InvalidVersionException {
         if (version != op.getVersion()) {
             throw new InvalidVersionException();
         }
+        return this.lockOwner;
     }
 
-    public synchronized TransactionID releaseLock(TransactionID txID) {
+    public synchronized TransactionID releaseLockAndQueueNext(TransactionID txID) {
         if (txID.equals(lockOwner)) {
             lockOwner = lockQueue.pollFirst();
             return lockOwner;
         }
         return null;
+    }
+
+    public synchronized  boolean releaseLock(TransactionID txID) {
+        if (txID.equals(lockOwner)) {
+            lockOwner = null;
+            return true;
+        }
+        return false;
     }
 
     public synchronized void queueLock(TransactionID txID) {

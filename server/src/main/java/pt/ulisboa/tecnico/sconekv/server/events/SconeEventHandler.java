@@ -19,6 +19,7 @@ public interface SconeEventHandler {
     // State Machine Replication
     void handle(LogTransaction logTransaction);
     void handle(LogTransactionDecision logTransactionDecision);
+    void handle(LogRollback logRollback);
     void handle(Prepare prepare);
     void handle(PrepareOK prepareOK);
     void handle(StartViewChange startViewChange);

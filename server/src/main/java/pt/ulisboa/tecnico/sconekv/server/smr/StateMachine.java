@@ -106,6 +106,10 @@ public class StateMachine {
             logger.info("LogEvent {} was not processed as status is {}", event.getTxID(), status);
             throw new SMRStatusException();
         }
+        if (!currentMaster.equals(mm.getMyself())) {
+            logger.error("PrepareLog but I am not the master, ignoring...");
+            throw new SMRStatusException();
+        }
         logger.debug("Master replicating request...");
         log.add(new LogEntry(event));
 

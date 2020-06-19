@@ -91,8 +91,11 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(CommitRequest commitRequest) {
         if (sm.isMaster()) {
-            store.addTransaction(commitRequest.getTx());
-            cm.queueEvent(new MakeLocalDecision(generateId(), commitRequest.getTxID()));
+            if (store.addTransaction(commitRequest.getTx())) {
+                cm.queueEvent(new MakeLocalDecision(generateId(), commitRequest.getTxID()));
+            } else {
+                logger.error("Received duplicated commitRequest {}, client must be patient", commitRequest.getTxID());
+            }
         } else {
             logger.error("Received commit request {} but I am not the master of bucket {}", commitRequest.getId(), sm.getCurrentBucketId());
         }
@@ -144,6 +147,16 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                         logTransactionDecision.getDecision() == TransactionState.COMMITTED);
                 cm.replyToClient(store.getTransaction(logTransactionDecision.getTxID()).getClient(), response);
             }
+        }
+    }
+
+    @Override
+    public void handle(LogRollback logRollback) {
+        logger.info("Rollback : {}", logRollback.getTxID());
+        store.getTransaction(logRollback.getTxID()).setState(TransactionState.NONE);
+        if (sm.isMaster()) {
+            queueMakeLocalDecisions(store.releaseLocks(logRollback.getTxID()));
+            store.queueLocks(logRollback.getTxID());
         }
     }
 
@@ -218,26 +231,44 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(RequestRollbackLocalDecision requestRollbackLocalDecision) {
-        // TODO
+        Transaction tx = store.getTransaction(requestRollbackLocalDecision.getTxID());
+        try {
+            if (!dht.getMasterOfBucket(tx.getCoordinatorBucket()).equals(self)) {
+                logger.error("Received incorrect RollbackLocalDecision for tx {}, i am not the coordinator", tx.getId());
+            } else if (!tx.isDecided()) { // not yet committed nor aborted
+                tx.removeResponse(requestRollbackLocalDecision.getNode());
+                if (self.equals(requestRollbackLocalDecision.getNode()))
+                    cm.queueEvent(new RollbackLocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), tx.getId()));
+                else
+                    cm.send(CommunicationUtils.generateRollbackLocalDecisionResponse(self, sm.getCurrentVersion(), tx.getId()), requestRollbackLocalDecision.getNode());
+            }
+        } catch (InvalidBucketException e) {
+            logger.error("Invalid buckets in transaction {}, ignoring", tx.getId());
+        }
     }
 
     @Override
     public void handle(RollbackLocalDecisionResponse rollbackLocalDecisionResponse) {
-        // TODO
+        try {
+            sm.prepareLogMaster(new LogRollback(generateId(), rollbackLocalDecisionResponse.getTxID(), null), rollbackLocalDecisionResponse);
+        } catch (SMRStatusException ignored) {
+        }
     }
 
     @Override
     public void handle(CommitTransaction commitTransaction) {
         try {
             sm.prepareLogMaster(new LogTransactionDecision(generateId(), commitTransaction.getTxID(), true, null), commitTransaction);
-        } catch (SMRStatusException ignored) {}
+        } catch (SMRStatusException ignored) {
+        }
     }
 
     @Override
     public void handle(AbortTransaction abortTransaction) {
         try {
             sm.prepareLogMaster(new LogTransactionDecision(generateId(), abortTransaction.getTxID(), false, null), abortTransaction);
-        } catch (SMRStatusException ignored) {}
+        } catch (SMRStatusException ignored) {
+        }
     }
 
     @Override
@@ -249,9 +280,22 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             sm.prepareLogMaster(logTransaction, makeLocalDecision);
         } catch (SMRStatusException e) {
             queueMakeLocalDecisions(store.resetTx(makeLocalDecision.getTxID()));
-        } catch (ValidTransactionNotLockableException ignored) {
-            queueMakeLocalDecisions(store.releaseLocks(makeLocalDecision.getTxID()));
+        } catch (ValidTransactionNotLockableException e) {
             store.queueLocks(makeLocalDecision.getTxID());
+            if (e.possibleRollback()) {
+                for (TransactionID txID : e.getCurrentOwners()) {
+                    try {
+                        Node coordinator = dht.getMasterOfBucket(store.getTransaction(txID).getCoordinatorBucket());
+                        if (coordinator.equals(self)) {
+                            cm.queueEvent(new RequestRollbackLocalDecision(generateId(), self, sm.getCurrentVersion(), txID));
+                        } else {
+                            cm.send(CommunicationUtils.generateRequestRollbackLocalDecision(self, sm.getCurrentVersion(), txID), coordinator);
+                        }
+                    } catch (InvalidBucketException ignored) {
+                        logger.error("Invalid buckets in transaction {}, ignoring", txID); // should not happen
+                    }
+                }
+            }
         }
     }
 

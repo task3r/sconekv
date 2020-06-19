@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.sconekv.server.db;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.ulisboa.tecnico.sconekv.common.db.AbstractTransaction;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
@@ -84,5 +85,9 @@ public class Transaction extends AbstractTransaction {
 
     public void setState(TransactionState state) {
         applyState(state);
+    }
+
+    public void removeResponse(Node node) {
+        responses.remove(node);
     }
 }

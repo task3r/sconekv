@@ -35,11 +35,14 @@ public class Store {
             values.put(key, new Value(value, version));
     }
 
-    public void addTransaction(Transaction tx) {
-        if (transactions.containsKey(tx.getId()))
+    public boolean addTransaction(Transaction tx) {
+        if (transactions.containsKey(tx.getId())) {
             logger.error("TxID {} was already added to the store", tx.getId());
-        else
+            return false;
+        } else {
             this.transactions.put(tx.getId(), tx);
+            return true;
+        }
     }
 
     public Transaction getTransaction(TransactionID txID) {
@@ -49,20 +52,33 @@ public class Store {
     public synchronized void validate(TransactionID txID) throws ValidTransactionNotLockableException {
         Transaction tx = transactions.get(txID);
         try {
-            boolean lockable = true;
+            Set<TransactionID> owners = new HashSet<>();
+            TransactionID currentOwner;
             for (Operation op : tx.getRwSet()) {
-                if (lockable)
-                    lockable = this.get(op.getKey()).validateAndLock(tx.getId(), op);
-                else
-                    this.get(op.getKey()).validate(op);
+                if (owners.size() == 0) { // transaction is still lockable
+                    currentOwner = this.get(op.getKey()).validateAndLock(tx.getId(), op);
+                    if (!txID.equals(currentOwner))
+                        owners.add(currentOwner);
+                } else {
+                    currentOwner = this.get(op.getKey()).validate(op);
+                    if (currentOwner != null)
+                        owners.add(currentOwner);
+                }
             }
 
-            if (lockable) {
+            if (owners.size() == 0) { // acquired locks for all keys
                 tx.setState(TransactionState.PREPARED);
             } else {
-                throw new ValidTransactionNotLockableException();
+                for (Operation op: tx.getRwSet()) // release any locks it acquired
+                    this.get(op.getKey()).releaseLock(txID);
+                if (owners.stream().min(TransactionID::compareTo).get().isGreater(txID)) // if txID e lower than all currentOwners, then they should rollback
+                    throw new ValidTransactionNotLockableException(owners);
+                else
+                    throw new ValidTransactionNotLockableException();
             }
         } catch (InvalidVersionException e) {
+            for (Operation op: tx.getRwSet()) // release any locks it acquired
+                this.get(op.getKey()).releaseLock(txID);
             tx.setState(TransactionState.ABORTED);
         }
     }
@@ -78,7 +94,7 @@ public class Store {
         Transaction tx = transactions.get(txID);
         Set<TransactionID> restartTxs = new HashSet<>();
         for (Operation op : tx.getRwSet()) {
-            restartTxs.add(this.get(op.getKey()).releaseLock(tx.getId()));
+            restartTxs.add(this.get(op.getKey()).releaseLockAndQueueNext(tx.getId()));
         }
         restartTxs.remove(null); // releaseLock might return null
         return restartTxs;
