@@ -69,7 +69,7 @@ public class Transaction extends AbstractTransaction {
     }
 
     private void validate() throws InvalidTransactionStateChangeException {
-        if (getState() != TransactionState.NONE)
+        if (getState() != TransactionState.RECEIVED)
             throw new InvalidTransactionStateChangeException();
     }
 

@@ -122,7 +122,7 @@ public class Store {
     }
 
     public synchronized Set<TransactionID> resetTx(TransactionID txID) {
-        transactions.get(txID).setState(TransactionState.NONE);
+        transactions.get(txID).setState(TransactionState.RECEIVED);
         return releaseLocks(txID);
     }
 

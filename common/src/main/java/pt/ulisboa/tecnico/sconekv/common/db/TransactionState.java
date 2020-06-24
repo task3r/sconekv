@@ -4,5 +4,5 @@ public enum TransactionState {
         COMMITTED,
         ABORTED,
         PREPARED,
-        NONE
+        RECEIVED
 }

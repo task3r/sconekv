@@ -9,7 +9,7 @@ public abstract class AbstractTransaction {
 
     public AbstractTransaction(TransactionID id) {
         this.id = id;
-        this.state = TransactionState.NONE;
+        this.state = TransactionState.RECEIVED;
     }
 
     protected abstract void addOperation(Operation op);

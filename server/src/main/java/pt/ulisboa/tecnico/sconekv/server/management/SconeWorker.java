@@ -163,7 +163,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(LogRollback logRollback) {
         logger.info("Rollback : {}", logRollback.getTxID());
-        store.getTransaction(logRollback.getTxID()).setState(TransactionState.NONE);
+        store.getTransaction(logRollback.getTxID()).setState(TransactionState.RECEIVED);
         if (sm.isMaster()) {
             queueMakeLocalDecisions(store.releaseLocks(logRollback.getTxID()));
             store.queueLocks(logRollback.getTxID());
