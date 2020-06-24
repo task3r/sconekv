@@ -169,6 +169,12 @@ public class SconeServer implements Runnable {
             case ABORT_TRANSACTION:
                 cm.queueEvent(new AbortTransaction(eventId, node, viewVersion, new TransactionID(message.getAbortTransaction())));
                 break;
+            case REQUEST_LOCAL_DECISION:
+                cm.queueEvent(new RequestLocalDecision(eventId, node, viewVersion, new TransactionID(message.getAbortTransaction())));
+                break;
+            case REQUEST_GLOBAL_DECISION:
+                cm.queueEvent(new RequestGlobalDecision(eventId, node, viewVersion, new TransactionID(message.getAbortTransaction())));
+                break;
             case _NOT_IN_SCHEMA:
             default:
                 logger.error("Received an incorrect internal message, ignoring...");

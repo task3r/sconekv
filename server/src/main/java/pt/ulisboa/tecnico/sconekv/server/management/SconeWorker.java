@@ -219,6 +219,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                     if (!tx.isDecided()) { // not yet committed nor aborted
                         if (localDecisionResponse.shouldAbort()) {
                             tx.setDecided();
+                            tx.setState(TransactionState.ABORTED);
                             Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
                             masters.remove(self);
                             cm.broadcast(CommunicationUtils.generateAbortTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
@@ -308,6 +309,28 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    public void handle(RequestGlobalDecision requestGlobalDecision) {
+        Transaction tx = store.getTransaction(requestGlobalDecision.getTxID());
+        if (tx != null && tx.isDecided()) {
+            if (tx.getState() == TransactionState.ABORTED)
+                cm.send(CommunicationUtils.generateAbortTransaction(self, sm.getCurrentVersion(), tx.getId()),
+                        requestGlobalDecision.getNode());
+            else
+                cm.send(CommunicationUtils.generateCommitTransaction(self, sm.getCurrentVersion(), tx.getId()),
+                        requestGlobalDecision.getNode());
+        }
+    }
+
+    @Override
+    public void handle(RequestLocalDecision requestLocalDecision) {
+        Transaction tx = store.getTransaction(requestLocalDecision.getTxID());
+        if (tx != null) {
+            cm.send(CommunicationUtils.generateLocalDecisionResponse(self, sm.getCurrentVersion(), tx.getId(),
+                    tx.getState()), requestLocalDecision.getNode());
         }
     }
 

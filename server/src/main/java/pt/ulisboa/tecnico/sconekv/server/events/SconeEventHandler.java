@@ -33,4 +33,6 @@ public interface SconeEventHandler {
     void handle(CommitTransaction commitTransaction);
     void handle(AbortTransaction abortTransaction);
     void handle(MakeLocalDecision makeLocalDecision);
+    void handle(RequestGlobalDecision requestGlobalDecision);
+    void handle(RequestLocalDecision requestLocalDecision);
 }

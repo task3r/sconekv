@@ -27,6 +27,8 @@ struct InternalMessage {
         rollbackLocalDecisionResponse @11 :TransactionID;
         commitTransaction @12 :TransactionID;
         abortTransaction @13 :TransactionID;
+        requestLocalDecision @14 :TransactionID;
+        requestGlobalDecision @15 :TransactionID;
     }
 }
 

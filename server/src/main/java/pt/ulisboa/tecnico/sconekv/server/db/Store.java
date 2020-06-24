@@ -112,6 +112,7 @@ public class Store {
             }
             tx.setState(TransactionState.COMMITTED);
         }
+        tx.setDecided();
     }
 
     public synchronized void abort(TransactionID txID) {
@@ -119,6 +120,7 @@ public class Store {
         if (tx.getState() != TransactionState.ABORTED) {
             tx.setState(TransactionState.ABORTED);
         }
+        tx.setDecided();
     }
 
     public synchronized Set<TransactionID> resetTx(TransactionID txID) {
