@@ -31,9 +31,10 @@ struct Operation {
     union {
         write @0 :Data; # value written
         read @1 :Void;
+        delete @2 :Void;
     }
-    key @2 :Data;
-    version @3 :Int16;
+    key @3 :Data;
+    version @4 :Int16;
 }
 
 struct TransactionID {

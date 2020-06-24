@@ -85,6 +85,8 @@ public class SconeServer implements Runnable {
                 return new WriteRequest(eventId, client, txID, new String(request.getRead().toArray()));
             case READ:
                 return new ReadRequest(eventId, client, txID, new String(request.getRead().toArray()));
+            case DELETE:
+                return new DeleteRequest(eventId, client, txID, new String(request.getRead().toArray()));
             case COMMIT:
                 Transaction tx = new Transaction(txID, client, request.getCommit());
                 return new CommitRequest(eventId, client, tx, request);

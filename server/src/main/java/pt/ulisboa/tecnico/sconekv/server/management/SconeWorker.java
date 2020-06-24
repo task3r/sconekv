@@ -89,6 +89,14 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     }
 
     @Override
+    public void handle(DeleteRequest deleteRequest) {
+        logger.info("Delete {} : {}", deleteRequest.getKey(), deleteRequest.getTxID());
+        Value value = store.get(deleteRequest.getKey());
+        MessageBuilder response = CommunicationUtils.generateDeleteResponse(deleteRequest.getTxID(), deleteRequest.getKey().getBytes(), value.getVersion());
+        cm.replyToClient(deleteRequest.getClient(), response);
+    }
+
+    @Override
     public void handle(CommitRequest commitRequest) {
         if (sm.isMaster()) {
             if (store.addTransaction(commitRequest.getTx())) {

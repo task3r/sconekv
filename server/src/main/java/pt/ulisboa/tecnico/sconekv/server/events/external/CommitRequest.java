@@ -33,7 +33,7 @@ public class CommitRequest extends ClientRequest {
 
     @Override
     public boolean checkBucket(DHT dht, Node self) {
-        // validate transaction (every key should belong to this bucket)
+        // TODO validate transaction (every key should belong to this bucket)
         // check master
         return true;
     }

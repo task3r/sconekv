@@ -87,6 +87,17 @@ public class ClientApplication {
     }
 
     @Command
+    public void delete(@Param(name = "txID") String id, @Param(name = "key") String key) throws RequestFailedException, InvalidTransactionStateChangeException {
+        if (!transactions.containsKey(id)) {
+            logger.error("Transaction identifier {} does not exist", id);
+        } else {
+            transactions.get(id).delete(key);
+            logger.info("[{}] Delete {}", id, key);
+        }
+    }
+
+
+    @Command
     public void read(@Param(name = "txID") String id, @Param(name = "key") String key) throws RequestFailedException, InvalidTransactionStateChangeException {
         if (!transactions.containsKey(id)) {
             logger.error("Transaction identifier {} does not exist", id);

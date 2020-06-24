@@ -43,6 +43,16 @@ public class CommunicationUtils {
         return response;
     }
 
+    public static MessageBuilder generateDeleteResponse(TransactionID txID, byte[] key, short version) {
+        MessageBuilder response = new org.capnproto.MessageBuilder();
+        External.Response.Builder rBuilder = response.initRoot(External.Response.factory);
+        txID.serialize(rBuilder.getTxID());
+        External.DeleteResponse.Builder builder = rBuilder.initDelete();
+        builder.setKey(key);
+        builder.setVersion(version);
+        return response;
+    }
+
     public static MessageBuilder generateCommitResponse(TransactionID txID, boolean wasSuccessful) {
         MessageBuilder response = new org.capnproto.MessageBuilder();
         External.Response.Builder rBuilder = response.initRoot(External.Response.factory);

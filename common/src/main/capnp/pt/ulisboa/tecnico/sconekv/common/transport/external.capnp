@@ -15,8 +15,9 @@ struct Request {
     union {
       write @1 :Data; # read or write simply sends the key
       read @2 :Data;
-      commit @3 :Transaction;
-      getDht @4 :Void;
+      delete @3 :Data;
+      commit @4 :Transaction;
+      getDht @5 :Void;
     }
 }
 
@@ -26,13 +27,18 @@ struct Response {
     union {
         write @1 :WriteResponse;
         read @2 :ReadResponse;
-        commit @3 :CommitResponse;
-        dht @4 :DHT;
-        ack @5 :Void;
+        delete @3 :DeleteResponse;
+        commit @4 :CommitResponse;
+        dht @5 :DHT;
     }
 }
 
 struct WriteResponse {
+    key @0 :Data;
+    version @1 :Int16;
+}
+
+struct DeleteResponse {
     key @0 :Data;
     version @1 :Int16;
 }

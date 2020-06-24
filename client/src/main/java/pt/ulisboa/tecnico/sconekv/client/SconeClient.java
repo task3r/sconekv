@@ -162,6 +162,15 @@ public class SconeClient {
         return request(this.dht.getBucketForKey(key.getBytes()), message, External.Response.Which.WRITE).getWrite().getVersion();
     }
 
+    public Short performDelete(TransactionID txID, String key) throws RequestFailedException {
+        MessageBuilder message = new org.capnproto.MessageBuilder();
+        External.Request.Builder builder = message.initRoot(External.Request.factory);
+        txID.serialize(builder.getTxID());
+        builder.setDelete(key.getBytes());
+
+        return request(this.dht.getBucketForKey(key.getBytes()), message, External.Response.Which.DELETE).getDelete().getVersion();
+    }
+
     public boolean performCommit(TransactionID txID, List<Operation> ops) throws RequestFailedException {
         MessageBuilder message = new org.capnproto.MessageBuilder();
         External.Request.Builder rBuilder = message.initRoot(External.Request.factory);

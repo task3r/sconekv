@@ -46,6 +46,16 @@ public class Transaction extends AbstractTransaction {
         }
     }
 
+    public void delete(String key) throws InvalidTransactionStateChangeException, RequestFailedException {
+        validate();
+        if (rwSet.containsKey(key)) {
+            rwSet.replace(key, new DeleteOperation(key, rwSet.get(key).getVersion(), null));
+        } else {
+            short version = client.performDelete(getId(), key);
+            addOperation(new DeleteOperation(key, version, null));
+        }
+    }
+
     public void commit() throws InvalidTransactionStateChangeException, CommitFailedException, RequestFailedException {
         validate();
         if (!client.performCommit(getId(), getRwSet())) {

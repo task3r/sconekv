@@ -24,6 +24,8 @@ public abstract class Operation {
                 return new WriteOperation(op);
             case READ:
                 return new ReadOperation(op);
+            case DELETE:
+                return new DeleteOperation(op);
             case _NOT_IN_SCHEMA:
                 // TODO throw something
                 break;

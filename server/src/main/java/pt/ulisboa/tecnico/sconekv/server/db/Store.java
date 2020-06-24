@@ -106,6 +106,8 @@ public class Store {
             for (Operation op : tx.getRwSet()) {
                 if (op instanceof WriteOperation) {
                     this.put(op.getKey(), op.getValue(), (short) (op.getVersion() + 1));
+                } else if (op instanceof DeleteOperation) {
+                    values.remove(op.getKey()); // maybe could simply turn it invisible in the future
                 }
             }
             tx.setState(TransactionState.COMMITTED);

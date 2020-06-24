@@ -1,9 +1,6 @@
 package pt.ulisboa.tecnico.sconekv.server.events;
 
-import pt.ulisboa.tecnico.sconekv.server.events.external.CommitRequest;
-import pt.ulisboa.tecnico.sconekv.server.events.external.GetDHTRequest;
-import pt.ulisboa.tecnico.sconekv.server.events.external.ReadRequest;
-import pt.ulisboa.tecnico.sconekv.server.events.external.WriteRequest;
+import pt.ulisboa.tecnico.sconekv.server.events.external.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
 
@@ -12,6 +9,7 @@ public interface SconeEventHandler {
     // External Events
     void handle(ReadRequest readRequest);
     void handle(WriteRequest writeRequest);
+    void handle(DeleteRequest deleteRequest);
     void handle(CommitRequest commitRequest);
     void handle(GetDHTRequest getViewRequest);
 
