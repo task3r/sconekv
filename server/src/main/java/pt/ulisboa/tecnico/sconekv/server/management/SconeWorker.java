@@ -199,33 +199,37 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(LocalDecisionResponse localDecisionResponse) {
-        // if I'm not the coordinator -> error
         Transaction tx = store.getTransaction(localDecisionResponse.getTxID());
-        try {
-            if (!dht.getMasterOfBucket(tx.getCoordinatorBucket()).equals(self)) {
-                logger.error("Received incorrect LocalDecisionResponse for tx {}, i am not the coordinator", tx.getId());
-            } else {
-                if (!tx.isDecided()) { // not yet committed nor aborted
-                    if (localDecisionResponse.shouldAbort()) {
-                        tx.setDecided();
-                        Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
-                        masters.remove(self);
-                        cm.broadcast(CommunicationUtils.generateAbortTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
-                        cm.queueEvent(new AbortTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
-                    } else {
-                        tx.addResponse(dht.getBucketOfNode(localDecisionResponse.getNode()).getId());
-                        if (tx.isReady()) {
+        if (tx == null) {
+            logger.debug("Received a LocalDecisionResponse for a transaction I've yet to receive, delaying");
+            cm.queueEvent(localDecisionResponse); // maybe scheduled task, so there is really a delay
+        } else {
+            try {
+                if (!dht.getMasterOfBucket(tx.getCoordinatorBucket()).equals(self)) {
+                    logger.error("Received incorrect LocalDecisionResponse for tx {}, i am not the coordinator", tx.getId());
+                } else {
+                    if (!tx.isDecided()) { // not yet committed nor aborted
+                        if (localDecisionResponse.shouldAbort()) {
                             tx.setDecided();
                             Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
                             masters.remove(self);
-                            cm.broadcast(CommunicationUtils.generateCommitTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
-                            cm.queueEvent(new CommitTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+                            cm.broadcast(CommunicationUtils.generateAbortTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
+                            cm.queueEvent(new AbortTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+                        } else {
+                            tx.addResponse(dht.getBucketOfNode(localDecisionResponse.getNode()).getId());
+                            if (tx.isReady()) {
+                                tx.setDecided();
+                                Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
+                                masters.remove(self);
+                                cm.broadcast(CommunicationUtils.generateCommitTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
+                                cm.queueEvent(new CommitTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+                            }
                         }
-                    }
-                } // else maybe inform once more the sender about the global decision
+                    } // else maybe inform once more the sender about the global decision
+                }
+            } catch (InvalidBucketException e) {
+                logger.error("Invalid buckets in transaction {}, ignoring", tx.getId());
             }
-        } catch (InvalidBucketException e) {
-            logger.error("Invalid buckets in transaction {}, ignoring", tx.getId());
         }
     }
 

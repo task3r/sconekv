@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import site.ycsb.ByteIterator;
 import site.ycsb.DB;
+import site.ycsb.DBException;
 import site.ycsb.Status;
 
 import java.util.HashMap;
@@ -13,6 +14,11 @@ import java.util.Vector;
 
 public class SconeClient extends DB {
     private static final Logger logger = LoggerFactory.getLogger(SconeClient.class);
+
+    @Override
+    public void init() throws DBException {
+        super.init();
+    }
 
     public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
         return null;

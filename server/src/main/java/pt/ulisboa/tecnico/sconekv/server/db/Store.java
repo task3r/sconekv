@@ -55,7 +55,7 @@ public class Store {
             Set<TransactionID> owners = new HashSet<>();
             TransactionID currentOwner;
             for (Operation op : tx.getRwSet()) {
-                if (owners.size() == 0) { // transaction is still lockable
+                if (owners.isEmpty()) { // transaction is still lockable
                     currentOwner = this.get(op.getKey()).validateAndLock(tx.getId(), op);
                     if (!txID.equals(currentOwner))
                         owners.add(currentOwner);
@@ -66,7 +66,7 @@ public class Store {
                 }
             }
 
-            if (owners.size() == 0) { // acquired locks for all keys
+            if (owners.isEmpty()) { // acquired locks for all keys
                 tx.setState(TransactionState.PREPARED);
             } else {
                 for (Operation op: tx.getRwSet()) // release any locks it acquired

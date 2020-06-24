@@ -1,7 +1,7 @@
 docker service ls | grep -q tracker
 
 if [ ! $? ]; then 
-    docker service create --name tracker --network sconenet tracker
+    docker service create --name tracker --network sconenet task3r/tracker
 else
     docker run --rm -it --network sconenet curlimages/curl http://tracker:4321/clear
 fi
