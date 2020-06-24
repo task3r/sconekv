@@ -37,6 +37,7 @@ public class SconeClient {
         REPLICA_ONLY,
         RANDOM
     }
+
     private static final Logger logger = LoggerFactory.getLogger(SconeClient.class);
 
     private SconeClientProperties properties;
@@ -172,20 +173,63 @@ public class SconeClient {
     }
 
     public boolean performCommit(TransactionID txID, List<Operation> ops) throws RequestFailedException {
-        MessageBuilder message = new org.capnproto.MessageBuilder();
+        Map<Short, List<Operation>> opsPerBucket = gerOpsPerBucket(ops);
+        SortedSet<Short> buckets = new TreeSet<>(opsPerBucket.keySet()); // I want the coordinator to receive it first if possible
+
+        ZMQ.Socket coordinator = null;
+        int retries = 0;
+        while (retries < properties.MAX_REQUEST_RETRIES) {
+            for (Short bucket : buckets) {
+                MessageBuilder message = constructCommitMessage(txID, opsPerBucket.get(bucket), buckets);
+                ZMQ.Socket socket = sendRequest(bucket, message);
+                if (coordinator == null)
+                    coordinator = socket;
+            }
+
+            if (coordinator == null)
+                throw new RequestFailedException();
+
+            External.Response.Reader response = recvResponse(coordinator, External.Response.Which.COMMIT);
+            if (response != null) {
+                return response.getCommit().getResult() == External.CommitResponse.Result.OK;
+            } else {
+                retries++;
+            }
+        }
+        throw new MaxRetriesExceededException();
+    }
+
+    private MessageBuilder constructCommitMessage(TransactionID txID, List<Operation> bucketOps, SortedSet<Short> buckets) {
+        MessageBuilder message = new MessageBuilder();
         External.Request.Builder rBuilder = message.initRoot(External.Request.factory);
         txID.serialize(rBuilder.getTxID());
         Common.Transaction.Builder cBuilder = rBuilder.initCommit();
-        StructList.Builder<Common.Operation.Builder> opsBuilder = cBuilder.initOps(ops.size());
-        for (int i = 0; i < ops.size(); i++) {
-            ops.get(i).serialize(opsBuilder.get(i));
+        StructList.Builder<Common.Operation.Builder> opsBuilder = cBuilder.initOps(bucketOps.size());
+        for (int i = 0; i < bucketOps.size(); i++) {
+            bucketOps.get(i).serialize(opsBuilder.get(i));
         }
-        cBuilder.initBuckets(1); // insert buckets in message
-        cBuilder.getBuckets().set(0, (short) 0);
 
-        //TODO send multiple requests, one to each master
+        // it is dumb to do this every single time, but I couldn't find a way, capnproto does not allow me to re-utilize the builder
+        PrimitiveList.Short.Builder bucketsBuilder = cBuilder.initBuckets(buckets.size());
+        int i = 0;
+        for (Short b : buckets) {
+            bucketsBuilder.set(i, b);
+            i++;
+        }
+        return message;
+    }
 
-        return request((short) 0, message, External.Response.Which.COMMIT).getCommit().getResult() == External.CommitResponse.Result.OK;
+
+    private Map<Short, List<Operation>> gerOpsPerBucket(List<Operation> ops) {
+        Map<Short, List<Operation>> opsPerBucket = new HashMap<>();
+        for (Operation op : ops) {
+            short bucket = this.dht.getBucketForKey(op.getKey().getBytes());
+            if (!opsPerBucket.containsKey(bucket)) {
+                opsPerBucket.put(bucket, new ArrayList<>());
+            }
+            opsPerBucket.get(bucket).add(op);
+        }
+        return opsPerBucket;
     }
 
     private ZMQ.Socket getSocketForRequest(short bucket) throws InvalidBucketException {
@@ -215,29 +259,48 @@ public class SconeClient {
         int retries = 0;
         ZMQ.Socket requester;
         while (retries < properties.MAX_REQUEST_RETRIES) {
-            try {
-                requester = getSocketForRequest(bucket);
-                requester.sendMore(""); // delimiter
-                requester.send(SerializationUtils.getBytesFromMessage(message));
-                requester.recv(); // delimiter
-                External.Response.Reader response = SerializationUtils.getMessageFromBytes(requester.recv(0)).getRoot(External.Response.factory);
-                if (response.which() != requestType) {
-                    if (response.which() == External.Response.Which.DHT) // request was sent to the wrong node
-                        this.dht.applyView(response.getDht());
-                    else
-                        retries++;
-                } else {
-                    return response;
-                }
-            } catch (IOException | InvalidBucketException e) {
-                try {
-                    this.dht = getDHT();
-                } catch (UnableToGetViewException ex) {
-                    logger.error("Request failed, getDHT also failed. Is the system down? Retrying...");
-                }
+            requester = sendRequest(bucket, message);
+            External.Response.Reader response = recvResponse(requester, requestType);
+            if (response != null) {
+                return response;
+            } else {
                 retries++;
             }
         }
         throw new MaxRetriesExceededException();
+    }
+
+    private ZMQ.Socket sendRequest(short bucket, MessageBuilder message) throws RequestFailedException {
+        ZMQ.Socket requester;
+        try {
+            requester = getSocketForRequest(bucket);
+            requester.sendMore(""); // delimiter
+            requester.send(SerializationUtils.getBytesFromMessage(message));
+            return requester;
+        } catch (InvalidBucketException | IOException e) {
+            throw new RequestFailedException();
+        }
+    }
+
+    private External.Response.Reader recvResponse(ZMQ.Socket socket, External.Response.Which requestType) {
+        socket.recv(); // delimiter
+        External.Response.Reader response;
+        try {
+            response = SerializationUtils.getMessageFromBytes(socket.recv(0)).getRoot(External.Response.factory);
+            if (response.which() != requestType) {
+                if (response.which() == External.Response.Which.DHT) // request was sent to the wrong node
+                    this.dht.applyView(response.getDht());
+                return null;
+            } else {
+                return response;
+            }
+        } catch (IOException e) {
+            try {
+                this.dht = getDHT();
+            } catch (UnableToGetViewException ex) {
+                logger.error("Request failed, getDHT also failed. Is the system down? Retrying...");
+            }
+            return null;
+        }
     }
 }

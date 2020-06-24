@@ -19,7 +19,6 @@ public class Transaction extends AbstractTransaction {
 
     private SconeClient client;
     private Map<String, Operation> rwSet;
-    // map bucket:ops ?
 
     public Transaction(SconeClient client,TransactionID id) {
         super(id);
