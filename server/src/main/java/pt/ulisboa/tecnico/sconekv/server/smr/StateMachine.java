@@ -13,6 +13,7 @@ import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
+import pt.ulisboa.tecnico.sconekv.server.events.local.CheckPendingTransactions;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.SMRStatusException;
 
 import java.util.*;
@@ -183,8 +184,10 @@ public class StateMachine {
             }
         }
 
-        if (this.status == Status.MASTER_AFTER_VIEW_CHANGE && this.commitNumber == getOpNumber())
+        if (this.status == Status.MASTER_AFTER_VIEW_CHANGE && this.commitNumber == getOpNumber()) {
+            cm.queueEvent(new CheckPendingTransactions(null));
             setStatus(Status.NORMAL);
+        }
     }
 
     public synchronized void startViewChange(StartViewChange event) {

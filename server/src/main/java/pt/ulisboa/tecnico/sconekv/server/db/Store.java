@@ -6,9 +6,7 @@ import pt.ulisboa.tecnico.sconekv.common.db.*;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidVersionException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Store {
@@ -126,5 +124,14 @@ public class Store {
     public synchronized Set<TransactionID> resetTx(TransactionID txID) {
         transactions.get(txID).setState(TransactionState.NONE);
         return releaseLocks(txID);
+    }
+
+    public synchronized List<Transaction> getPendingTransactions() {
+        List<Transaction> pendingTransactions = new ArrayList<>();
+        for (Transaction tx : transactions.values()) {
+            if (!tx.isDecided())
+                pendingTransactions.add(tx);
+        }
+        return  pendingTransactions;
     }
 }

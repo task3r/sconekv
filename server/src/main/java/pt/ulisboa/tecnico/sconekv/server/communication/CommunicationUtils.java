@@ -119,6 +119,24 @@ public class CommunicationUtils {
         return message;
     }
 
+    public static MessageBuilder generateRequestLocalDecision(Node sender, Version currentVersion, TransactionID txID) {
+        MessageBuilder message = new MessageBuilder();
+        Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
+        SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
+        txID.serialize(mBuilder.getRequestLocalDecision());
+        return message;
+    }
+
+    public static MessageBuilder generateRequestGlobalDecision(Node sender, Version currentVersion, TransactionID txID) {
+        MessageBuilder message = new MessageBuilder();
+        Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
+        SerializationUtils.serializeNode(mBuilder.getNode(), sender);
+        SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
+        txID.serialize(mBuilder.getRequestGlobalDecision());
+        return message;
+    }
+
     public static MessageBuilder generatePrepare(LogEvent event, Node sender, Version currentVersion, short bucketId, int commitNumber, int opNumber) {
         MessageBuilder message = new MessageBuilder();
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);

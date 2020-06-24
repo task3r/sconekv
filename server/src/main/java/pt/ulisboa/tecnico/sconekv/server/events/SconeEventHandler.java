@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.sconekv.server.events;
 
 import pt.ulisboa.tecnico.sconekv.server.events.external.*;
+import pt.ulisboa.tecnico.sconekv.server.events.local.CheckPendingTransactions;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
 
@@ -35,4 +36,7 @@ public interface SconeEventHandler {
     void handle(MakeLocalDecision makeLocalDecision);
     void handle(RequestGlobalDecision requestGlobalDecision);
     void handle(RequestLocalDecision requestLocalDecision);
+
+    // Local Events
+    void handle(CheckPendingTransactions checkPendingTransactions);
 }

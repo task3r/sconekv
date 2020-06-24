@@ -16,12 +16,14 @@ import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
 import pt.ulisboa.tecnico.sconekv.server.events.*;
 import pt.ulisboa.tecnico.sconekv.server.events.external.*;
+import pt.ulisboa.tecnico.sconekv.server.events.local.CheckPendingTransactions;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.SMRStatusException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 import pt.ulisboa.tecnico.sconekv.server.smr.StateMachine;
 
+import java.util.List;
 import java.util.Set;
 
 public class SconeWorker implements Runnable, SconeEventHandler {
@@ -333,6 +335,31 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                     tx.getState()), requestLocalDecision.getNode());
         }
     }
+
+    // Local Events
+
+    @Override
+    public void handle(CheckPendingTransactions checkPendingTransactions) {
+        if (sm.isMaster()) {
+            List<Transaction> pendingTransactions = store.getPendingTransactions();
+            for (Transaction tx : pendingTransactions) {
+                try {
+                    if (tx.getCoordinatorBucket() == sm.getCurrentBucketId()) {
+                        Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
+                        masters.remove(self);
+                        cm.broadcast(CommunicationUtils.generateRequestLocalDecision(self, sm.getCurrentVersion(), tx.getId()), masters);
+                    } else {
+                        Node coordinator = dht.getMasterOfBucket(tx.getCoordinatorBucket());
+                        cm.send(CommunicationUtils.generateRequestGlobalDecision(self, sm.getCurrentVersion(), tx.getId()), coordinator);
+                    }
+                } catch (InvalidBucketException e) {
+                    logger.error("Invalid buckets in transaction {}, ignoring", tx.getId()); // should not happen
+                }
+            }
+        }
+    }
+
+    // Aux methods
 
     private void queueMakeLocalDecisions(Set<TransactionID> transactions) {
         for (TransactionID txID : transactions) {
