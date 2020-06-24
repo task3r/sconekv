@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.sconekv.server.events.external;
 
 import org.javatuples.Pair;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
+import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
@@ -33,8 +34,11 @@ public class CommitRequest extends ClientRequest {
 
     @Override
     public boolean checkBucket(DHT dht, Node self) {
-        // TODO validate transaction (every key should belong to this bucket)
-        // check master
+        for (Operation op : tx.getRwSet()) {
+            if (!dht.getMasterForKey(op.getKey().getBytes()).equals(self)) {
+                return false;
+            }
+        }
         return true;
     }
 
