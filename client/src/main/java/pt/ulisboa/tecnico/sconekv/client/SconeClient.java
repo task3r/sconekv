@@ -32,11 +32,7 @@ import java.io.InputStream;
 import java.util.*;
 
 public class SconeClient {
-    enum RequestMode {
-        MASTER_ONLY,
-        REPLICA_ONLY,
-        RANDOM
-    }
+
 
     private static final Logger logger = LoggerFactory.getLogger(SconeClient.class);
 
@@ -46,24 +42,14 @@ public class SconeClient {
     private Map<Node, ZMQ.Socket> sockets;
     private DHT dht;
     private int transactionCounter = 0;
-    private RequestMode mode;
     private Random random;
 
     public SconeClient() throws UnableToGetViewException, IOException {
-        this(RequestMode.MASTER_ONLY, "client-config.properties");
+        this("client-config.properties");
     }
 
     public SconeClient(String configFile) throws UnableToGetViewException, IOException {
-        this(RequestMode.MASTER_ONLY, configFile);
-    }
-
-    public SconeClient(RequestMode mode) throws UnableToGetViewException, IOException {
-        this(mode, "client-config.properties");
-    }
-
-    public SconeClient(RequestMode mode, String configFile) throws UnableToGetViewException, IOException {
         this.properties = new SconeClientProperties(configFile);
-        this.mode = mode;
         this.sockets = new HashMap<>();
         this.random = new Random();
         this.context = new ZContext();
@@ -181,7 +167,7 @@ public class SconeClient {
         while (retries < properties.MAX_REQUEST_RETRIES) {
             for (Short bucket : buckets) {
                 MessageBuilder message = constructCommitMessage(txID, opsPerBucket.get(bucket), buckets);
-                ZMQ.Socket socket = sendRequest(bucket, message);
+                ZMQ.Socket socket = sendRequest(bucket, message, true);
                 if (coordinator == null)
                     coordinator = socket;
             }
@@ -232,25 +218,29 @@ public class SconeClient {
         return opsPerBucket;
     }
 
-    private ZMQ.Socket getSocketForRequest(short bucket) throws InvalidBucketException {
+    private ZMQ.Socket getSocketForRequest(short bucket, boolean isCommit) throws InvalidBucketException {
         List<Node> candidates;
         Node selected;
         Node masterOfBucket = this.dht.getMasterOfBucket(bucket);
-        switch (this.mode) {
-            case MASTER_ONLY:
-                selected = masterOfBucket;
-                break;
-            case REPLICA_ONLY:
-                candidates = new ArrayList<>(this.dht.getBucket(bucket).getNodesExcept(masterOfBucket));
-                selected = candidates.get(random.nextInt(candidates.size()));
-                break;
-            case RANDOM:
-                candidates = new ArrayList<>(this.dht.getBucket(bucket).getNodes());
-                selected = candidates.get(random.nextInt(candidates.size()));
-                break;
-            default:
-                //shouldn't reach here
-                throw new InvalidBucketException();
+        if (isCommit) {
+            selected = masterOfBucket;
+        } else {
+            switch (properties.MODE) {
+                case MASTER_ONLY:
+                    selected = masterOfBucket;
+                    break;
+                case REPLICA_ONLY:
+                    candidates = new ArrayList<>(this.dht.getBucket(bucket).getNodesExcept(masterOfBucket));
+                    selected = candidates.get(random.nextInt(candidates.size()));
+                    break;
+                case RANDOM:
+                    candidates = new ArrayList<>(this.dht.getBucket(bucket).getNodes());
+                    selected = candidates.get(random.nextInt(candidates.size()));
+                    break;
+                default:
+                    //shouldn't reach here
+                    throw new InvalidBucketException();
+            }
         }
         return getSocket(selected);
     }
@@ -259,7 +249,7 @@ public class SconeClient {
         int retries = 0;
         ZMQ.Socket requester;
         while (retries < properties.MAX_REQUEST_RETRIES) {
-            requester = sendRequest(bucket, message);
+            requester = sendRequest(bucket, message, false);
             External.Response.Reader response = recvResponse(requester, requestType);
             if (response != null) {
                 return response;
@@ -270,10 +260,10 @@ public class SconeClient {
         throw new MaxRetriesExceededException();
     }
 
-    private ZMQ.Socket sendRequest(short bucket, MessageBuilder message) throws RequestFailedException {
+    private ZMQ.Socket sendRequest(short bucket, MessageBuilder message, boolean isCommit) throws RequestFailedException {
         ZMQ.Socket requester;
         try {
-            requester = getSocketForRequest(bucket);
+            requester = getSocketForRequest(bucket, isCommit);
             requester.sendMore(""); // delimiter
             requester.send(SerializationUtils.getBytesFromMessage(message));
             return requester;

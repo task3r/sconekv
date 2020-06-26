@@ -83,6 +83,10 @@ public class Transaction extends AbstractTransaction {
         return new ArrayList<>(rwSet.values());
     }
 
+    public int size() {
+        return rwSet.size();
+    }
+
     public void setState(TransactionState state) throws InvalidTransactionStateChangeException {
         if (getState() == TransactionState.COMMITTED || getState() == TransactionState.ABORTED)
             throw new InvalidTransactionStateChangeException();

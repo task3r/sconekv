@@ -12,12 +12,19 @@ import java.util.Properties;
 import static pt.ulisboa.tecnico.sconekv.common.utils.PropertiesUtils.*;
 
 public class SconeClientProperties {
+    enum RequestMode {
+        MASTER_ONLY,
+        REPLICA_ONLY,
+        RANDOM
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(SconeClientProperties.class);
 
     public final int RECV_TIMEOUT;
     public final int MAX_REQUEST_RETRIES;
     public final int SERVER_REQUEST_PORT;
     public final String TRACKER_URL;
+    public final RequestMode MODE;
 
     public SconeClientProperties(String filename) throws IOException {
         Properties properties = new Properties();
@@ -29,6 +36,7 @@ public class SconeClientProperties {
                 MAX_REQUEST_RETRIES = getInt(properties, "MAX_REQUEST_RETRIES");
                 SERVER_REQUEST_PORT = getInt(properties, "SERVER_REQUEST_PORT");
                 TRACKER_URL = getString(properties, "TRACKER_URL");
+                MODE = RequestMode.valueOf(getString(properties, "REQUEST_MODE"));
             } catch (IOException e) {
                 logger.error("Error loading properties.");
                 throw e;
