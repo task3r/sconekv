@@ -79,21 +79,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <!-- The gmavenplus plugin is used to compile Groovy code. To learn
-                    more about this plugin, visit https://github.com/groovy/GMavenPlus/wiki -->
-                <groupId>org.codehaus.gmavenplus</groupId>
-                <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>addTestSources</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>dockerfile-maven-plugin</artifactId>
                 <version>1.4.13</version>
@@ -110,13 +95,11 @@
                         <id>default</id>
                         <goals>
                             <goal>build</goal>
-                            <goal>push</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
                     <repository>task3r/sconekv-client</repository>
-<!--                    <tag>${project.version}</tag>-->
                 </configuration>
             </plugin>
         </plugins>
