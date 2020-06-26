@@ -2,6 +2,8 @@ package pt.ulisboa.tecnico.sconekv.server.constants;
 
 public class SconeConstants {
 
+    public static long GC_PERIOD = 100L; // 100s
+    public static long TX_TTL = 100L; // 100s
     public static int SERVER_REQUEST_PORT = 5555;
     public static int SERVER_INTERNAL_PORT = 6666;
     public static short NUM_BUCKETS = 1;

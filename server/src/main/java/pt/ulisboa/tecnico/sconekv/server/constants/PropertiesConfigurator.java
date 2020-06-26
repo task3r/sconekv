@@ -50,6 +50,8 @@ public class PropertiesConfigurator {
         SconeConstants.NUM_WORKERS = getShort(properties, "NUM_WORKERS");
         SconeConstants.TRACKER_URL = getString(properties, "TRACKER_URL");
         SconeConstants.MAX_OP_NUMBER_HOLE = getInt(properties, "MAX_OP_NUMBER_HOLE");
+        SconeConstants.GC_PERIOD = getLong(properties, "GC_PERIOD");
+        SconeConstants.TX_TTL = getLong(properties, "TX_TTL");
         validateSconeConfiguration();
     }
 

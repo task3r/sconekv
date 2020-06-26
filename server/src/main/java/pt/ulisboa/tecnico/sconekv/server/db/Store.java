@@ -1,23 +1,52 @@
 package pt.ulisboa.tecnico.sconekv.server.db;
 
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.common.db.*;
+import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidVersionException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 
 public class Store {
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
 
     private final Map<String, Value> values;
     private final Map<TransactionID, Transaction> transactions;
+    private final Queue<Pair<TransactionID, LocalDateTime>> completedTransactions;
 
     public Store() {
         this.values = new ConcurrentHashMap<>();
         this.transactions = new ConcurrentHashMap<>();
+        this.completedTransactions = new ConcurrentLinkedQueue<>();
+
+        // Garbage Collection
+        Timer timer = new Timer("GarbageCollectionTimer", true);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                logger.debug("Started GC");
+                LocalDateTime gcTime = LocalDateTime.now().minusSeconds(SconeConstants.TX_TTL);
+                boolean runGC = true;
+                while (runGC) {
+                    Pair<TransactionID, LocalDateTime> head = completedTransactions.peek();
+                    if (head != null && head.getValue1().isBefore(gcTime)) {
+                        logger.debug("GC {}", head.getValue0());
+                        transactions.remove(head.getValue0());
+                        completedTransactions.remove();
+                    } else {
+                        runGC = false;
+                    }
+                }
+                logger.debug("Ended GC");
+            }
+        }, 0, TimeUnit.SECONDS.toMillis(SconeConstants.GC_PERIOD));
     }
 
     public synchronized Value get(String key) {
@@ -111,6 +140,7 @@ public class Store {
             tx.setState(TransactionState.COMMITTED);
         }
         tx.setDecided();
+        completedTransactions.add(new Pair<>(tx.getId(), LocalDateTime.now()));
     }
 
     public synchronized void abort(TransactionID txID) {
@@ -119,6 +149,7 @@ public class Store {
             tx.setState(TransactionState.ABORTED);
         }
         tx.setDecided();
+        completedTransactions.add(new Pair<>(tx.getId(), LocalDateTime.now()));
     }
 
     public synchronized Set<TransactionID> resetTx(TransactionID txID) {
