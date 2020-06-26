@@ -25,7 +25,7 @@ public class SconeKVClient extends DB {
         try {
             Properties props = getProperties();
             String configFile = props.getProperty("scone.config");
-            String txSize = props.getProperty("scone.config");
+            String txSize = props.getProperty("scone.tx_size");
 
             if (configFile != null) {
                 sconeClient = new SconeClient(configFile);
@@ -122,12 +122,11 @@ public class SconeKVClient extends DB {
                 totalTransactions++;
                 currentTransaction.commit();
                 commits++;
-                currentTransaction = sconeClient.newTransaction();
-
             } catch (CommitFailedException e) {
                 logger.error("Aborted tx {}", currentTransaction.getId());
                 aborts++;
             }
+            currentTransaction = sconeClient.newTransaction();
         }
     }
 
