@@ -59,8 +59,8 @@ public class SconeKVClient extends DB {
 
         logger.info("Ended SconeKV benchmark.");
         logger.info("Total transactions: {}", totalTransactions);
-        logger.info("Committed: {} ({}%)", commits, commits/(float)totalTransactions);
-        logger.info("Aborted: {} ({}%)", aborts, commits/(float)totalTransactions);
+        logger.info("Committed: {} ({}%)", commits, commits/(float)totalTransactions*100);
+        logger.info("Aborted: {} ({}%)", aborts, aborts/(float)totalTransactions*100);
     }
 
     public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
