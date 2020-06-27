@@ -30,7 +30,7 @@ public class ClientApplication {
         transactions = new HashMap();
     }
 
-    public static void main(String[] args) throws IOException, UnableToGetViewException {
+    public static void main(String[] args) throws IOException, UnableToGetViewException, InterruptedException {
         logger.info("Launching client application...");
 
         String shell = System.getenv("USE_SHELL");
@@ -41,26 +41,19 @@ public class ClientApplication {
             try {
                 SconeClient client = new SconeClient();
 
-                Transaction tx1 = client.newTransaction();
-                tx1.write("foo", "bar".getBytes());
-
-                byte[] r1 = tx1.read("foo");
-                logger.info("tx1 read foo: {}", new String(r1));
-
-                tx1.commit();
-
-                Transaction tx2 = client.newTransaction();
-
-                byte[] response = tx2.read("foo");
-
-                logger.info("tx2 read foo response: {}", new String(response));
-
-                tx2.write("bar", response);
-                tx2.write("bar", "barfoo".getBytes());
-
-                tx2.commit();
-
-            } catch (InvalidTransactionStateChangeException | UnableToGetViewException | RequestFailedException | CommitFailedException e) {
+                for (int i = 0; i < 100; i++) {
+                    Transaction tx1 = client.newTransaction();
+                    tx1.write(i + "a", "b".getBytes());
+                    tx1.write(i + "b", "c".getBytes());
+                    try {
+                        tx1.commit();
+                        logger.info("Commit {}", tx1.getId());
+                    } catch (CommitFailedException e) {
+                        logger.info("Abort {}", tx1.getId());
+                    }
+                    Thread.sleep(1000);
+                }
+            } catch (InvalidTransactionStateChangeException | UnableToGetViewException | RequestFailedException e) {
                 e.printStackTrace();
             }
         }

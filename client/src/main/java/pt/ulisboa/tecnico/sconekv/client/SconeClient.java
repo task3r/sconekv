@@ -26,6 +26,7 @@ import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidBucketException;
 import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 import pt.ulisboa.tecnico.sconekv.common.transport.External;
 import pt.ulisboa.tecnico.sconekv.common.utils.SerializationUtils;
+import zmq.ZError;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,12 +55,12 @@ public class SconeClient {
         this.random = new Random();
         this.context = new ZContext();
         this.clientID = UUID.randomUUID();
-        this.dht = getDHT();
+        this.dht = new DHT(getDHT());
 
         logger.info("Created new client {}", this.clientID);
     }
 
-    private DHT getDHT() throws UnableToGetViewException {
+    private Common.DHT.Reader getDHT() throws UnableToGetViewException {
         try {
             DiscoveryResponseDto discoveryResponseDto = getDiscoveryNodes();
             if (discoveryResponseDto == null)
@@ -84,7 +85,7 @@ public class SconeClient {
                         External.Response.Reader response = SerializationUtils.getMessageFromBytes(rawResponse)
                                 .getRoot(External.Response.factory);
                         if (response.which() == External.Response.Which.DHT)
-                            return new DHT(response.getDht());
+                            return response.getDht();
                     }
                     socket.disconnect(address);
                 }
@@ -159,6 +160,7 @@ public class SconeClient {
     }
 
     public boolean performCommit(TransactionID txID, List<Operation> ops) throws RequestFailedException {
+        logger.debug("Committing {}", txID);
         Map<Short, List<Operation>> opsPerBucket = gerOpsPerBucket(ops);
         SortedSet<Short> buckets = new TreeSet<>(opsPerBucket.keySet()); // I want the coordinator to receive it first if possible
 
@@ -175,7 +177,7 @@ public class SconeClient {
             if (coordinator == null)
                 throw new RequestFailedException();
 
-            External.Response.Reader response = recvResponse(coordinator, External.Response.Which.COMMIT);
+            External.Response.Reader response = recvResponse(coordinator, External.Response.Which.COMMIT, retries);
             if (response != null) {
                 return response.getCommit().getResult() == External.CommitResponse.Result.OK;
             } else {
@@ -250,7 +252,7 @@ public class SconeClient {
         ZMQ.Socket requester;
         while (retries < properties.MAX_REQUEST_RETRIES) {
             requester = sendRequest(bucket, message, false);
-            External.Response.Reader response = recvResponse(requester, requestType);
+            External.Response.Reader response = recvResponse(requester, requestType, retries);
             if (response != null) {
                 return response;
             } else {
@@ -272,11 +274,12 @@ public class SconeClient {
         }
     }
 
-    private External.Response.Reader recvResponse(ZMQ.Socket socket, External.Response.Which requestType) {
-        socket.recv(); // delimiter
+    private External.Response.Reader recvResponse(ZMQ.Socket socket, External.Response.Which requestType, int tryCount) {
+        socket.recv(); // waits for delimiter until timeout
         External.Response.Reader response;
         try {
-            response = SerializationUtils.getMessageFromBytes(socket.recv(0)).getRoot(External.Response.factory);
+            byte[] recvBytes = socket.recv(ZMQ.DONTWAIT); // already waited for the delimiter
+            response = SerializationUtils.getMessageFromBytes(recvBytes).getRoot(External.Response.factory);
             if (response.which() != requestType) {
                 if (response.which() == External.Response.Which.DHT) // request was sent to the wrong node
                     this.dht.applyView(response.getDht());
@@ -285,10 +288,13 @@ public class SconeClient {
                 return response;
             }
         } catch (IOException e) {
-            try {
-                this.dht = getDHT();
-            } catch (UnableToGetViewException ex) {
-                logger.error("Request failed, getDHT also failed. Is the system down? Retrying...");
+            logger.error("Timeout recv {}", socket.errno() == ZError.EAGAIN);
+            if (tryCount + 1 < properties.MAX_REQUEST_RETRIES) { // otherwise its pointless to getDHT
+                try {
+                    this.dht.applyView(getDHT());
+                } catch (UnableToGetViewException ex) {
+                    logger.error("Request failed, getDHT also failed. Is the system down? Retrying...");
+                }
             }
             return null;
         }
