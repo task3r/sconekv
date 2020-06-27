@@ -25,15 +25,6 @@ public class DHT {
     private Bucket[] buckets;
     private int murmurSeed;
 
-    public DHT(Ring ring, short numBuckets, int murmurSeed) {
-        this.nodes = ring.asSet();
-        this.viewVersion = ring.getVersion();
-        this.numBuckets = numBuckets;
-        this.murmurSeed = murmurSeed;
-        this.hashFunction = Hashing.murmur3_128(murmurSeed);
-        defineBuckets();
-    }
-
     public DHT(SortedSet<Node> nodes, Version version, short numBuckets, int murmurSeed) {
         this.nodes = nodes;
         this.viewVersion = version;
@@ -43,20 +34,25 @@ public class DHT {
         defineBuckets();
     }
 
+    public DHT(Ring ring, short numBuckets, int murmurSeed) {
+        this(ring.asSet(), ring.getVersion(), numBuckets, murmurSeed);
+    }
+
     public DHT(Common.DHT.Reader dht) {
-        this.nodes = new TreeSet<>();
+        this(getNodes(dht), SerializationUtils.getVersionFromMesage(dht.getVersion()),
+                dht.getNumBuckets(), dht.getMurmurSeed());
+    }
+
+    private static SortedSet<Node> getNodes(Common.DHT.Reader dht) {
+        SortedSet<Node> nodes = new TreeSet<>();
         for (Common.Node.Reader node : dht.getNodes()) {
             try {
-                this.nodes.add(SerializationUtils.getNodeFromMessage(node));
+                nodes.add(SerializationUtils.getNodeFromMessage(node));
             } catch (UnknownHostException e) {
                 logger.error("Received invalid node, ignoring {} {}", node.getId(), node.getAddress());
             }
         }
-        this.viewVersion = SerializationUtils.getVersionFromMesage(dht.getVersion());
-        this.numBuckets = dht.getNumBuckets();
-        this.murmurSeed = dht.getMurmurSeed();
-        this.hashFunction = Hashing.murmur3_128(dht.getMurmurSeed());
-        defineBuckets();
+        return nodes;
     }
 
     public void serialize(Common.DHT.Builder builder) {
@@ -71,23 +67,33 @@ public class DHT {
         builder.setMurmurSeed(this.murmurSeed);
     }
 
-    public synchronized void applyView(SortedSet<Node> newView, Version newVersion) {
-        if (this.viewVersion.isLesser(newVersion)) {
-            this.nodes = newView;
-            this.viewVersion = newVersion;
-            defineBuckets();
-        } else {
-            logger.error("Tried adding a view with an earlier version. Ignored");
-        }
+    private synchronized void changeView(SortedSet<Node> newView, Version newVersion) {
+        this.nodes = newView;
+        this.viewVersion = newVersion;
+        defineBuckets();
     }
 
     public synchronized void applyView(Ring ring) {
-        applyView(ring.asSet(), ring.getVersion());
+        if (checkVersion(ring.getVersion()))
+            changeView(ring.asSet(), ring.getVersion());
     }
 
     public synchronized void applyView(Common.DHT.Reader dht) {
-        DHT newDHT = new DHT(dht);
-        this.applyView(newDHT.nodes, newDHT.viewVersion);
+        Version receivedVersion = SerializationUtils.getVersionFromMesage(dht.getVersion());
+        if (checkVersion(receivedVersion)) {
+            changeView(getNodes(dht), receivedVersion);
+        }
+    }
+
+    private boolean checkVersion(Version newVersion) {
+        if (this.viewVersion.isLesser(newVersion)) {
+            return true;
+        } else if (this.viewVersion.equals(newVersion)) {
+            logger.debug("Received view with same version. Ignored");
+        } else {
+            logger.error("Tried adding a view with an earlier version. Ignored");
+        }
+        return false;
     }
 
     private void defineBuckets() {
@@ -97,13 +103,18 @@ public class DHT {
         for (short b = 0; b < numBuckets; b++) {
             buckets[b] = new Bucket(b, new TreeSet<>(aux.subList(b*bucketSize, Math.min((b+1)*bucketSize, nodes.size()))));
         }
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("Defined buckets");
+            for (Bucket b : buckets) {
+                logger.debug("{}", b);
+            }
+        }
     }
 
     public short getBucketForKey(byte[] key) {
         // this works because for now numBuckets doesn't change
         // otherwise we would need to apply consistent hashing
-        return (short) (hashFunction.hashBytes(key).asInt()  % numBuckets);
+        return (short) Math.floorMod(hashFunction.hashBytes(key).asInt(), numBuckets);
     }
 
     public Node getMasterOfBucket(short bucket) throws InvalidBucketException {

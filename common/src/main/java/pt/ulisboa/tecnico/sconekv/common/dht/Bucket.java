@@ -52,4 +52,13 @@ public class Bucket {
     public int hashCode() {
         return Objects.hash(id, nodes);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder("Bucket{id=" + id + ", nodes=[");
+        for (Node n : nodes)
+            result.append(n).append(",");
+        result.append("]}");
+        return result.toString();
+    }
 }
