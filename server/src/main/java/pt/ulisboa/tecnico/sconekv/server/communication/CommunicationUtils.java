@@ -88,7 +88,7 @@ public class CommunicationUtils {
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
         SerializationUtils.serializeNode(mBuilder.getNode(), sender);
         SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
-        txID.serialize(mBuilder.getCommitTransaction());
+        txID.serialize(mBuilder.initCommitTransaction());
         return message;
     }
 
@@ -97,7 +97,7 @@ public class CommunicationUtils {
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
         SerializationUtils.serializeNode(mBuilder.getNode(), sender);
         SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
-        txID.serialize(mBuilder.getAbortTransaction());
+        txID.serialize(mBuilder.initAbortTransaction());
         return message;
     }
 
@@ -106,7 +106,7 @@ public class CommunicationUtils {
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
         SerializationUtils.serializeNode(mBuilder.getNode(), sender);
         SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
-        txID.serialize(mBuilder.getRequestRollbackLocalDecision());
+        txID.serialize(mBuilder.initRequestRollbackLocalDecision());
         return message;
     }
 
@@ -115,7 +115,7 @@ public class CommunicationUtils {
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
         SerializationUtils.serializeNode(mBuilder.getNode(), sender);
         SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
-        txID.serialize(mBuilder.getRollbackLocalDecisionResponse());
+        txID.serialize(mBuilder.initRollbackLocalDecisionResponse());
         return message;
     }
 
@@ -124,7 +124,7 @@ public class CommunicationUtils {
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
         SerializationUtils.serializeNode(mBuilder.getNode(), sender);
         SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
-        txID.serialize(mBuilder.getRequestLocalDecision());
+        txID.serialize(mBuilder.initRequestLocalDecision());
         return message;
     }
 
@@ -133,7 +133,7 @@ public class CommunicationUtils {
         Internal.InternalMessage.Builder mBuilder = message.initRoot(Internal.InternalMessage.factory);
         SerializationUtils.serializeNode(mBuilder.getNode(), sender);
         SerializationUtils.serializeViewVersion(mBuilder.getViewVersion(), currentVersion);
-        txID.serialize(mBuilder.getRequestGlobalDecision());
+        txID.serialize(mBuilder.initRequestGlobalDecision());
         return message;
     }
 
