@@ -111,12 +111,12 @@ public class StateMachine {
             logger.error("PrepareLog but I am not the master, ignoring...");
             throw new SMRStatusException();
         }
-        logger.debug("Master replicating request...");
         log.add(new LogEntry(event));
 
         MessageBuilder message = CommunicationUtils.generatePrepare(event, mm.getMyself(), currentVersion,
                 currentBucket.getId(), commitNumber, getOpNumber());
         cm.broadcastBucket(message);
+        logger.debug("Master replicated {}", getOpNumber());
     }
 
     public synchronized void prepareLogReplica(Prepare prepare) {
@@ -125,7 +125,7 @@ public class StateMachine {
             logger.info("Prepare event {} was not processed as status is {}", prepare.getEvent().getTxID(), status);
             return;
         }
-        logger.debug("Replica received prepare message");
+        logger.debug("Replica received prepare message op:{} commit:{}", prepare.getOpNumber(), prepare.getCommitNumber());
 
         if (prepare.getBucket() != currentBucket.getId() || !prepare.getNode().equals(currentMaster)) {
             logger.error("Received incorrect prepare request, ignoring");
@@ -134,6 +134,7 @@ public class StateMachine {
 
         // if this entry is not the immediately consecutive in the log, wait
         if (this.log.size() != prepare.getOpNumber()) {
+            logger.error("Received {} but am on {}", prepare.getOpNumber(), getOpNumber());
             this.pendingEntries.put(prepare.getOpNumber(), prepare);
             if (prepare.getOpNumber() - this.getOpNumber() >= SconeConstants.MAX_OP_NUMBER_HOLE) {
                 logger.info("Detected op number hole, requesting state update");
@@ -160,6 +161,7 @@ public class StateMachine {
 
         MessageBuilder message = CommunicationUtils.generatePrepareOK(mm.getMyself(), currentVersion, currentBucket.getId(), getOpNumber());
         cm.send(message, currentMaster);
+        logger.debug("Replica sent prepareOK {}", getOpNumber());
     }
 
     public synchronized void prepareOK(PrepareOK prepareOK) {
