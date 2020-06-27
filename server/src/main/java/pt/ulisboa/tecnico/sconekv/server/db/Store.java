@@ -37,7 +37,6 @@ public class Store {
                 while (runGC) {
                     Pair<TransactionID, LocalDateTime> head = completedTransactions.peek();
                     if (head != null && head.getValue1().isBefore(gcTime)) {
-                        logger.debug("GC {}", head.getValue0());
                         transactions.remove(head.getValue0());
                         completedTransactions.remove();
                     } else {
@@ -79,35 +78,54 @@ public class Store {
     public synchronized void validate(TransactionID txID) throws ValidTransactionNotLockableException {
         Transaction tx = transactions.get(txID);
         try {
-            Set<TransactionID> owners = new HashSet<>();
-            TransactionID currentOwner;
-            for (Operation op : tx.getRwSet()) {
-                if (owners.isEmpty()) { // transaction is still lockable
-                    currentOwner = this.get(op.getKey()).validateAndLock(tx.getId(), op);
-                    if (!txID.equals(currentOwner))
-                        owners.add(currentOwner);
-                } else {
-                    currentOwner = this.get(op.getKey()).validate(op);
-                    if (currentOwner != null)
-                        owners.add(currentOwner);
-                }
-            }
+            Set<TransactionID> currentOwners = validateAndLock(tx);
 
-            if (owners.isEmpty()) { // acquired locks for all keys
+            if (currentOwners.isEmpty()) { // acquired locks for all keys
+                logger.debug("Locally accepted {}", txID);
                 tx.setState(TransactionState.PREPARED);
             } else {
-                for (Operation op: tx.getRwSet()) // release any locks it acquired
-                    this.get(op.getKey()).releaseLock(txID);
-                if (owners.stream().min(TransactionID::compareTo).get().isGreater(txID)) // if txID e lower than all currentOwners, then they should rollback
-                    throw new ValidTransactionNotLockableException(owners);
+                releaseLocks(tx);
+
+                if (logger.isDebugEnabled()) {
+                    StringBuilder s = new StringBuilder();
+                    for (TransactionID id : currentOwners)
+                        s.append(id).append(",");
+                    logger.debug("Locally accepted {} but it's not lockable {}", txID, s);
+                }
+
+                Optional<TransactionID> min = currentOwners.stream().min(TransactionID::compareTo);
+                if (min.isPresent() && min.get().isGreater(txID)) // if txID e lower than all currentOwners, then they should rollback
+                    throw new ValidTransactionNotLockableException(currentOwners);
                 else
                     throw new ValidTransactionNotLockableException();
             }
         } catch (InvalidVersionException e) {
-            for (Operation op: tx.getRwSet()) // release any locks it acquired
-                this.get(op.getKey()).releaseLock(txID);
+            releaseLocks(tx);
             tx.setState(TransactionState.ABORTED);
+            logger.debug("Locally rejected {}", txID);
         }
+    }
+
+    private void releaseLocks(Transaction tx) {
+        for (Operation op : tx.getRwSet()) // release any locks it acquired
+            this.get(op.getKey()).releaseLock(tx.getId());
+    }
+
+    private Set<TransactionID> validateAndLock(Transaction tx) throws InvalidVersionException {
+        Set<TransactionID> owners = new HashSet<>();
+        TransactionID currentOwner;
+        for (Operation op : tx.getRwSet()) {
+            if (owners.isEmpty()) { // transaction is still lockable
+                currentOwner = this.get(op.getKey()).validateAndLock(tx.getId(), op);
+                if (!tx.getId().equals(currentOwner))
+                    owners.add(currentOwner);
+            } else {
+                currentOwner = this.get(op.getKey()).validate(op);
+                if (currentOwner != null)
+                    owners.add(currentOwner);
+            }
+        }
+        return owners;
     }
 
     public synchronized void queueLocks(TransactionID txID) {
