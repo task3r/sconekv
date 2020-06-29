@@ -63,7 +63,6 @@ public class Store {
 
     public boolean addTransaction(Transaction tx) {
         if (transactions.containsKey(tx.getId())) {
-            logger.error("TxID {} was already added to the store", tx.getId());
             return false;
         } else {
             this.transactions.put(tx.getId(), tx);

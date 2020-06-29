@@ -100,9 +100,10 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(CommitRequest commitRequest) {
+        logger.info("CommitRequest {}", commitRequest.getTxID());
         if (sm.isMaster()) {
             if (store.addTransaction(commitRequest.getTx())) {
-                cm.queueEvent(new MakeLocalDecision(generateId(), commitRequest.getTxID()));
+                handle(new MakeLocalDecision(generateId(), commitRequest.getTxID()));
             } else {
                 logger.error("Received duplicated commitRequest {}, client must be patient", commitRequest.getTxID());
             }
@@ -152,10 +153,17 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         }
         if (sm.isMaster()) {
             store.releaseLocks(logTransactionDecision.getTxID());
-            if (store.getTransaction(logTransactionDecision.getTxID()).getClient() != null) { // might be from the old master, in that case this node will not be able to reply
-                MessageBuilder response = CommunicationUtils.generateCommitResponse(logTransactionDecision.getTxID(),
-                        logTransactionDecision.getDecision() == TransactionState.COMMITTED);
-                cm.replyToClient(store.getTransaction(logTransactionDecision.getTxID()).getClient(), response);
+            try {
+                Node coordinator = dht.getMasterOfBucket(store.getTransaction(logTransactionDecision.getTxID()).getCoordinatorBucket());
+                // even if I am the coordinator, the request might be from the old master, in that case this node will not be able to reply
+                if (self.equals(coordinator) && store.getTransaction(logTransactionDecision.getTxID()).getClient() != null) {
+                    MessageBuilder response = CommunicationUtils.generateCommitResponse(logTransactionDecision.getTxID(),
+                            logTransactionDecision.getDecision() == TransactionState.COMMITTED);
+                    cm.replyToClient(store.getTransaction(logTransactionDecision.getTxID()).getClient(), response);
+                }
+            } catch (InvalidBucketException ignored) {
+                // this does not happen if the number of buckets e static
+                // right now if it were to happen, it would've happened earlier
             }
         }
     }
@@ -214,6 +222,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             logger.debug("Received a LocalDecisionResponse for a transaction I've yet to receive, delaying");
             cm.queueEvent(localDecisionResponse); // maybe scheduled task, so there is really a delay
         } else {
+            logger.debug("Received a LocalDecisionResponse from {} for transaction {}", localDecisionResponse.getNode(), localDecisionResponse.getTxID());
             try {
                 if (!dht.getMasterOfBucket(tx.getCoordinatorBucket()).equals(self)) {
                     logger.error("Received incorrect LocalDecisionResponse for tx {}, i am not the coordinator", tx.getId());
