@@ -160,7 +160,6 @@ public class SconeClient {
     }
 
     public boolean performCommit(TransactionID txID, List<Operation> ops) throws RequestFailedException {
-        logger.debug("Committing {}", txID);
         Map<Short, List<Operation>> opsPerBucket = gerOpsPerBucket(ops);
         SortedSet<Short> buckets = new TreeSet<>(opsPerBucket.keySet()); // I want the coordinator to receive it first if possible
 

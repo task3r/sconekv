@@ -51,7 +51,6 @@ public class ClientApplication {
                     } catch (CommitFailedException e) {
                         logger.info("Abort {}", tx1.getId());
                     }
-                    Thread.sleep(1000);
                 }
             } catch (InvalidTransactionStateChangeException | UnableToGetViewException | RequestFailedException e) {
                 e.printStackTrace();
