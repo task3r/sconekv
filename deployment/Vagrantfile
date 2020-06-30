@@ -1,0 +1,14 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# developed for use in the gsd inesc-ist cluster
+Vagrant.configure("2") do |config|
+  # ubuntu server with docker pre-configured
+  config.vm.box = "gusztavvargadr/docker-linux"
+  # allow vms in different physical machines to communicate with each other
+  config.vm.network "public_network", bridge: 'enp3s0'
+  # give vms the same name as the host
+  # usefull as I deploy only one vm per machine
+  # and use docker swarm (nodes are identified by their hostname)
+  config.vm.hostname = `hostname`.chomp
+end
