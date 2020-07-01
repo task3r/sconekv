@@ -287,7 +287,11 @@ public class SconeClient {
                 return response;
             }
         } catch (IOException e) {
-            logger.error("Timeout recv {}", socket.errno() == ZError.EAGAIN);
+            if (socket.errno() == ZError.EAGAIN) {
+                logger.error("Timeout recv {}", txID);
+            } else {
+                logger.error("Error recv {}, but not a timeout", txID);
+            }
             if (tryCount + 1 < properties.MAX_REQUEST_RETRIES) { // otherwise its pointless to getDHT
                 try {
                     this.dht.applyView(getDHT());
