@@ -136,7 +136,7 @@ public class SconeClient {
         txID.serialize(builder.getTxID());
         builder.setRead(key.getBytes());
 
-        External.Response.Reader response = request(this.dht.getBucketForKey(key.getBytes()), message, External.Response.Which.READ);
+        External.Response.Reader response = request(this.dht.getBucketForKey(key.getBytes()), message, txID, External.Response.Which.READ);
 
         return new Pair<>(response.getRead().getValue().toArray(), response.getRead().getVersion());
     }
@@ -147,7 +147,7 @@ public class SconeClient {
         txID.serialize(builder.getTxID());
         builder.setWrite(key.getBytes());
 
-        return request(this.dht.getBucketForKey(key.getBytes()), message, External.Response.Which.WRITE).getWrite().getVersion();
+        return request(this.dht.getBucketForKey(key.getBytes()), message, txID, External.Response.Which.WRITE).getWrite().getVersion();
     }
 
     public Short performDelete(TransactionID txID, String key) throws RequestFailedException {
@@ -156,7 +156,7 @@ public class SconeClient {
         txID.serialize(builder.getTxID());
         builder.setDelete(key.getBytes());
 
-        return request(this.dht.getBucketForKey(key.getBytes()), message, External.Response.Which.DELETE).getDelete().getVersion();
+        return request(this.dht.getBucketForKey(key.getBytes()), message, txID, External.Response.Which.DELETE).getDelete().getVersion();
     }
 
     public boolean performCommit(TransactionID txID, List<Operation> ops) throws RequestFailedException {
@@ -176,7 +176,7 @@ public class SconeClient {
             if (coordinator == null)
                 throw new RequestFailedException();
 
-            External.Response.Reader response = recvResponse(coordinator, External.Response.Which.COMMIT, retries);
+            External.Response.Reader response = recvResponse(coordinator, External.Response.Which.COMMIT, txID, retries);
             if (response != null) {
                 return response.getCommit().getResult() == External.CommitResponse.Result.OK;
             } else {
@@ -246,12 +246,12 @@ public class SconeClient {
         return getSocket(selected);
     }
 
-    private External.Response.Reader request(short bucket, MessageBuilder message, External.Response.Which requestType) throws RequestFailedException {
+    private External.Response.Reader request(short bucket, MessageBuilder message, TransactionID txID, External.Response.Which requestType) throws RequestFailedException {
         int retries = 0;
         ZMQ.Socket requester;
         while (retries < properties.MAX_REQUEST_RETRIES) {
             requester = sendRequest(bucket, message, false);
-            External.Response.Reader response = recvResponse(requester, requestType, retries);
+            External.Response.Reader response = recvResponse(requester, requestType, txID, retries);
             if (response != null) {
                 return response;
             } else {
@@ -273,13 +273,13 @@ public class SconeClient {
         }
     }
 
-    private External.Response.Reader recvResponse(ZMQ.Socket socket, External.Response.Which requestType, int tryCount) {
+    private External.Response.Reader recvResponse(ZMQ.Socket socket, External.Response.Which requestType, TransactionID txID, int tryCount) {
         socket.recv(); // waits for delimiter until timeout
         External.Response.Reader response;
         try {
             byte[] recvBytes = socket.recv(ZMQ.DONTWAIT); // already waited for the delimiter
             response = SerializationUtils.getMessageFromBytes(recvBytes).getRoot(External.Response.factory);
-            if (response.which() != requestType) {
+            if (response.which() != requestType || !txID.equals(new TransactionID(response.getTxID()))) {
                 if (response.which() == External.Response.Which.DHT) // request was sent to the wrong node
                     this.dht.applyView(response.getDht());
                 return null;
