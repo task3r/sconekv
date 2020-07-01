@@ -1,5 +1,14 @@
 version: '3.2'
 services:
+  tracker:
+    image: task3r/tracker
+    networks:
+      - sconenet
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.sconekv_type==client"
   cluster:
     image: task3r/sconekv-node
     networks:
@@ -11,12 +20,6 @@ services:
       placement:
         constraints:
           - "node.labels.sconekv_type!=client"
-  tracker:
-    image: task3r/tracker
-    networks:
-      - sconenet
-    deploy:
-      replicas: 1
 
 networks:
   sconenet:

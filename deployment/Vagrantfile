@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+HOSTNAME = `hostname`.chomp
 
-# developed for use in the gsd inesc-ist cluster
 Vagrant.configure("2") do |config|
   # ubuntu server with docker pre-configured
   config.vm.box = "gusztavvargadr/docker-linux"
@@ -10,5 +10,7 @@ Vagrant.configure("2") do |config|
   # give vms the same name as the host
   # usefull as I deploy only one vm per machine
   # and use docker swarm (nodes are identified by their hostname)
-  config.vm.hostname = `hostname`.chomp
+  config.vm.hostname = 'vm-' + HOSTNAME
+  # use insecure keys (faster booting)
+  config.ssh.insert_key = false
 end
