@@ -31,7 +31,6 @@ public class Store {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                logger.debug("Started GC");
                 LocalDateTime gcTime = LocalDateTime.now().minusSeconds(SconeConstants.TX_TTL);
                 boolean runGC = true;
                 while (runGC) {
@@ -43,7 +42,6 @@ public class Store {
                         runGC = false;
                     }
                 }
-                logger.debug("Ended GC");
             }
         }, 0, TimeUnit.SECONDS.toMillis(SconeConstants.GC_PERIOD));
     }
