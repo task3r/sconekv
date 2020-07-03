@@ -20,6 +20,8 @@ services:
       placement:
         constraints:
           - "node.labels.sconekv_type!=client"
+      restart_policy:
+        condition: none
 
 networks:
   sconenet:
