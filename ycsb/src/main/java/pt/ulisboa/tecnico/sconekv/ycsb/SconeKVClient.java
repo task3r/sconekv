@@ -79,6 +79,7 @@ public class SconeKVClient extends DB {
             currentTransaction = sconeClient.newTransaction();
             return Status.ERROR;
         } catch (RequestFailedException e) {
+            currentTransaction = sconeClient.newTransaction();
             return Status.SERVICE_UNAVAILABLE;
         }
     }
@@ -94,6 +95,7 @@ public class SconeKVClient extends DB {
             currentTransaction = sconeClient.newTransaction();
             return Status.ERROR;
         } catch (RequestFailedException e) {
+            currentTransaction = sconeClient.newTransaction();
             return Status.SERVICE_UNAVAILABLE;
         }
     }
@@ -112,6 +114,7 @@ public class SconeKVClient extends DB {
             currentTransaction = sconeClient.newTransaction();
             return Status.ERROR;
         } catch (RequestFailedException e) {
+            currentTransaction = sconeClient.newTransaction();
             return Status.SERVICE_UNAVAILABLE;
         }
     }
