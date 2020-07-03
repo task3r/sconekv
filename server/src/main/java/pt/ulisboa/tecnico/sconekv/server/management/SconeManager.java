@@ -37,7 +37,7 @@ public class SconeManager implements UpdateViewCallback {
     private void joinMembership() throws IOException, InterruptedException {
         membershipManager = new MembershipManager(this);
         if (!membershipManager.isFirstNode()) {
-            int sleepMs = ThreadLocalRandom.current().nextInt(15000);
+            int sleepMs = ThreadLocalRandom.current().nextInt(20000);
             logger.info("[{}] - Sleeping {} ms", MembershipManager.myself, sleepMs);
             Thread.sleep(sleepMs);
         } else {
@@ -47,7 +47,6 @@ public class SconeManager implements UpdateViewCallback {
     }
 
     private void start() {
-        logger.info("Scone Node starting...");
         threads = new ArrayList<>();
         threads.add(new Thread(new SconeServer((short)0, communicationManager)));
         for (short i = 1; i <= SconeConstants.NUM_WORKERS; i++) {
@@ -56,6 +55,7 @@ public class SconeManager implements UpdateViewCallback {
         for (Thread t : threads) {
             t.start();
         }
+        logger.info("Scone Node ready.");
     }
 
     public void shutdown() throws InterruptedException {

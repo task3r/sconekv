@@ -39,8 +39,6 @@ public class SconeServer implements Runnable {
 
     @Override
     public void run() {
-        logger.info("Listening for requests...");
-
         while (!Thread.currentThread().isInterrupted()) {
             Triplet<MessageType, String, byte[]> message = cm.recvMessage();
             if (message != null) {

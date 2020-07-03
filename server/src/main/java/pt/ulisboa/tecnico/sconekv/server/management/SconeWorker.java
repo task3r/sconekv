@@ -76,24 +76,24 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(ReadRequest readRequest) {
-        logger.info("Read {} : {}", readRequest.getKey(), readRequest.getTxID());
         Value value = store.get(readRequest.getKey());
+        logger.info("Read {} v{} : {}", readRequest.getKey(), value.getVersion(), readRequest.getTxID());
         MessageBuilder response = CommunicationUtils.generateReadResponse(readRequest.getTxID(), readRequest.getKey().getBytes(), value);
         cm.replyToClient(readRequest.getClient(), response);
     }
 
     @Override
     public void handle(WriteRequest writeRequest) {
-        logger.info("Write {} : {}", writeRequest.getKey(), writeRequest.getTxID());
         Value value = store.get(writeRequest.getKey());
+        logger.info("Write {} v{} : {}", writeRequest.getKey(), value.getVersion(), writeRequest.getTxID());
         MessageBuilder response = CommunicationUtils.generateWriteResponse(writeRequest.getTxID(), writeRequest.getKey().getBytes(), value.getVersion());
         cm.replyToClient(writeRequest.getClient(), response);
     }
 
     @Override
     public void handle(DeleteRequest deleteRequest) {
-        logger.info("Delete {} : {}", deleteRequest.getKey(), deleteRequest.getTxID());
         Value value = store.get(deleteRequest.getKey());
+        logger.info("Delete {} v{} : {}", deleteRequest.getKey(), value.getVersion(), deleteRequest.getTxID());
         MessageBuilder response = CommunicationUtils.generateDeleteResponse(deleteRequest.getTxID(), deleteRequest.getKey().getBytes(), value.getVersion());
         cm.replyToClient(deleteRequest.getClient(), response);
     }
@@ -104,6 +104,8 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         if (sm.isMaster()) {
             if (store.addTransaction(commitRequest.getTx())) {
                 handle(new MakeLocalDecision(generateId(), commitRequest.getTxID()));
+            } else if (store.getTransaction(commitRequest.getTxID()).isDecided()) {
+                replyIfAmCoordinator(commitRequest.getTxID());
             } else {
                 logger.error("Received duplicated commitRequest {}, client must be patient", commitRequest.getTxID());
             }
@@ -153,18 +155,24 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         }
         if (sm.isMaster()) {
             store.releaseLocks(logTransactionDecision.getTxID());
-            try {
-                Node coordinator = dht.getMasterOfBucket(store.getTransaction(logTransactionDecision.getTxID()).getCoordinatorBucket());
-                // even if I am the coordinator, the request might be from the old master, in that case this node will not be able to reply
-                if (self.equals(coordinator) && store.getTransaction(logTransactionDecision.getTxID()).getClient() != null) {
-                    MessageBuilder response = CommunicationUtils.generateCommitResponse(logTransactionDecision.getTxID(),
-                            logTransactionDecision.getDecision() == TransactionState.COMMITTED);
-                    cm.replyToClient(store.getTransaction(logTransactionDecision.getTxID()).getClient(), response);
-                }
-            } catch (InvalidBucketException ignored) {
-                // this does not happen if the number of buckets e static
-                // right now if it were to happen, it would've happened earlier
+            replyIfAmCoordinator(logTransactionDecision.getTxID());
+        }
+    }
+
+    private void replyIfAmCoordinator(TransactionID txID) {
+        Transaction tx = store.getTransaction(txID);
+        try {
+            Node coordinator = dht.getMasterOfBucket(tx.getCoordinatorBucket());
+            // even if I am the coordinator, the request might be from the old master, in that case this node will not be able to reply
+            if (self.equals(coordinator) && tx.getClient() != null) {
+                MessageBuilder response = CommunicationUtils.generateCommitResponse(txID,
+                        tx.getState() == TransactionState.COMMITTED);
+                cm.replyToClient(tx.getClient(), response);
+                logger.debug("Responded to client {}", txID);
             }
+        } catch (InvalidBucketException ignored) {
+            // this does not happen if the number of buckets e static
+            // right now if it were to happen, it would've happened earlier
         }
     }
 

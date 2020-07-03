@@ -46,7 +46,7 @@ public class Value {
     }
 
     public synchronized TransactionID validateAndLock(TransactionID txID, Operation op) throws InvalidVersionException {
-        logger.debug("Validate {} v{} -> v{}", op.getKey(), version, op.getVersion());
+        logger.debug("Validate&Lock {} v{} == v{}", op.getKey(), version, op.getVersion());
         if (version == op.getVersion()) {
             if (this.lockOwner == null) {
                 this.lockOwner = txID;
@@ -58,6 +58,7 @@ public class Value {
     }
 
     public synchronized TransactionID validate(Operation op) throws InvalidVersionException {
+        logger.debug("Validate {} : current v{}, received v{}", op.getKey(), version, op.getVersion());
         if (version != op.getVersion()) {
             throw new InvalidVersionException();
         }
