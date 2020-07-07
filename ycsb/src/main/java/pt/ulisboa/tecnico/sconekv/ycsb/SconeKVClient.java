@@ -47,20 +47,12 @@ public class SconeKVClient extends DB {
     @Override
     public void cleanup() {
         try {
-            if (currentTransaction.size() > 0) {
-                totalTransactions++;
-                currentTransaction.commit();
-                commits++;
-            }
-        } catch (CommitFailedException e) {
-            logger.error("Aborted tx {}", currentTransaction.getId());
-            aborts++;
+            commit();
         } catch (RequestFailedException | InvalidTransactionStateChangeException ignored) {}
 
-        logger.info("Ended SconeKV benchmark.");
-        logger.info("Total transactions: {}", totalTransactions);
-        logger.info("Committed: {} ({}%)", commits, commits/(float)totalTransactions*100);
-        logger.info("Aborted: {} ({}%)", aborts, aborts/(float)totalTransactions*100);
+        logger.info("\nEnded SconeKV benchmark for client {}.\nTotal transactions: {}\nCommitted: {} ({}%)\nAborted: {} ({}%)",
+                currentTransaction.getId().getClient(), totalTransactions, commits, commits/(float)totalTransactions*100,
+                aborts, aborts/(float)totalTransactions*100);
     }
 
     public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
@@ -79,6 +71,7 @@ public class SconeKVClient extends DB {
             currentTransaction = sconeClient.newTransaction();
             return Status.ERROR;
         } catch (RequestFailedException e) {
+            totalTransactions++;
             currentTransaction = sconeClient.newTransaction();
             return Status.SERVICE_UNAVAILABLE;
         }
@@ -95,6 +88,7 @@ public class SconeKVClient extends DB {
             currentTransaction = sconeClient.newTransaction();
             return Status.ERROR;
         } catch (RequestFailedException e) {
+            totalTransactions++;
             currentTransaction = sconeClient.newTransaction();
             return Status.SERVICE_UNAVAILABLE;
         }
@@ -114,6 +108,7 @@ public class SconeKVClient extends DB {
             currentTransaction = sconeClient.newTransaction();
             return Status.ERROR;
         } catch (RequestFailedException e) {
+            totalTransactions++;
             currentTransaction = sconeClient.newTransaction();
             return Status.SERVICE_UNAVAILABLE;
         }
@@ -125,8 +120,9 @@ public class SconeKVClient extends DB {
                 totalTransactions++;
                 currentTransaction.commit();
                 commits++;
+                logger.debug("Committed {}", currentTransaction.getId());
             } catch (CommitFailedException e) {
-                logger.error("Aborted tx {}", currentTransaction.getId());
+                logger.debug("Aborted {}", currentTransaction.getId());
                 aborts++;
             }
             currentTransaction = sconeClient.newTransaction();
