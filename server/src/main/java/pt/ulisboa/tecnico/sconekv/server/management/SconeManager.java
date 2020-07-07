@@ -87,7 +87,8 @@ public class SconeManager implements UpdateViewCallback {
             logger.debug("Constructing DHT...");
             dht = new DHT(ring, SconeConstants.NUM_BUCKETS, SconeConstants.MURMUR3_SEED);
             Bucket currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
-            logger.info("Belong to bucket {}, master: {}", currentBucket.getId(), currentBucket.getMaster());
+            logger.info("Belong to bucket {}, master: {}", currentBucket.getId(),
+                    membershipManager.getMyself().equals(currentBucket.getMaster()) ? "myself" : currentBucket.getMaster());
             communicationManager.updateBucket(currentBucket);
             stateMachine.updateBucket(currentBucket, ring.getVersion());
             start();

@@ -139,6 +139,12 @@ public class Store {
             restartTxs.add(this.get(op.getKey()).releaseLockAndQueueNext(tx.getId()));
         }
         restartTxs.remove(null); // releaseLock might return null
+        if (logger.isDebugEnabled()) {
+            StringBuilder s = new StringBuilder();
+            for (TransactionID id : restartTxs)
+                s.append(id).append(",");
+            logger.debug("Released locks for {}, restarting {}", txID, s);
+        }
         return restartTxs;
     }
 

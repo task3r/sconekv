@@ -186,7 +186,7 @@ public class StateMachine {
             }
         }
 
-        if (this.status == Status.MASTER_AFTER_VIEW_CHANGE && this.commitNumber == getOpNumber()) {
+        if (this.status == Status.MASTER_AFTER_VIEW_CHANGE && (this.commitNumber == -1 || this.commitNumber == getOpNumber())) {
             cm.queueEvent(new CheckPendingTransactions(null));
             setStatus(Status.NORMAL);
         }

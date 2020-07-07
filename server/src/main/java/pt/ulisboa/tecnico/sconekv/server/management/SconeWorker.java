@@ -154,7 +154,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             store.abort(logTransactionDecision.getTxID());
         }
         if (sm.isMaster()) {
-            store.releaseLocks(logTransactionDecision.getTxID());
+            queueMakeLocalDecisions(store.releaseLocks(logTransactionDecision.getTxID()));
             replyIfAmCoordinator(logTransactionDecision.getTxID());
         }
     }
@@ -315,6 +315,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         } catch (ValidTransactionNotLockableException e) {
             store.queueLocks(makeLocalDecision.getTxID());
             if (e.possibleRollback()) {
+                logger.debug("Will ask to rollback because of {}", makeLocalDecision.getTxID());
                 for (TransactionID txID : e.getCurrentOwners()) {
                     try {
                         Node coordinator = dht.getMasterOfBucket(store.getTransaction(txID).getCoordinatorBucket());
