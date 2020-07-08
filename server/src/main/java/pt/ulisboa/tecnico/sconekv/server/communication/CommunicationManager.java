@@ -34,7 +34,6 @@ public class CommunicationManager {
     private ZMQ.Poller poller;
     private Map<Node, ZMQ.Socket> sockets;
     private BlockingQueue<SconeEvent> eventQueue;
-    private boolean running;
 
     public CommunicationManager(Node self) {
         this.self = self;
@@ -51,7 +50,6 @@ public class CommunicationManager {
         this.poller = context.createPoller(2);
         this.poller.register(clientRequestSocket, ZMQ.Poller.POLLIN);
         this.poller.register(internalCommSocket, ZMQ.Poller.POLLIN);
-        this.running = true;
     }
 
     public void updateBucket(Bucket newBucket) {
@@ -72,7 +70,6 @@ public class CommunicationManager {
     }
 
     public void shutdown() {
-        this.running = false;
         clientRequestSocket.setLinger(0);
         clientRequestSocket.close();
         internalCommSocket.setLinger(0);
@@ -82,45 +79,41 @@ public class CommunicationManager {
     }
 
     public Triplet<MessageType, String, byte[]> recvMessage() {
-        if (running) {
-            MessageType type = null;
-            ZMQ.Socket socket = null;
-            try {
-                poller.poll();
-                if (poller.pollin(0)) {
-                    type = MessageType.EXTERNAL;
-                    socket = clientRequestSocket;
-                } else if (poller.pollin(1)) {
-                    type = MessageType.INTERNAL;
-                    socket = internalCommSocket;
-                }
-                if (socket != null) {
-                    String client = socket.recvStr();
-                    socket.recv(0); // delimiter
-                    byte[] requestBytes = socket.recv(0);
-                    return new Triplet<>(type, client, requestBytes);
-                }
-            } catch (ZError.IOException | ZMQException e) {
-                logger.info("Probably due to termination");
-                logger.error(e.toString());
+        MessageType type = null;
+        ZMQ.Socket socket = null;
+        try {
+            poller.poll();
+            if (poller.pollin(0)) {
+                type = MessageType.EXTERNAL;
+                socket = clientRequestSocket;
+            } else if (poller.pollin(1)) {
+                type = MessageType.INTERNAL;
+                socket = internalCommSocket;
             }
+            if (socket != null) {
+                String client = socket.recvStr();
+                socket.recv(0); // delimiter
+                byte[] requestBytes = socket.recv(0);
+                return new Triplet<>(type, client, requestBytes);
+            }
+        } catch (ZError.IOException | ZMQException e) {
+            logger.info("Probably due to termination");
+            logger.error(e.toString());
         }
         return null;
     }
 
-    public void replyToClient(String client, MessageBuilder response) {
-        if (running) {
-            try {
-                clientRequestSocket.sendMore(client);
-                clientRequestSocket.sendMore("");
-                clientRequestSocket.send(SerializationUtils.getBytesFromMessage(response), 0);
-            } catch (IOException e) {
-                logger.error("IOException serializing response to {}", client);
-            }
+    public synchronized void replyToClient(String client, MessageBuilder response) {
+        try {
+            clientRequestSocket.sendMore(client);
+            clientRequestSocket.sendMore("");
+            clientRequestSocket.send(SerializationUtils.getBytesFromMessage(response), 0);
+        } catch (IOException e) {
+            logger.error("IOException serializing response to {}", client);
         }
     }
 
-    public void broadcastBucket(MessageBuilder message) {
+    public synchronized void broadcastBucket(MessageBuilder message) {
         try {
             byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
             for (Node n : currentBucket.getNodesExcept(self)) { // should guarantee that I am the master and they are all replicas
@@ -133,7 +126,7 @@ public class CommunicationManager {
         }
     }
 
-    public void broadcast(MessageBuilder message, Set<Node> recipients) {
+    public synchronized void broadcast(MessageBuilder message, Set<Node> recipients) {
         try {
             byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
             for (Node node : recipients) {
@@ -144,7 +137,7 @@ public class CommunicationManager {
         }
     }
 
-    public void send(MessageBuilder message, Node node) {
+    public synchronized void send(MessageBuilder message, Node node) {
         try {
             byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
             send(messageBytes, node);
@@ -153,7 +146,7 @@ public class CommunicationManager {
         }
     }
 
-    public void send(byte[] message, Node node) {
+    private void send(byte[] message, Node node) {
         ZMQ.Socket socket = getSocket(node);
         socket.sendMore(""); // delimiter
         socket.send(message);
