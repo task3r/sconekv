@@ -11,16 +11,19 @@ import java.util.TreeSet;
 public class Value {
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
 
+    private String key;
     private byte[] content;
     private short version;
     private TransactionID lockOwner;
     private TreeSet<TransactionID> lockQueue = new TreeSet<>();
 
-    public Value() {
+    public Value(String key) {
+        this.key = key;
         this.content = new byte[0];
         this.version = 0;
     }
-    public Value(byte[] content, short version) {
+    public Value(String key, byte[] content, short version) {
+        this.key = key;
         this.content = content;
         this.version = version;
     }
@@ -67,15 +70,20 @@ public class Value {
 
     public synchronized TransactionID releaseLockAndQueueNext(TransactionID txID) {
         lockQueue.remove(txID);
-        if (txID.equals(lockOwner)) {
+        if (txID.equals(lockOwner) || lockOwner == null) {
             lockOwner = lockQueue.pollFirst();
+            if (logger.isDebugEnabled()) {
+                StringBuilder s = new StringBuilder();
+                for (TransactionID id : lockQueue)
+                    s.append(id).append(",");
+                logger.debug("Released lock {} of tx {}, selected {} and left {} in the queue", key, txID, lockOwner, s);
+            }
             return lockOwner;
         }
         return null;
     }
 
     public synchronized void releaseLock(TransactionID txID) {
-        lockQueue.remove(txID);
         if (txID.equals(lockOwner)) {
             lockOwner = null;
         }
@@ -83,5 +91,6 @@ public class Value {
 
     public synchronized void queueLock(TransactionID txID) {
         lockQueue.add(txID);
+        logger.debug("Added {} to {}'s queue", txID, key);
     }
 }
