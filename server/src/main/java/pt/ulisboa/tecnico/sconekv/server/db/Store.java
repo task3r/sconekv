@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.common.db.*;
 import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.AlreadyProcessedTransaction;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidVersionException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 
@@ -48,7 +49,7 @@ public class Store {
 
     public synchronized Value get(String key) {
         if (!values.containsKey(key))
-            values.put(key, new Value());
+            values.put(key, new Value(key));
         return values.get(key);
     }
 
@@ -56,7 +57,7 @@ public class Store {
         if (values.containsKey(key))
             values.get(key).update(value, version);
         else
-            values.put(key, new Value(value, version));
+            values.put(key, new Value(key, value, version));
     }
 
     public boolean addTransaction(Transaction tx) {
@@ -72,39 +73,44 @@ public class Store {
         return transactions.get(txID);
     }
 
-    public synchronized void validate(TransactionID txID) throws ValidTransactionNotLockableException {
+    public synchronized void validate(TransactionID txID) throws ValidTransactionNotLockableException, AlreadyProcessedTransaction {
         Transaction tx = transactions.get(txID);
         try {
-            Set<TransactionID> currentOwners = validateAndLock(tx);
-
-            if (currentOwners.isEmpty()) { // acquired locks for all keys
-                logger.debug("Locally accepted {}", txID);
-                tx.setState(TransactionState.PREPARED);
+            if (tx.isDecided()) {
+                logger.debug("Already decided transaction {}, ignoring", txID);
+                throw new AlreadyProcessedTransaction();
             } else {
-                releaseLocks(tx);
+                Set<TransactionID> currentOwners = validateAndLock(tx);
 
-                if (logger.isDebugEnabled()) {
-                    StringBuilder s = new StringBuilder();
-                    for (TransactionID id : currentOwners)
-                        s.append(id).append(",");
-                    logger.debug("Locally accepted {} but it's not lockable {}", txID, s);
+                if (currentOwners.isEmpty()) { // acquired locks for all keys
+                    logger.debug("Locally accepted {}", txID);
+                    tx.setState(TransactionState.PREPARED);
+                } else {
+                    simplyReleaseLocks(tx);
+
+                    if (logger.isDebugEnabled()) {
+                        StringBuilder s = new StringBuilder();
+                        for (TransactionID id : currentOwners)
+                            s.append(id).append(",");
+                        logger.debug("Locally accepted {} but it's not lockable {}", txID, s);
+                    }
+
+                    Optional<TransactionID> min = currentOwners.stream().min(TransactionID::compareTo);
+                    if (min.isPresent() && min.get().isGreater(txID)) // if txID is lower than all currentOwners, then they should rollback
+                        throw new ValidTransactionNotLockableException(currentOwners);
+                    else
+                        throw new ValidTransactionNotLockableException();
                 }
-
-                Optional<TransactionID> min = currentOwners.stream().min(TransactionID::compareTo);
-                if (min.isPresent() && min.get().isGreater(txID)) // if txID e lower than all currentOwners, then they should rollback
-                    throw new ValidTransactionNotLockableException(currentOwners);
-                else
-                    throw new ValidTransactionNotLockableException();
             }
         } catch (InvalidVersionException e) {
-            releaseLocks(tx);
+            simplyReleaseLocks(tx);
             tx.setState(TransactionState.ABORTED);
             logger.debug("Locally rejected {}", txID);
         }
     }
 
-    private void releaseLocks(Transaction tx) {
-        for (Operation op : tx.getRwSet()) // release any locks it acquired
+    private void simplyReleaseLocks(Transaction tx) {
+        for (Operation op : tx.getRwSet()) // release any locks it acquired but do not queue next (as it is synchronized, if it acquired any locks the txIDs in the queue were there already)
             this.get(op.getKey()).releaseLock(tx.getId());
     }
 

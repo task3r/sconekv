@@ -19,6 +19,7 @@ import pt.ulisboa.tecnico.sconekv.server.events.external.*;
 import pt.ulisboa.tecnico.sconekv.server.events.local.CheckPendingTransactions;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.AlreadyProcessedTransaction;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.SMRStatusException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 import pt.ulisboa.tecnico.sconekv.server.smr.StateMachine;
@@ -128,6 +129,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     public void handle(LogTransaction logTransaction) {
         if (sm.isMaster()) {
             try {
+                logger.info("Sending Local Decision for {}", logTransaction.getTxID());
                 Node coordinator = dht.getMasterOfBucket(store.getTransaction(logTransaction.getTxID()).getCoordinatorBucket());
                 if (coordinator.equals(self)) {
                     cm.queueEvent(new LocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), logTransaction.getTxID(),
@@ -329,6 +331,11 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                     }
                 }
             }
+        } catch (AlreadyProcessedTransaction e) {
+            // this occurs if the makeDecision was already in the queue as the tx was aborted,
+            // although it didn't acquire locks, it could be ahead of others in the queue
+            // so we need to queue other txs that could be waiting for this one
+            store.releaseLocks(makeLocalDecision.getTxID());
         }
     }
 
