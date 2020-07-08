@@ -132,8 +132,28 @@ public class StateMachine {
             return;
         }
 
-        // if this entry is not the immediately consecutive in the log, wait
-        if (this.log.size() != prepare.getOpNumber()) {
+        if (this.log.size() == prepare.getOpNumber()) {
+            this.log.add(new LogEntry(prepare.getEvent()));
+
+            // if the next entry is pending, queue it
+            if (pendingEntries.containsKey(this.log.size())) {
+                cm.queueEvent(pendingEntries.remove(this.log.size()));
+            }
+
+            // could save the queued opNumber and only send prepareOK to the highest value to reduce traffic
+
+            // commit all entries with opNumber <= prepare.commitNumber
+            for (int i = commitNumber + 1; i <= prepare.getCommitNumber(); i++) {
+                LogEntry entry = log.get(i);
+                cm.queueEvent(entry.getEvent());
+            }
+            this.commitNumber = prepare.getCommitNumber();
+
+            MessageBuilder message = CommunicationUtils.generatePrepareOK(mm.getMyself(), currentVersion, currentBucket.getId(), getOpNumber());
+            cm.send(message, currentMaster);
+            logger.debug("Replica sent prepareOK {}", getOpNumber());
+
+        } else if (this.log.size() < prepare.getOpNumber()) {// if this entry is not the immediately consecutive in the log, wait
             logger.error("Received {} but am on {}", prepare.getOpNumber(), getOpNumber());
             this.pendingEntries.put(prepare.getOpNumber(), prepare);
             if (prepare.getOpNumber() - this.getOpNumber() >= SconeConstants.MAX_OP_NUMBER_HOLE) {
@@ -141,27 +161,10 @@ public class StateMachine {
                 MessageBuilder message = CommunicationUtils.generateGetState(mm.getMyself(), this.currentVersion, getOpNumber());
                 cm.send(message, currentMaster);
             }
-            return;
+
+        } else {
+            logger.error("Received old entry {}, I am on {}", prepare.getOpNumber(), getOpNumber());
         }
-        this.log.add(new LogEntry(prepare.getEvent()));
-
-        // if the next entry is pending, queue it
-        if (pendingEntries.containsKey(this.log.size())) {
-            cm.queueEvent(pendingEntries.remove(this.log.size()));
-        }
-
-        // could save the queued opNumber and only send prepareOK to the highest value to reduce traffic
-
-        // commit all entries with opNumber <= prepare.commitNumber
-        for (int i = commitNumber + 1; i <= prepare.getCommitNumber(); i++) {
-            LogEntry entry = log.get(i);
-            cm.queueEvent(entry.getEvent());
-        }
-        this.commitNumber = prepare.getCommitNumber();
-
-        MessageBuilder message = CommunicationUtils.generatePrepareOK(mm.getMyself(), currentVersion, currentBucket.getId(), getOpNumber());
-        cm.send(message, currentMaster);
-        logger.debug("Replica sent prepareOK {}", getOpNumber());
     }
 
     public synchronized void prepareOK(PrepareOK prepareOK) {
