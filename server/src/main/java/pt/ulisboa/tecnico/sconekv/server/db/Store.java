@@ -87,6 +87,7 @@ public class Store {
                     tx.setState(TransactionState.PREPARED);
                 } else {
                     simplyReleaseLocks(tx);
+                    queueLocks(tx);
 
                     if (logger.isDebugEnabled()) {
                         StringBuilder s = new StringBuilder();
@@ -131,18 +132,21 @@ public class Store {
         return owners;
     }
 
-    public synchronized void queueLocks(TransactionID txID) {
-        Transaction tx = transactions.get(txID);
+    private synchronized void queueLocks(Transaction tx) {
         for (Operation op : tx.getRwSet()) {
             this.get(op.getKey()).queueLock(tx.getId());
         }
     }
 
-    public synchronized Set<TransactionID> releaseLocks(TransactionID txID) {
+    public synchronized Set<TransactionID> releaseLocks(TransactionID txID, boolean butQueue) {
         Transaction tx = transactions.get(txID);
         Set<TransactionID> restartTxs = new HashSet<>();
         for (Operation op : tx.getRwSet()) {
-            restartTxs.add(this.get(op.getKey()).releaseLockAndQueueNext(tx.getId()));
+            if (butQueue) { // in case of a rollback of txID
+                restartTxs.add(this.get(op.getKey()).releaseLockButQueue(tx.getId()));
+            } else { // the normal case, txID is decided or reset
+                restartTxs.add(this.get(op.getKey()).releaseLockAndChangeToNext(tx.getId()));
+            }
         }
         restartTxs.remove(null); // releaseLock might return null
         if (logger.isDebugEnabled()) {
@@ -181,7 +185,7 @@ public class Store {
 
     public synchronized Set<TransactionID> resetTx(TransactionID txID) {
         transactions.get(txID).setState(TransactionState.RECEIVED);
-        return releaseLocks(txID);
+        return releaseLocks(txID ,false);
     }
 
     public synchronized List<Transaction> getPendingTransactions() {

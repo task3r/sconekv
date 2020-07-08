@@ -148,16 +148,21 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(LogTransactionDecision logTransactionDecision) {
-        if (logTransactionDecision.getDecision() == TransactionState.COMMITTED) {
-            logger.info("Commit : {}", logTransactionDecision.getTxID());
-            store.commit(logTransactionDecision.getTxID());
+        if (store.getTransaction(logTransactionDecision.getTxID()) != null) {
+            if (logTransactionDecision.getDecision() == TransactionState.COMMITTED) {
+                logger.info("Commit : {}", logTransactionDecision.getTxID());
+                store.commit(logTransactionDecision.getTxID());
+            } else {
+                logger.info("Abort : {}", logTransactionDecision.getTxID());
+                store.abort(logTransactionDecision.getTxID());
+            }
+            if (sm.isMaster()) {
+                queueMakeLocalDecisions(store.releaseLocks(logTransactionDecision.getTxID(), false));
+                replyIfAmCoordinator(logTransactionDecision.getTxID());
+            }
         } else {
-            logger.info("Abort : {}", logTransactionDecision.getTxID());
-            store.abort(logTransactionDecision.getTxID());
-        }
-        if (sm.isMaster()) {
-            queueMakeLocalDecisions(store.releaseLocks(logTransactionDecision.getTxID()));
-            replyIfAmCoordinator(logTransactionDecision.getTxID());
+            logger.debug("Received log decision before logging transaction, added to end of queue");
+            cm.queueEvent(logTransactionDecision);
         }
     }
 
@@ -182,9 +187,14 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     public void handle(LogRollback logRollback) {
         logger.info("Rollback : {}", logRollback.getTxID());
         store.getTransaction(logRollback.getTxID()).setState(TransactionState.RECEIVED);
-        if (sm.isMaster()) {
-            queueMakeLocalDecisions(store.releaseLocks(logRollback.getTxID()));
-            store.queueLocks(logRollback.getTxID());
+
+        if (store.getTransaction(logRollback.getTxID()) != null) {
+            if (sm.isMaster()) {
+                queueMakeLocalDecisions(store.releaseLocks(logRollback.getTxID(), true));
+            }
+        } else {
+            logger.debug("Received log rollback before logging transaction, added to end of queue");
+            cm.queueEvent(logRollback);
         }
     }
 
@@ -270,7 +280,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             if (!dht.getMasterOfBucket(tx.getCoordinatorBucket()).equals(self)) {
                 logger.error("Received incorrect RollbackLocalDecision for tx {}, i am not the coordinator", tx.getId());
             } else if (!tx.isDecided()) { // not yet committed nor aborted
-                tx.removeResponse(requestRollbackLocalDecision.getNode());
+                tx.removeResponse(dht.getBucketOfNode(requestRollbackLocalDecision.getNode()).getId());
                 if (self.equals(requestRollbackLocalDecision.getNode()))
                     cm.queueEvent(new RollbackLocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), tx.getId()));
                 else
@@ -315,7 +325,6 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         } catch (SMRStatusException e) {
             queueMakeLocalDecisions(store.resetTx(makeLocalDecision.getTxID()));
         } catch (ValidTransactionNotLockableException e) {
-            store.queueLocks(makeLocalDecision.getTxID());
             if (e.possibleRollback()) {
                 logger.debug("Will ask to rollback because of {}", makeLocalDecision.getTxID());
                 for (TransactionID txID : e.getCurrentOwners()) {
@@ -335,7 +344,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             // this occurs if the makeDecision was already in the queue as the tx was aborted,
             // although it didn't acquire locks, it could be ahead of others in the queue
             // so we need to queue other txs that could be waiting for this one
-            store.releaseLocks(makeLocalDecision.getTxID());
+            store.releaseLocks(makeLocalDecision.getTxID(), false);
         }
     }
 

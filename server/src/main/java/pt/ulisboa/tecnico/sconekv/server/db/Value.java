@@ -68,7 +68,7 @@ public class Value {
         return this.lockOwner;
     }
 
-    public synchronized TransactionID releaseLockAndQueueNext(TransactionID txID) {
+    public synchronized TransactionID releaseLockAndChangeToNext(TransactionID txID) {
         lockQueue.remove(txID);
         if (txID.equals(lockOwner) || lockOwner == null) {
             lockOwner = lockQueue.pollFirst();
@@ -77,6 +77,21 @@ public class Value {
                 for (TransactionID id : lockQueue)
                     s.append(id).append(",");
                 logger.debug("Released lock {} of tx {}, selected {} and left {} in the queue", key, txID, lockOwner, s);
+            }
+            return lockOwner;
+        }
+        return null;
+    }
+
+    public synchronized TransactionID releaseLockButQueue(TransactionID txID) {
+        if (txID.equals(lockOwner) || lockOwner == null) {
+            lockOwner = lockQueue.pollFirst();
+            lockQueue.add(txID);
+            if (logger.isDebugEnabled()) {
+                StringBuilder s = new StringBuilder();
+                for (TransactionID id : lockQueue)
+                    s.append(id).append(",");
+                logger.debug("Released but queued lock {} of tx {}, selected {} and left {} in the queue", key, txID, lockOwner, s);
             }
             return lockOwner;
         }

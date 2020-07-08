@@ -87,7 +87,7 @@ public class Transaction extends AbstractTransaction {
         applyState(state);
     }
 
-    public void removeResponse(Node node) {
-        responses.remove(node);
+    public void removeResponse(short bucket) {
+        responses.remove(bucket);
     }
 }
