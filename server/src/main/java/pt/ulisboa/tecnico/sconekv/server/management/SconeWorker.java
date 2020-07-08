@@ -344,7 +344,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             // this occurs if the makeDecision was already in the queue as the tx was aborted,
             // although it didn't acquire locks, it could be ahead of others in the queue
             // so we need to queue other txs that could be waiting for this one
-            store.releaseLocks(makeLocalDecision.getTxID(), false);
+            queueMakeLocalDecisions(store.releaseLocks(makeLocalDecision.getTxID(), false));
         }
     }
 
