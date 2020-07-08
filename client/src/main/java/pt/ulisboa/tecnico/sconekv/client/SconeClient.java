@@ -122,7 +122,7 @@ public class SconeClient {
         socket.setIdentity(this.clientID.toString().getBytes(ZMQ.CHARSET));
         socket.connect("tcp://" + address + ":" + properties.SERVER_REQUEST_PORT);
         socket.setReceiveTimeOut(properties.RECV_TIMEOUT);
-        logger.info("Client {} connected to {}", clientID, address);
+        logger.debug("Client {} connected to {}", clientID, address);
         return socket;
     }
 

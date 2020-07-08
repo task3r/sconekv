@@ -86,14 +86,7 @@ public class DHT {
     }
 
     private boolean checkVersion(Version newVersion) {
-        if (this.viewVersion.isLesser(newVersion)) {
-            return true;
-        } else if (this.viewVersion.equals(newVersion)) {
-            logger.debug("Received view with same version. Ignored");
-        } else {
-            logger.error("Tried adding a view with an earlier version. Ignored");
-        }
-        return false;
+        return this.viewVersion.isLesser(newVersion);
     }
 
     private void defineBuckets() {
