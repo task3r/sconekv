@@ -117,12 +117,13 @@ public class SconeKVClient extends DB {
     private void commit() throws RequestFailedException, InvalidTransactionStateChangeException {
         if (currentTransaction.size() >= transactionSize) {
             try {
-                totalTransactions++;
                 currentTransaction.commit();
+                totalTransactions++;
                 commits++;
                 logger.debug("Committed {}", currentTransaction.getId());
             } catch (CommitFailedException e) {
                 logger.debug("Aborted {}", currentTransaction.getId());
+                totalTransactions++;
                 aborts++;
             }
             currentTransaction = sconeClient.newTransaction();
