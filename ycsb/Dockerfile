@@ -9,4 +9,6 @@ COPY scripts/benchmark.sh /usr/src/sconekv/benchmark
 COPY scripts/load.sh /usr/src/sconekv/load
 COPY workloads /usr/src/sconekv/
 ENV PATH="${PATH}:/usr/src/sconekv"
+ENV WORKLOAD="workloada"
+ENV THREADS="4"
 CMD "/bin/bash"
