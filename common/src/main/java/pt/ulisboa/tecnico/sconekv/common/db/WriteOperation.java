@@ -2,6 +2,10 @@ package pt.ulisboa.tecnico.sconekv.common.db;
 
 import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 
+/**
+ * Represents a SconeKV Write operation
+ *     - the chosen behaviour is to set a new value for the key and increment the version
+ */
 public class WriteOperation extends Operation {
 
     public WriteOperation(String key, short version, byte[] value) {

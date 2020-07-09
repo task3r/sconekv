@@ -2,6 +2,9 @@ package pt.ulisboa.tecnico.sconekv.common.db;
 
 import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 
+/*
+    SconeKV Operation abstraction
+ */
 public abstract class Operation {
     private String key;
     private short version;
@@ -26,11 +29,9 @@ public abstract class Operation {
                 return new ReadOperation(op);
             case DELETE:
                 return new DeleteOperation(op);
-            case _NOT_IN_SCHEMA:
-                // TODO throw something
-                break;
+            default:
+                throw new IllegalStateException("Unexpected operation: " + op.which());
         }
-        return null;
     }
 
     public String getKey() {

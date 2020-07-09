@@ -6,6 +6,11 @@ import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+/**
+ * SconeKV DHT Bucket representation, containing
+ *      - bucket id in the DHT
+ *      - section of the membership Ring as  a Set of Nodes
+ */
 public class Bucket {
     private short id;
     private SortedSet<Node> nodes;
@@ -23,15 +28,26 @@ public class Bucket {
         return nodes;
     }
 
-    public SortedSet<Node> getNodesExcept(Node self) {
-        SortedSet<Node> withoutSelf = new TreeSet<>(nodes);
-        withoutSelf.remove(self);
-        return withoutSelf;
+    /**
+     * Get nodes from bucket except one.
+     * Typically used by a node to get the others in the same bucket.
+     * @param node exception
+     * @return the other nodes from bucket
+     */
+    public SortedSet<Node> getNodesExcept(Node node) {
+        SortedSet<Node> others = new TreeSet<>(nodes);
+        others.remove(node);
+        return others;
     }
 
+    /**
+     * Get the master of the bucket.
+     * Decided as the element with the lowest id.
+     * **Subject to change, ideally would be the oldest node (in the membership) form this bucket**
+     * @return master Node
+     */
     public Node getMaster() {
         // avoid NoSuchElement
-        // decided that master is the one with lowest id, subject to change
         return nodes.isEmpty() ? null : nodes.first();
     }
 

@@ -6,6 +6,11 @@ import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * SconeKV Transaction identifier
+ *      - pair < ClientID, localID >
+ *      - localID being the transaction counter for that client as the transaction is created
+ */
 public class TransactionID implements Comparable<TransactionID> {
     private UUID client;
     private int localID;
@@ -15,9 +20,9 @@ public class TransactionID implements Comparable<TransactionID> {
         this.localID = localID;
     }
 
-    public TransactionID(Common.TransactionID.Reader txID) {
-        this.client = new UUID(txID.getClientID().getMostSignificant(), txID.getClientID().getLeastSignificant());
-        this.localID = txID.getLocalID();
+    public TransactionID(Common.TransactionID.Reader reader) {
+        this.client = new UUID(reader.getClientID().getMostSignificant(), reader.getClientID().getLeastSignificant());
+        this.localID = reader.getLocalID();
     }
 
     public UUID getClient() {
@@ -33,7 +38,6 @@ public class TransactionID implements Comparable<TransactionID> {
         builder.getClientID().setLeastSignificant(this.client.getLeastSignificantBits());
         builder.setLocalID(this.localID);
     }
-
 
     public boolean isLesser(TransactionID other) {
         return compareTo(other) < 0;
@@ -72,5 +76,4 @@ public class TransactionID implements Comparable<TransactionID> {
     public String toString() {
         return "<" + client + "," + localID + '>';
     }
-
 }

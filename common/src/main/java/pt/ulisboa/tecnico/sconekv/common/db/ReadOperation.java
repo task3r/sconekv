@@ -2,6 +2,10 @@ package pt.ulisboa.tecnico.sconekv.common.db;
 
 import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 
+/**
+ * Represents a SconeKV Read operation
+ *     - the chosen behaviour is to get the current committed value and version number
+ */
 public class ReadOperation extends Operation {
 
     public ReadOperation(String key, short version) {
