@@ -67,12 +67,6 @@ public class DHT {
         builder.setMurmurSeed(this.murmurSeed);
     }
 
-    private synchronized void changeView(SortedSet<Node> newView, Version newVersion) {
-        this.nodes = newView;
-        this.viewVersion = newVersion;
-        defineBuckets();
-    }
-
     public synchronized void applyView(Ring ring) {
         if (checkVersion(ring.getVersion()))
             changeView(ring.asSet(), ring.getVersion());
@@ -83,6 +77,12 @@ public class DHT {
         if (checkVersion(receivedVersion)) {
             changeView(getNodes(dht), receivedVersion);
         }
+    }
+
+    private synchronized void changeView(SortedSet<Node> newView, Version newVersion) {
+        this.nodes = newView;
+        this.viewVersion = newVersion;
+        defineBuckets();
     }
 
     private boolean checkVersion(Version newVersion) {
@@ -99,7 +99,7 @@ public class DHT {
         if (logger.isDebugEnabled()) {
             logger.debug("Defined buckets");
             for (Bucket b : buckets) {
-                logger.debug("{}", b);
+                logger.debug(b.toString());
             }
         }
     }
@@ -110,11 +110,9 @@ public class DHT {
         return (short) Math.floorMod(hashFunction.hashBytes(key).asInt(), numBuckets);
     }
 
-    public Node getMasterOfBucket(short bucket) throws InvalidBucketException {
-        if (bucket >= numBuckets) {
-            throw new InvalidBucketException();
-        }
-        return buckets[bucket].getMaster();
+    public Node getMasterOfBucket(short bucketID) throws InvalidBucketException {
+        validateBucket(bucketID);
+        return buckets[bucketID].getMaster();
     }
 
     public Node getMasterForKey(byte[] key) {
@@ -131,9 +129,13 @@ public class DHT {
     }
 
     public Bucket getBucket(short bucketID) throws InvalidBucketException {
-        if (bucketID > buckets.length)
-            throw new InvalidBucketException();
+        validateBucket(bucketID);
         return buckets[bucketID];
+    }
+
+    private void validateBucket(short bucket) throws InvalidBucketException {
+        if (bucket < 0 || bucket >= numBuckets)
+            throw new InvalidBucketException("Bucket out of bounds, DHT has " + numBuckets + " buckets, requested " + bucket);
     }
 
     public Set<Node> getMasters() {

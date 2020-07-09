@@ -239,8 +239,7 @@ public class SconeClient {
                     selected = candidates.get(random.nextInt(candidates.size()));
                     break;
                 default:
-                    //shouldn't reach here
-                    throw new InvalidBucketException();
+                    throw new IllegalStateException("Unexpected request mode: " + properties.MODE);
             }
         }
         return getSocket(selected);
