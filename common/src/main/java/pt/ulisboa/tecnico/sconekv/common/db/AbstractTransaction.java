@@ -7,9 +7,9 @@ public abstract class AbstractTransaction {
     private TransactionID id;
     private TransactionState state;
 
-    public AbstractTransaction(TransactionID id) {
+    public AbstractTransaction(TransactionID id, TransactionState state) {
         this.id = id;
-        this.state = TransactionState.RECEIVED;
+        this.state = state;
     }
 
     protected abstract void addOperation(Operation op);

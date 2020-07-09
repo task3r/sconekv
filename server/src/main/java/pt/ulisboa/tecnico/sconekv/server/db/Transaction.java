@@ -2,7 +2,6 @@ package pt.ulisboa.tecnico.sconekv.server.db;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.ulisboa.tecnico.sconekv.common.db.AbstractTransaction;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
@@ -23,7 +22,7 @@ public class Transaction extends AbstractTransaction {
     private boolean decided;
 
     public Transaction(TransactionID txID, String client, Common.Transaction.Reader transaction) {
-        super(txID);
+        super(txID, TransactionState.RECEIVED);
 
         this.client = client;
         this.rwSet = new ArrayList<>();

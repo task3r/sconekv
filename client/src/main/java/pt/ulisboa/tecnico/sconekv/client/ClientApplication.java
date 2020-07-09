@@ -30,7 +30,7 @@ public class ClientApplication {
         transactions = new HashMap();
     }
 
-    public static void main(String[] args) throws IOException, UnableToGetViewException, InterruptedException {
+    public static void main(String[] args) throws IOException, UnableToGetViewException {
         logger.info("Launching client application...");
 
         String shell = System.getenv("USE_SHELL");

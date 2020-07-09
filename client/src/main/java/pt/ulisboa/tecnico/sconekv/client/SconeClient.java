@@ -64,7 +64,7 @@ public class SconeClient {
         try {
             DiscoveryResponseDto discoveryResponseDto = getDiscoveryNodes();
             if (discoveryResponseDto == null)
-                throw new UnableToGetViewException();
+                throw new UnableToGetViewException("Did not receive any discovery nodes");
 
             MessageBuilder message = new org.capnproto.MessageBuilder();
             External.Request.Builder builder = message.initRoot(External.Request.factory);
@@ -91,10 +91,10 @@ public class SconeClient {
                 }
             }
         } catch (IOException e) {
-            throw new UnableToGetViewException();
+            throw new UnableToGetViewException(e);
         }
 
-        throw new UnableToGetViewException(); // if it reached here then it did not receive any correct getDHT responses
+        throw new UnableToGetViewException("Did not receive any correct GetDHT responses");
     }
 
     private DiscoveryResponseDto getDiscoveryNodes() throws IOException {
@@ -174,7 +174,7 @@ public class SconeClient {
             }
 
             if (coordinator == null)
-                throw new RequestFailedException();
+                throw new RequestFailedException("Unable to contact coordinator node");
 
             External.Response.Reader response = recvResponse(coordinator, External.Response.Which.COMMIT, txID, retries);
             if (response != null) {
@@ -183,7 +183,7 @@ public class SconeClient {
                 retries++;
             }
         }
-        throw new MaxRetriesExceededException();
+        throw new MaxRetriesExceededException("Exceeded the number o retries to commit transaction " + txID);
     }
 
     private MessageBuilder constructCommitMessage(TransactionID txID, List<Operation> bucketOps, SortedSet<Short> buckets) {
@@ -258,7 +258,7 @@ public class SconeClient {
                 retries++;
             }
         }
-        throw new MaxRetriesExceededException();
+        throw new MaxRetriesExceededException("Exceed the number of retries to " + requestType + " of transaction " + txID);
     }
 
     private ZMQ.Socket sendRequest(short bucket, MessageBuilder message, boolean isCommit) throws RequestFailedException {
@@ -269,7 +269,7 @@ public class SconeClient {
             requester.send(SerializationUtils.getBytesFromMessage(message));
             return requester;
         } catch (InvalidBucketException | IOException e) {
-            throw new RequestFailedException();
+            throw new RequestFailedException(e);
         }
     }
 

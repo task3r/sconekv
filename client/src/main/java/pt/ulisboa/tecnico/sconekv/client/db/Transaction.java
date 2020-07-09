@@ -21,7 +21,7 @@ public class Transaction extends AbstractTransaction {
     private Map<String, Operation> rwSet;
 
     public Transaction(SconeClient client,TransactionID id) {
-        super(id);
+        super(id, TransactionState.NONE);
         this.client = client;
         this.rwSet = new HashMap<>();
     }
@@ -59,18 +59,18 @@ public class Transaction extends AbstractTransaction {
         validate();
         if (!client.performCommit(getId(), getRwSet())) {
             setState(TransactionState.ABORTED);
-            throw new CommitFailedException();
+            throw new CommitFailedException("Transaction was aborted");
         }
         setState(TransactionState.COMMITTED);
     }
 
-    public void abort() throws InvalidTransactionStateChangeException { //Specific client side exceptions?
+    public void abort() throws InvalidTransactionStateChangeException {
         setState(TransactionState.ABORTED);
     }
 
     private void validate() throws InvalidTransactionStateChangeException {
-        if (getState() != TransactionState.RECEIVED)
-            throw new InvalidTransactionStateChangeException();
+        if (getState() != TransactionState.NONE)
+            throw new InvalidTransactionStateChangeException("Transaction was already " + getState());
     }
 
     @Override
@@ -89,7 +89,7 @@ public class Transaction extends AbstractTransaction {
 
     public void setState(TransactionState state) throws InvalidTransactionStateChangeException {
         if (getState() == TransactionState.COMMITTED || getState() == TransactionState.ABORTED)
-            throw new InvalidTransactionStateChangeException();
+            throw new InvalidTransactionStateChangeException("Transaction was already " + getState());
         applyState(state);
     }
 }
