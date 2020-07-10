@@ -72,7 +72,7 @@ public class DHT {
         return nodes;
     }
 
-    public void serialize(Common.DHT.Builder builder) {
+    public synchronized void serialize(Common.DHT.Builder builder) {
         StructList.Builder<Common.Node.Builder> nodesBuilder = builder.initNodes(this.nodes.size());
         int i = 0;
         for (Node node : this.nodes) {

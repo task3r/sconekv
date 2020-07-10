@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionState;
+import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidBucketException;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
@@ -256,13 +257,18 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                             cm.broadcast(CommunicationUtils.generateAbortTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
                             cm.queueEvent(new AbortTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
                         } else {
-                            tx.addResponse(dht.getBucketOfNode(localDecisionResponse.getNode()).getId());
-                            if (tx.isReady()) {
-                                tx.setDecided();
-                                Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
-                                masters.remove(self);
-                                cm.broadcast(CommunicationUtils.generateCommitTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
-                                cm.queueEvent(new CommitTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+                            Bucket bucket = dht.getBucketOfNode(localDecisionResponse.getNode());
+                            if (bucket != null) {
+                                tx.addResponse(bucket.getId());
+                                if (tx.isReady()) {
+                                    tx.setDecided();
+                                    Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
+                                    masters.remove(self);
+                                    cm.broadcast(CommunicationUtils.generateCommitTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
+                                    cm.queueEvent(new CommitTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+                                }
+                            } else {
+                                logger.error("Received LocalDecision from node that does not belong to the system, ignoring");
                             }
                         }
                     } // else maybe inform once more the sender about the global decision
@@ -276,18 +282,23 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(RequestRollbackLocalDecision requestRollbackLocalDecision) {
         Transaction tx = store.getTransaction(requestRollbackLocalDecision.getTxID());
-        try {
-            if (!dht.getMasterOfBucket(tx.getCoordinatorBucket()).equals(self)) {
-                logger.error("Received incorrect RollbackLocalDecision for tx {}, i am not the coordinator", tx.getId());
-            } else if (!tx.isDecided()) { // not yet committed nor aborted
-                tx.removeResponse(dht.getBucketOfNode(requestRollbackLocalDecision.getNode()).getId());
-                if (self.equals(requestRollbackLocalDecision.getNode()))
-                    cm.queueEvent(new RollbackLocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), tx.getId()));
-                else
-                    cm.send(CommunicationUtils.generateRollbackLocalDecisionResponse(self, sm.getCurrentVersion(), tx.getId()), requestRollbackLocalDecision.getNode());
+        if (tx == null) {
+            logger.debug("Received a RequestRollbackLocalDecision for a transaction I've yet to receive, delaying");
+            cm.queueEvent(requestRollbackLocalDecision); // maybe scheduled task, so there is really a delay
+        } else {
+            try {
+                if (!dht.getMasterOfBucket(tx.getCoordinatorBucket()).equals(self)) {
+                    logger.error("Received incorrect RollbackLocalDecision for tx {}, i am not the coordinator", tx.getId());
+                } else if (!tx.isDecided()) { // not yet committed nor aborted
+                    tx.removeResponse(dht.getBucketOfNode(requestRollbackLocalDecision.getNode()).getId());
+                    if (self.equals(requestRollbackLocalDecision.getNode()))
+                        cm.queueEvent(new RollbackLocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), tx.getId()));
+                    else
+                        cm.send(CommunicationUtils.generateRollbackLocalDecisionResponse(self, sm.getCurrentVersion(), tx.getId()), requestRollbackLocalDecision.getNode());
+                }
+            } catch (InvalidBucketException e) {
+                logger.error("Invalid buckets in transaction {}, ignoring", tx.getId());
             }
-        } catch (InvalidBucketException e) {
-            logger.error("Invalid buckets in transaction {}, ignoring", tx.getId());
         }
     }
 
