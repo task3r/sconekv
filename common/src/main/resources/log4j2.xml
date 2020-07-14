@@ -22,13 +22,15 @@
     </Appenders>
 
     <Loggers>
+        <Logger name="pt.ulisboa.tecnico.sconekv.common" level="trace"></Logger>
+        <Logger name="pt.ulisboa.tecnico.sconekv.server" level="trace"></Logger>
+        <Logger name="pt.ulisboa.tecnico.sconekv.client" level="info"></Logger>
+        <Logger name="pt.ulisboa.tecnico.sconekv.ycsb" level="info"></Logger>
         <!-- LOG everything at INFO level -->
         <Root level="info">
             <AppenderRef ref="Console" />
             <AppenderRef ref="RollingFile" />
         </Root>
-
-        <Logger name="pt.ulisboa.tecnico.sconekv" level="trace"></Logger>
     </Loggers>
 
 </Configuration>
