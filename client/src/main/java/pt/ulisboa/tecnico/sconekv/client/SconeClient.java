@@ -287,7 +287,7 @@ public class SconeClient {
             }
         } catch (IOException e) {
             if (socket.errno() == ZError.EAGAIN) {
-                logger.error("Timeout recv {}", txID);
+                logger.error("Timeout recv {}, try #{}", txID, tryCount);
             } else {
                 logger.error("Error recv {}, but not a timeout", txID);
             }
