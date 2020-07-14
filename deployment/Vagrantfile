@@ -8,9 +8,14 @@ Vagrant.configure("2") do |config|
   # allow vms in different physical machines to communicate with each other
   config.vm.network "public_network", bridge: 'enp3s0'
   # give vms the same name as the host
-  # usefull as I deploy only one vm per machine
+  # useful as I deploy only one vm per machine
   # and use docker swarm (nodes are identified by their hostname)
   config.vm.hostname = 'vm-' + HOSTNAME
   # use insecure keys (faster booting)
   config.ssh.insert_key = false
+  # set resource values
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 16
+    vb.memory = "32768"
+  end
 end
