@@ -27,6 +27,8 @@ import pt.ulisboa.tecnico.sconekv.server.smr.StateMachine;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class SconeWorker implements Runnable, SconeEventHandler {
     private static final Logger logger = LoggerFactory.getLogger(SconeWorker.class);
@@ -38,6 +40,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     private DHT dht;
     private Node self;
     private int eventCounter;
+    private Timer timer;
 
     public SconeWorker(short id, CommunicationManager cm, StateMachine sm, Store store, DHT dht, Node self) {
         this.id = id;
@@ -46,6 +49,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         this.dht = dht;
         this.self = self;
         this.sm = sm;
+        this.timer = new Timer("DelayEventTimer", true);
     }
 
     @Override
@@ -72,6 +76,15 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     private Pair<Short, Integer> generateId() {
         return new Pair<>(id, eventCounter++);
+    }
+
+    private void delayEvent(SconeEvent event) {
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                cm.queueEvent(event);
+            }
+        }, 500);
     }
 
     // External Events
@@ -240,8 +253,8 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     public void handle(LocalDecisionResponse localDecisionResponse) {
         Transaction tx = store.getTransaction(localDecisionResponse.getTxID());
         if (tx == null) {
-            logger.debug("Received a LocalDecisionResponse for a transaction I've yet to receive, delaying");
-            cm.queueEvent(localDecisionResponse); // maybe scheduled task, so there is really a delay
+            logger.debug("Received a LocalDecisionResponse for a transaction {} I've yet to receive, delaying", localDecisionResponse.getTxID());
+            delayEvent(localDecisionResponse);
         } else {
             logger.debug("Received a LocalDecisionResponse from {} for transaction {}", localDecisionResponse.getNode(), localDecisionResponse.getTxID());
             try {
@@ -283,8 +296,8 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     public void handle(RequestRollbackLocalDecision requestRollbackLocalDecision) {
         Transaction tx = store.getTransaction(requestRollbackLocalDecision.getTxID());
         if (tx == null) {
-            logger.debug("Received a RequestRollbackLocalDecision for a transaction I've yet to receive, delaying");
-            cm.queueEvent(requestRollbackLocalDecision); // maybe scheduled task, so there is really a delay
+            logger.debug("Received a RequestRollbackLocalDecision for a transaction {} I've yet to receive, delaying", requestRollbackLocalDecision.getTxID());
+            delayEvent(requestRollbackLocalDecision);
         } else {
             try {
                 if (!dht.getMasterOfBucket(tx.getCoordinatorBucket()).equals(self)) {
