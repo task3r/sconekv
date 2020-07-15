@@ -16,10 +16,7 @@ import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
 import zmq.ZError;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -29,11 +26,13 @@ public class CommunicationManager {
     private Bucket currentBucket;
     private Node self;
     private ZContext context;
-    private ZMQ.Socket clientRequestSocket;
-    private ZMQ.Socket internalCommSocket;
+    private final ZMQ.Socket clientRequestSocket;
+    private final ZMQ.Socket internalCommSocket;
     private ZMQ.Poller poller;
-    private Map<Node, ZMQ.Socket> sockets;
+    private final Map<Node, ZMQ.Socket> sockets;
     private BlockingQueue<SconeEvent> eventQueue;
+    private final List<ZMQ.Socket> workerReply;
+    private final ZMQ.Socket workerReplySink;
 
     public CommunicationManager(Node self) {
         this.self = self;
@@ -47,9 +46,20 @@ public class CommunicationManager {
         this.internalCommSocket = context.createSocket(SocketType.ROUTER);
         this.internalCommSocket.bind("tcp://*:" + SconeConstants.SERVER_INTERNAL_PORT);
 
-        this.poller = context.createPoller(2);
+        this.workerReplySink = context.createSocket(SocketType.PULL);
+        this.workerReplySink.bind("inproc://reply-sink");
+
+        this.workerReply = new ArrayList<>();
+        for (int i = 0; i < SconeConstants.NUM_WORKERS; i++) {
+            ZMQ.Socket socket = context.createSocket(SocketType.PUSH);
+            socket.connect("inproc://reply-sink");
+            this.workerReply.add(socket);
+        }
+
+        this.poller = context.createPoller(3);
         this.poller.register(clientRequestSocket, ZMQ.Poller.POLLIN);
         this.poller.register(internalCommSocket, ZMQ.Poller.POLLIN);
+        this.poller.register(workerReplySink, ZMQ.Poller.POLLIN);
     }
 
     public void updateBucket(Bucket newBucket) {
@@ -79,22 +89,30 @@ public class CommunicationManager {
     }
 
     public Triplet<MessageType, String, byte[]> recvMessage() {
-        MessageType type = null;
-        ZMQ.Socket socket = null;
         try {
-            poller.poll();
-            if (poller.pollin(0)) {
-                type = MessageType.EXTERNAL;
-                socket = clientRequestSocket;
-            } else if (poller.pollin(1)) {
-                type = MessageType.INTERNAL;
-                socket = internalCommSocket;
-            }
-            if (socket != null) {
-                String client = socket.recvStr();
-                socket.recv(0); // delimiter
-                byte[] requestBytes = socket.recv(0);
-                return new Triplet<>(type, client, requestBytes);
+            while (true) {
+                poller.poll();
+
+                if (poller.pollin(0)) {
+                    String client = clientRequestSocket.recvStr();
+                    clientRequestSocket.recv(); //delimiter
+                    byte[] message = clientRequestSocket.recv();
+                    return new Triplet<>(MessageType.EXTERNAL, client, message);
+
+                } else if (poller.pollin(1)) {
+                    String node = internalCommSocket.recvStr();
+                    internalCommSocket.recv(); //delimiter
+                    byte[] message = internalCommSocket.recv();
+                    return new Triplet<>(MessageType.INTERNAL, node, message);
+
+                } else if (poller.pollin(2)) {
+                    String clientToReply = workerReplySink.recvStr();
+                    workerReplySink.recv(); //delimiter
+                    byte[] response = workerReplySink.recv();
+                    clientRequestSocket.sendMore(clientToReply);
+                    clientRequestSocket.sendMore(""); //delimiter
+                    clientRequestSocket.send(response);
+                }
             }
         } catch (ZError.IOException | ZMQException e) {
             logger.info("Probably due to termination");
@@ -103,46 +121,53 @@ public class CommunicationManager {
         return null;
     }
 
-    public synchronized void replyToClient(String client, MessageBuilder response) {
-        try {
-            clientRequestSocket.sendMore(client);
-            clientRequestSocket.sendMore("");
-            clientRequestSocket.send(SerializationUtils.getBytesFromMessage(response), 0);
-        } catch (IOException e) {
-            logger.error("IOException serializing response to {}", client);
-        }
+    public void replyToClient(String client, MessageBuilder response, short id) {
+            try {
+                ZMQ.Socket socket = workerReply.get(id - 1); // id 0 is reserved for the server thread
+                socket.sendMore(client);
+                socket.sendMore("");
+                socket.send(SerializationUtils.getBytesFromMessage(response), 0);
+            } catch (IOException e) {
+                logger.error("IOException serializing response to {}", client);
+            }
     }
 
-    public synchronized void broadcastBucket(MessageBuilder message) {
-        try {
-            byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
-            for (Node n : currentBucket.getNodesExcept(self)) { // should guarantee that I am the master and they are all replicas
-                ZMQ.Socket socket = getSocket(n);
-                socket.sendMore(""); // delimiter
-                socket.send(messageBytes);
+    public void broadcastBucket(MessageBuilder message) {
+        synchronized (sockets) {
+            try {
+                byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
+                for (Node n : currentBucket.getNodesExcept(self)) { // should guarantee that I am the master and they are all replicas
+                    ZMQ.Socket socket = getSocket(n);
+                    socket.sendMore(""); // delimiter
+                    socket.send(messageBytes);
+                }
+            } catch (IOException e) {
+                logger.error("IOException serializing internal message");
             }
-        } catch (IOException e) {
-            logger.error("IOException serializing internal message");
         }
     }
 
     public synchronized void broadcast(MessageBuilder message, Set<Node> recipients) {
-        try {
-            byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
-            for (Node node : recipients) {
-                send(messageBytes, node);
+        synchronized (sockets) {
+            try {
+                byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
+                for (Node node : recipients) {
+                    send(messageBytes, node);
+                }
+            } catch (IOException e) {
+                logger.error("IOException serializing internal message");
             }
-        } catch (IOException e) {
-            logger.error("IOException serializing internal message");
         }
     }
 
-    public synchronized void send(MessageBuilder message, Node node) {
-        try {
-            byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
-            send(messageBytes, node);
-        } catch (IOException e) {
-            logger.error("IOException serializing internal message");
+    public void send(MessageBuilder message, Node node) {
+        synchronized (sockets) {
+            try {
+                byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
+                send(messageBytes, node);
+            } catch (IOException e) {
+                logger.error("IOException serializing internal message");
+            }
         }
     }
 

@@ -94,7 +94,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         Value value = store.get(readRequest.getKey());
         logger.info("Read {} v{} : {}", readRequest.getKey(), value.getVersion(), readRequest.getTxID());
         MessageBuilder response = CommunicationUtils.generateReadResponse(readRequest.getTxID(), readRequest.getKey().getBytes(), value);
-        cm.replyToClient(readRequest.getClient(), response);
+        cm.replyToClient(readRequest.getClient(), response, this.id);
     }
 
     @Override
@@ -102,7 +102,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         Value value = store.get(writeRequest.getKey());
         logger.info("Write {} v{} : {}", writeRequest.getKey(), value.getVersion(), writeRequest.getTxID());
         MessageBuilder response = CommunicationUtils.generateWriteResponse(writeRequest.getTxID(), writeRequest.getKey().getBytes(), value.getVersion());
-        cm.replyToClient(writeRequest.getClient(), response);
+        cm.replyToClient(writeRequest.getClient(), response, this.id);
     }
 
     @Override
@@ -110,7 +110,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         Value value = store.get(deleteRequest.getKey());
         logger.info("Delete {} v{} : {}", deleteRequest.getKey(), value.getVersion(), deleteRequest.getTxID());
         MessageBuilder response = CommunicationUtils.generateDeleteResponse(deleteRequest.getTxID(), deleteRequest.getKey().getBytes(), value.getVersion());
-        cm.replyToClient(deleteRequest.getClient(), response);
+        cm.replyToClient(deleteRequest.getClient(), response, this.id);
     }
 
     @Override
@@ -133,7 +133,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     public void handle(GetDHTRequest getViewRequest) {
         logger.info("GetView : {}", getViewRequest.getClient());
         MessageBuilder response = CommunicationUtils.generateGetDHTResponse(this.dht);
-        cm.replyToClient(getViewRequest.getClient(), response);
+        cm.replyToClient(getViewRequest.getClient(), response, this.id);
     }
 
     // Internal Events
@@ -188,7 +188,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             if (self.equals(coordinator) && tx.getClient() != null) {
                 MessageBuilder response = CommunicationUtils.generateCommitResponse(txID,
                         tx.getState() == TransactionState.COMMITTED);
-                cm.replyToClient(tx.getClient(), response);
+                cm.replyToClient(tx.getClient(), response, this.id);
                 logger.debug("Responded to client {}", txID);
             }
         } catch (InvalidBucketException ignored) {
