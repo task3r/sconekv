@@ -99,8 +99,8 @@ public class SconeClient {
 
     private DiscoveryResponseDto getDiscoveryNodes() throws IOException {
         HttpGet get = new HttpGet(properties.TRACKER_URL + "/current");
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            CloseableHttpResponse response = httpclient.execute(get);
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            CloseableHttpResponse response = httpClient.execute(get);
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 try (InputStream stream = entity.getContent()) {
@@ -163,14 +163,14 @@ public class SconeClient {
         Map<Short, List<Operation>> opsPerBucket = gerOpsPerBucket(ops);
         SortedSet<Short> buckets = new TreeSet<>(opsPerBucket.keySet()); // I want the coordinator to receive it first if possible
 
-        ZMQ.Socket coordinator = null;
+        Node coordinator = null;
         int retries = 0;
         while (retries < properties.MAX_REQUEST_RETRIES) {
             for (Short bucket : buckets) {
                 MessageBuilder message = constructCommitMessage(txID, opsPerBucket.get(bucket), buckets);
-                ZMQ.Socket socket = sendRequest(bucket, message, true);
+                Node node = sendRequest(bucket, message, true);
                 if (coordinator == null)
-                    coordinator = socket;
+                    coordinator = node;
             }
 
             if (coordinator == null)
@@ -219,7 +219,7 @@ public class SconeClient {
         return opsPerBucket;
     }
 
-    private ZMQ.Socket getSocketForRequest(short bucket, boolean isCommit) throws InvalidBucketException {
+    private Node getNodeForRequest(short bucket, boolean isCommit) throws InvalidBucketException {
         List<Node> candidates;
         Node selected;
         Node masterOfBucket = this.dht.getMasterOfBucket(bucket);
@@ -242,15 +242,15 @@ public class SconeClient {
                     throw new IllegalStateException("Unexpected request mode: " + properties.MODE);
             }
         }
-        return getSocket(selected);
+        return selected;
     }
 
     private External.Response.Reader request(short bucket, MessageBuilder message, TransactionID txID, External.Response.Which requestType) throws RequestFailedException {
         int retries = 0;
-        ZMQ.Socket requester;
+        Node node;
         while (retries < properties.MAX_REQUEST_RETRIES) {
-            requester = sendRequest(bucket, message, false);
-            External.Response.Reader response = recvResponse(requester, requestType, txID, retries);
+            node = sendRequest(bucket, message, false);
+            External.Response.Reader response = recvResponse(node, requestType, txID, retries);
             if (response != null) {
                 return response;
             } else {
@@ -260,19 +260,21 @@ public class SconeClient {
         throw new MaxRetriesExceededException("Exceed the number of retries to " + requestType + " of transaction " + txID);
     }
 
-    private ZMQ.Socket sendRequest(short bucket, MessageBuilder message, boolean isCommit) throws RequestFailedException {
+    private Node sendRequest(short bucket, MessageBuilder message, boolean isCommit) throws RequestFailedException {
         ZMQ.Socket requester;
         try {
-            requester = getSocketForRequest(bucket, isCommit);
+            Node node = getNodeForRequest(bucket, isCommit);
+            requester = getSocket(node);
             requester.sendMore(""); // delimiter
             requester.send(SerializationUtils.getBytesFromMessage(message));
-            return requester;
+            return node;
         } catch (InvalidBucketException | IOException e) {
             throw new RequestFailedException(e);
         }
     }
 
-    private External.Response.Reader recvResponse(ZMQ.Socket socket, External.Response.Which requestType, TransactionID txID, int tryCount) {
+    private External.Response.Reader recvResponse(Node node, External.Response.Which requestType, TransactionID txID, int tryCount) {
+        ZMQ.Socket socket = getSocket(node);
         socket.recv(); // waits for delimiter until timeout
         External.Response.Reader response;
         try {
@@ -287,7 +289,7 @@ public class SconeClient {
             }
         } catch (IOException e) {
             if (socket.errno() == ZError.EAGAIN) {
-                logger.error("Timeout recv {} - {}, try #{}", requestType.name(), txID, tryCount);
+                logger.error("Timeout recv [{}] {} - {}, try #{}", node.getAddress().getHostAddress(), requestType.name(), txID, tryCount);
             } else {
                 logger.error("Error recv {}, but not a timeout", txID);
             }
