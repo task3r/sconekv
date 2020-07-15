@@ -15,7 +15,7 @@ public class SconeKVClient extends DB {
     private static final Logger logger = LoggerFactory.getLogger(SconeKVClient.class);
     private SconeClient sconeClient;
     private Transaction currentTransaction;
-    private int transactionSize = 5;
+    private int transactionSize = 100;
     private int totalTransactions = 0;
     private int commits = 0;
     private int aborts = 0;

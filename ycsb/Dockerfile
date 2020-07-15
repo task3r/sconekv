@@ -10,5 +10,5 @@ COPY scripts/load.sh /usr/src/sconekv/load
 COPY workloads /usr/src/sconekv/
 ENV PATH="${PATH}:/usr/src/sconekv"
 ENV WORKLOAD="workloada"
-ENV THREADS="32"
+ENV THREADS="256"
 CMD "/bin/bash"
