@@ -66,6 +66,9 @@ public class SconeClient {
             if (discoveryResponseDto == null)
                 throw new UnableToGetViewException("Did not receive any discovery nodes");
 
+            List<String> discoveryNodes = Arrays.asList(discoveryResponseDto.view);
+            Collections.shuffle(discoveryNodes);
+
             MessageBuilder message = new org.capnproto.MessageBuilder();
             External.Request.Builder builder = message.initRoot(External.Request.factory);
             builder.setGetDht(null);
@@ -74,7 +77,7 @@ public class SconeClient {
             try (ZMQ.Socket socket = this.context.createSocket(SocketType.DEALER)) {
                 socket.setReceiveTimeOut(properties.RECV_TIMEOUT);
                 socket.setIdentity(UUID.randomUUID().toString().getBytes());
-                for (String node : discoveryResponseDto.view) {
+                for (String node : discoveryNodes) {
                     String address = "tcp://" + node + ":" + properties.SERVER_REQUEST_PORT;
                     socket.connect(address);
                     socket.sendMore(""); // delimiter
@@ -289,7 +292,7 @@ public class SconeClient {
             }
         } catch (IOException e) {
             if (socket.errno() == ZError.EAGAIN) {
-                logger.error("Timeout recv [{}] {} - {}, try #{}", node.getAddress().getHostAddress(), requestType.name(), txID, tryCount);
+                logger.warn("Timeout recv [{}] {} - {}, try #{}", node.getAddress().getHostAddress(), requestType.name(), txID, tryCount);
             } else {
                 logger.error("Error recv {}, but not a timeout", txID);
             }
