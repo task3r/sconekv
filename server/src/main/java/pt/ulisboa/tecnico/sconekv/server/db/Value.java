@@ -52,6 +52,7 @@ public class Value {
         logger.debug("Validate&Lock {} v{} == v{}", op.getKey(), version, op.getVersion());
         if (version == op.getVersion()) {
             if (this.lockOwner == null) {
+                logger.debug("Locked {} for {}", key, txID);
                 this.lockOwner = txID;
             }
             return this.lockOwner;

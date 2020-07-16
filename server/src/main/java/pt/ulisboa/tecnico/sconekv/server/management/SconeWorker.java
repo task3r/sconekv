@@ -156,7 +156,9 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                 logger.error("Invalid buckets in transaction {}, ignoring", logTransaction.getTxID());
             }
         } else {
-            store.addTransaction(logTransaction.getTx());
+            logger.debug("Logged transaction {}", logTransaction.getTxID());
+            if (!store.addTransaction(logTransaction.getTx()))
+                logger.debug("Transaction {} was already in the system", logTransaction.getTxID());
         }
     }
 
@@ -175,8 +177,8 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                 replyIfAmCoordinator(logTransactionDecision.getTxID());
             }
         } else {
-            logger.debug("Received log decision before logging transaction, added to end of queue");
-            cm.queueEvent(logTransactionDecision);
+            logger.debug("Received decision before logging transaction {}", logTransactionDecision.getTxID());
+            delayEvent(logTransactionDecision);
         }
     }
 
@@ -200,15 +202,14 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(LogRollback logRollback) {
         logger.info("Rollback : {}", logRollback.getTxID());
-        store.getTransaction(logRollback.getTxID()).setState(TransactionState.RECEIVED);
 
         if (store.getTransaction(logRollback.getTxID()) != null) {
-            if (sm.isMaster()) {
+            if (store.rollback(logRollback.getTxID()) && sm.isMaster()) {
                 queueMakeLocalDecisions(store.releaseLocks(logRollback.getTxID(), true));
             }
         } else {
             logger.debug("Received log rollback before logging transaction, added to end of queue");
-            cm.queueEvent(logRollback);
+            delayEvent(logRollback);
         }
     }
 

@@ -125,7 +125,7 @@ public class Store {
                     owners.add(currentOwner);
             } else {
                 currentOwner = this.get(op.getKey()).validate(op);
-                if (currentOwner != null)
+                if (currentOwner != null && !tx.getId().equals(currentOwner)) // rollback could have locked key to this tx
                     owners.add(currentOwner);
             }
         }
@@ -184,6 +184,7 @@ public class Store {
     }
 
     public synchronized Set<TransactionID> resetTx(TransactionID txID) {
+        logger.debug("Reset {}", txID);
         transactions.get(txID).setState(TransactionState.RECEIVED);
         return releaseLocks(txID ,false);
     }
@@ -195,5 +196,15 @@ public class Store {
                 pendingTransactions.add(tx);
         }
         return  pendingTransactions;
+    }
+
+    public synchronized boolean rollback(TransactionID txID) {
+        Transaction tx = transactions.get(txID);
+        if (tx != null && !tx.isDecided()) {
+            tx.setState(TransactionState.RECEIVED);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
