@@ -5,10 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.common.db.*;
 import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
-import pt.ulisboa.tecnico.sconekv.server.exceptions.AlreadyProcessedTransaction;
-import pt.ulisboa.tecnico.sconekv.server.exceptions.ExceededMaxLockQueueSize;
-import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidVersionException;
-import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.*;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -54,11 +51,11 @@ public class Store {
         return values.get(key);
     }
 
-    private synchronized void put(String key, byte[] value, short version) {
-        if (values.containsKey(key))
-            values.get(key).update(value, version);
-        else
-            values.put(key, new Value(key, value, version));
+    private synchronized Set<TransactionID> put(String key, byte[] value, short version) {
+        if (!values.containsKey(key))
+            values.put(key, new Value(key));
+
+        return values.get(key).update(value, version);
     }
 
     public boolean addTransaction(Transaction tx) {
@@ -105,13 +102,7 @@ public class Store {
                 }
             }
         } catch (InvalidVersionException e) {
-            simplyReleaseLocks(tx);
-            tx.setState(TransactionState.ABORTED);
-            logger.debug("Locally rejected {}", txID);
-        } catch (ExceededMaxLockQueueSize e) {
-            unqueueTransaction(tx);
-            tx.setState(TransactionState.ABORTED);
-            logger.debug("Locally rejected {} as it exceeded {} lock queue max size ({})", txID, e.getKey(), SconeConstants.MAX_TX_LOCK_QUEUE_SIZE);
+            localReject(tx);
         }
     }
 
@@ -120,9 +111,16 @@ public class Store {
             this.get(op.getKey()).releaseLock(tx.getId());
     }
 
+    public void localReject(Transaction tx) {
+        simplyReleaseLocks(tx);
+        unqueueTransaction(tx);
+        tx.setState(TransactionState.ABORTED);
+        logger.debug("Locally rejected {}", tx.getId());
+    }
+
     private void unqueueTransaction(Transaction tx) {
         for (Operation op : tx.getRwSet())
-            this.get(op.getKey()).unqueue(tx.getId());
+            this.get(op.getKey()).removeFromQueue(tx.getId());
     }
 
     private Set<TransactionID> validateAndLock(Transaction tx) throws InvalidVersionException {
@@ -142,7 +140,7 @@ public class Store {
         return owners;
     }
 
-    private synchronized void queueLocks(Transaction tx) throws ExceededMaxLockQueueSize {
+    private synchronized void queueLocks(Transaction tx) {
         for (Operation op : tx.getRwSet()) {
             this.get(op.getKey()).queueLock(tx.getId());
         }
@@ -168,13 +166,15 @@ public class Store {
         return restartTxs;
     }
 
-    public synchronized void commit(TransactionID txID) {
+    public synchronized Set<TransactionID> commit(TransactionID txID) {
         Transaction tx = transactions.get(txID);
+        HashSet<TransactionID> txsToAbort = new HashSet<>();
         if (tx.getState() != TransactionState.COMMITTED) {
             for (Operation op : tx.getRwSet()) {
                 if (op instanceof WriteOperation) {
-                    this.put(op.getKey(), op.getValue(), (short) (op.getVersion() + 1));
+                    txsToAbort.addAll(this.put(op.getKey(), op.getValue(), (short) (op.getVersion() + 1)));
                 } else if (op instanceof DeleteOperation) {
+                    txsToAbort.addAll(values.get(op.getKey()).getLockQueue());
                     values.remove(op.getKey()); // maybe could simply turn it invisible in the future
                 }
             }
@@ -182,6 +182,7 @@ public class Store {
         }
         tx.setDecided();
         completedTransactions.add(new Pair<>(tx.getId(), LocalDateTime.now()));
+        return txsToAbort;
     }
 
     public synchronized void abort(TransactionID txID) {

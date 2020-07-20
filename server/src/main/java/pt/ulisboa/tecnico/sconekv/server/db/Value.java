@@ -8,7 +8,7 @@ import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ExceededMaxLockQueueSize;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidVersionException;
 
-import java.util.TreeSet;
+import java.util.*;
 
 public class Value {
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
@@ -42,12 +42,21 @@ public class Value {
         return lockOwner;
     }
 
-    public synchronized void update(byte[] content, short version) {
+    public SortedSet<TransactionID> getLockQueue() {
+        return lockQueue;
+    }
+
+    public synchronized Set<TransactionID> update(byte[] content, short version) {
         if (version > this.version) {
             this.content = content;
+            Set<TransactionID> outdatedTxs = lockQueue;
+            lockQueue = new TreeSet<>();
             this.version = version;
-        } else
+            return outdatedTxs;
+        } else {
             logger.error("Tried applying previous version {} with content {} for object with version {}", version, content, this.version);
+            return new HashSet<>();
+        }
     }
 
     public synchronized TransactionID validateAndLock(TransactionID txID, Operation op) throws InvalidVersionException {
@@ -56,6 +65,9 @@ public class Value {
             if (this.lockOwner == null) {
                 logger.debug("Locked {} for {}", key, txID);
                 this.lockOwner = txID;
+            }
+            if (this.lockOwner.equals(txID)) {
+                removeFromQueue(txID);
             }
             return this.lockOwner;
         } else {
@@ -72,7 +84,6 @@ public class Value {
     }
 
     public synchronized TransactionID releaseLockAndChangeToNext(TransactionID txID) {
-        lockQueue.remove(txID);
         if (txID.equals(lockOwner) || lockOwner == null) {
             lockOwner = lockQueue.pollFirst();
             if (logger.isDebugEnabled()) {
@@ -89,7 +100,7 @@ public class Value {
     public synchronized TransactionID releaseLockButQueue(TransactionID txID) {
         if (txID.equals(lockOwner) || lockOwner == null) {
             lockOwner = lockQueue.pollFirst();
-            lockQueue.add(txID);
+            queueLock(txID);
             if (logger.isDebugEnabled()) {
                 StringBuilder s = new StringBuilder();
                 for (TransactionID id : lockQueue)
@@ -107,13 +118,11 @@ public class Value {
         }
     }
 
-    public synchronized void unqueue(TransactionID txID) {
+    public synchronized void removeFromQueue(TransactionID txID) {
         lockQueue.remove(txID);
     }
 
-    public synchronized void queueLock(TransactionID txID) throws ExceededMaxLockQueueSize {
-        if (lockQueue.size() >= SconeConstants.MAX_TX_LOCK_QUEUE_SIZE)
-            throw new ExceededMaxLockQueueSize(txID, key, lockQueue.size());
+    public synchronized void queueLock(TransactionID txID) {
         lockQueue.add(txID);
         logger.debug("Added {} to {}'s queue", txID, key);
     }

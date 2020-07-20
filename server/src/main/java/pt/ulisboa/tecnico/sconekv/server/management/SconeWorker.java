@@ -20,15 +20,13 @@ import pt.ulisboa.tecnico.sconekv.server.events.external.*;
 import pt.ulisboa.tecnico.sconekv.server.events.local.CheckPendingTransactions;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
+import pt.ulisboa.tecnico.sconekv.server.events.local.LocalRejectTransaction;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.AlreadyProcessedTransaction;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.SMRStatusException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 import pt.ulisboa.tecnico.sconekv.server.smr.StateMachine;
 
-import java.util.List;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class SconeWorker implements Runnable, SconeEventHandler {
     private static final Logger logger = LoggerFactory.getLogger(SconeWorker.class);
@@ -167,7 +165,10 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         if (store.getTransaction(logTransactionDecision.getTxID()) != null) {
             if (logTransactionDecision.getDecision() == TransactionState.COMMITTED) {
                 logger.info("Commit : {}", logTransactionDecision.getTxID());
-                store.commit(logTransactionDecision.getTxID());
+                Set<TransactionID> txsToAbort = store.commit(logTransactionDecision.getTxID());
+                for (TransactionID otherTxID : txsToAbort) {
+                    cm.queueEvent(new LocalRejectTransaction(generateId(), otherTxID));
+                }
             } else {
                 logger.info("Abort : {}", logTransactionDecision.getTxID());
                 store.abort(logTransactionDecision.getTxID());
@@ -414,6 +415,20 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                 } catch (InvalidBucketException e) {
                     logger.error("Invalid buckets in transaction {}, ignoring", tx.getId()); // should not happen
                 }
+            }
+        }
+    }
+
+    @Override
+    public void handle(LocalRejectTransaction localRejectTransaction) {
+        logger.info("MakeLocalDecision : {}", localRejectTransaction.getTxID());
+        LogTransaction logTransaction = new LogTransaction(generateId(), store.getTransaction(localRejectTransaction.getTxID()), null);
+        Transaction tx = store.getTransaction(localRejectTransaction.getTxID());
+        if (tx.getState() != TransactionState.ABORTED) {
+            try {
+                store.localReject(tx);
+                sm.prepareLogMaster(logTransaction, localRejectTransaction);
+            } catch (SMRStatusException ignored) {
             }
         }
     }
