@@ -13,6 +13,7 @@ public class SconeConstants {
     public static int MURMUR3_SEED = 42;
     public static int MAX_OP_NUMBER_HOLE = 1;
     public static short NUM_WORKERS = 1;
+    public static int MAX_TX_LOCK_QUEUE_SIZE = Integer.MAX_VALUE;
     public static String TRACKER_URL = "http://tracker:4321";
 
 

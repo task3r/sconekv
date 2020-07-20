@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
+import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.ExceededMaxLockQueueSize;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidVersionException;
 
 import java.util.TreeSet;
@@ -105,7 +107,13 @@ public class Value {
         }
     }
 
-    public synchronized void queueLock(TransactionID txID) {
+    public synchronized void unqueue(TransactionID txID) {
+        lockQueue.remove(txID);
+    }
+
+    public synchronized void queueLock(TransactionID txID) throws ExceededMaxLockQueueSize {
+        if (lockQueue.size() >= SconeConstants.MAX_TX_LOCK_QUEUE_SIZE)
+            throw new ExceededMaxLockQueueSize(txID, key, lockQueue.size());
         lockQueue.add(txID);
         logger.debug("Added {} to {}'s queue", txID, key);
     }

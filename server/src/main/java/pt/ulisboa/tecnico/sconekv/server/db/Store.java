@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.common.db.*;
 import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.AlreadyProcessedTransaction;
+import pt.ulisboa.tecnico.sconekv.server.exceptions.ExceededMaxLockQueueSize;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidVersionException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
 
@@ -107,12 +108,21 @@ public class Store {
             simplyReleaseLocks(tx);
             tx.setState(TransactionState.ABORTED);
             logger.debug("Locally rejected {}", txID);
+        } catch (ExceededMaxLockQueueSize e) {
+            unqueueTransaction(tx);
+            tx.setState(TransactionState.ABORTED);
+            logger.debug("Locally rejected {} as it exceeded {} lock queue max size ({})", txID, e.getKey(), SconeConstants.MAX_TX_LOCK_QUEUE_SIZE);
         }
     }
 
     private void simplyReleaseLocks(Transaction tx) {
         for (Operation op : tx.getRwSet()) // release any locks it acquired but do not queue next (as it is synchronized, if it acquired any locks the txIDs in the queue were there already)
             this.get(op.getKey()).releaseLock(tx.getId());
+    }
+
+    private void unqueueTransaction(Transaction tx) {
+        for (Operation op : tx.getRwSet())
+            this.get(op.getKey()).unqueue(tx.getId());
     }
 
     private Set<TransactionID> validateAndLock(Transaction tx) throws InvalidVersionException {
@@ -132,7 +142,7 @@ public class Store {
         return owners;
     }
 
-    private synchronized void queueLocks(Transaction tx) {
+    private synchronized void queueLocks(Transaction tx) throws ExceededMaxLockQueueSize {
         for (Operation op : tx.getRwSet()) {
             this.get(op.getKey()).queueLock(tx.getId());
         }
