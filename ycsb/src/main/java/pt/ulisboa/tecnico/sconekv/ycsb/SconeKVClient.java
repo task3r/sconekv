@@ -37,6 +37,8 @@ public class SconeKVClient extends DB {
                 transactionSize = Integer.parseInt(txSize);
             }
 
+            Stats.getInstance().newClient();
+
             currentTransaction = sconeClient.newTransaction();
 
         } catch (UnableToGetViewException | IOException e) {
@@ -53,6 +55,8 @@ public class SconeKVClient extends DB {
         logger.info("\nEnded SconeKV benchmark for client {}.\nTotal transactions: {}\nCommitted: {} ({}%)\nAborted: {} ({}%)",
                 currentTransaction.getId().getClient(), totalTransactions, commits, commits/(float)totalTransactions*100,
                 aborts, aborts/(float)totalTransactions*100);
+
+        Stats.getInstance().clientFinished(totalTransactions, commits, aborts);
     }
 
     public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
