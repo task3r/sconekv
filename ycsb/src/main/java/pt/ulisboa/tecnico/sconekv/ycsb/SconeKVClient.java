@@ -68,7 +68,7 @@ public class SconeKVClient extends DB {
             }
 
             Utils.createResultHashMap(fields, response, result);
-            // not considering reads for commit
+            commit();
             return Status.OK;
 
         } catch (InvalidTransactionStateChangeException e) { // should not happen
