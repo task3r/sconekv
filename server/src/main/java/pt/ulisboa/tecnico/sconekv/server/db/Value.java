@@ -27,10 +27,9 @@ public class Value {
         this.version = version;
         if (SconeConstants.LOCK_TYPE == SconeConstants.LockType.SINGLE) {
             this.lock = new SingleLock();
+        } else if (SconeConstants.LOCK_TYPE == SconeConstants.LockType.READ_WRITE) {
+            this.lock = new ReadWriteLock();
         }
-//        else if (SconeConstants.LOCK_TYPE == SconeConstants.LockType.READ_WRITE) {
-//            this.lock = new ReadWriteLock();
-//        }
     }
 
     public byte[] getContent() {
