@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
-import pt.ulisboa.tecnico.sconekv.server.exceptions.ExceededMaxLockQueueSize;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidVersionException;
 
 import java.util.*;
@@ -16,18 +15,22 @@ public class Value {
     private String key;
     private byte[] content;
     private short version;
-    private TransactionID lockOwner;
-    private TreeSet<TransactionID> lockQueue = new TreeSet<>();
+    private Lock lock;
 
     public Value(String key) {
-        this.key = key;
-        this.content = new byte[0];
-        this.version = 0;
+        this(key, new byte[0], (short) 0);
     }
+
     public Value(String key, byte[] content, short version) {
         this.key = key;
         this.content = content;
         this.version = version;
+        if (SconeConstants.LOCK_TYPE == SconeConstants.LockType.SINGLE) {
+            this.lock = new SingleLock();
+        }
+//        else if (SconeConstants.LOCK_TYPE == SconeConstants.LockType.READ_WRITE) {
+//            this.lock = new ReadWriteLock();
+//        }
     }
 
     public byte[] getContent() {
@@ -38,92 +41,95 @@ public class Value {
         return version;
     }
 
-    public synchronized TransactionID getLockOwner() {
-        return lockOwner;
+    public Set<TransactionID> getLockQueue() {
+        return lock.getLockQueue();
     }
 
-    public SortedSet<TransactionID> getLockQueue() {
-        return lockQueue;
-    }
-
-    public synchronized Set<TransactionID> update(byte[] content, short version) {
-        if (version > this.version) {
-            this.content = content;
-            Set<TransactionID> outdatedTxs = lockQueue;
-            lockQueue = new TreeSet<>();
-            this.version = version;
-            return outdatedTxs;
-        } else {
-            logger.error("Tried applying previous version {} with content {} for object with version {}", version, content, this.version);
-            return new HashSet<>();
-        }
-    }
-
-    public synchronized TransactionID validateAndLock(TransactionID txID, Operation op) throws InvalidVersionException {
-        logger.debug("Validate&Lock {} v{} == v{}", op.getKey(), version, op.getVersion());
-        if (version == op.getVersion()) {
-            if (this.lockOwner == null) {
-                logger.debug("Locked {} for {}", key, txID);
-                this.lockOwner = txID;
+    public Set<TransactionID> update(byte[] content, short version) {
+        synchronized (this) {
+            if (version > this.version) {
+                this.content = content;
+                this.version = version;
+                return lock.clearLockQueue();
+            } else {
+                logger.error("Tried applying previous version {} with content {} for object with version {}", version, content, this.version);
+                return new HashSet<>();
             }
-            if (this.lockOwner.equals(txID)) {
-                removeFromQueue(txID);
+        }
+    }
+
+    public Set<TransactionID> validateAndLock(TransactionID txID, Operation op) throws InvalidVersionException {
+        synchronized (this) {
+            if (version == op.getVersion()) {
+                return lock.lock(txID, op.getType());
+            } else {
+                throw new InvalidVersionException();
             }
-            return this.lockOwner;
-        } else {
-            throw new InvalidVersionException();
         }
     }
 
-    public synchronized TransactionID validate(Operation op) throws InvalidVersionException {
-        logger.debug("Validate {} v{} == v{}", op.getKey(), version, op.getVersion());
-        if (version != op.getVersion()) {
-            throw new InvalidVersionException();
+    public Set<TransactionID> validate(Operation op) throws InvalidVersionException {
+        synchronized (this) {
+            if (version != op.getVersion()) {
+                throw new InvalidVersionException();
+            }
+            return lock.getLockOwners();
         }
-        return this.lockOwner;
     }
 
-    public synchronized TransactionID releaseLockAndChangeToNext(TransactionID txID) {
-        if (txID.equals(lockOwner) || lockOwner == null) {
-            lockOwner = lockQueue.pollFirst();
+    public Set<TransactionID> releaseLockAndChangeToNext(TransactionID txID) {
+        synchronized (this) {
+            Set<TransactionID> owners = lock.unlockAndLockNext(txID);
+
             if (logger.isDebugEnabled()) {
-                StringBuilder s = new StringBuilder();
-                for (TransactionID id : lockQueue)
-                    s.append(id).append(",");
-                logger.debug("Released lock {} of tx {}, selected {} and left {} in the queue", key, txID, lockOwner, s);
+                if (owners.contains(txID)) {
+                    StringBuilder ownersSB = new StringBuilder();
+                    for (TransactionID id : owners)
+                        ownersSB.append(id).append(",");
+                    StringBuilder queueSB = new StringBuilder();
+                    for (TransactionID id : lock.getLockQueue())
+                        queueSB.append(id).append(",");
+                    logger.debug("Released lock {} of tx {}, selected {} and left {} in the queue", key, txID, ownersSB, queueSB);
+                }
             }
-            return lockOwner;
+
+            return owners;
         }
-        return null;
     }
 
-    public synchronized TransactionID releaseLockButQueue(TransactionID txID) {
-        if (txID.equals(lockOwner) || lockOwner == null) {
-            lockOwner = lockQueue.pollFirst();
-            queueLock(txID);
+    public Set<TransactionID> releaseLockButQueue(TransactionID txID, Operation.Type type) {
+        synchronized (this) {
+            Set<TransactionID> owners = lock.unlockButQueue(txID, type);
+
             if (logger.isDebugEnabled()) {
-                StringBuilder s = new StringBuilder();
-                for (TransactionID id : lockQueue)
-                    s.append(id).append(",");
-                logger.debug("Released but queued lock {} of tx {}, selected {} and left {} in the queue", key, txID, lockOwner, s);
+                StringBuilder ownersSB = new StringBuilder();
+                for (TransactionID id : owners)
+                    ownersSB.append(id).append(",");
+                StringBuilder queueSB = new StringBuilder();
+                for (TransactionID id : lock.getLockQueue())
+                    queueSB.append(id).append(",");
+                logger.debug("Released but queued lock {} of tx {}, selected {} and left {} in the queue", key, txID, ownersSB, queueSB);
             }
-            return lockOwner;
+            return owners;
         }
-        return null;
+
     }
 
-    public synchronized void releaseLock(TransactionID txID) {
-        if (txID.equals(lockOwner)) {
-            lockOwner = null;
+    public void releaseLock(TransactionID txID) {
+        synchronized (this) {
+            lock.unlock(txID);
         }
     }
 
-    public synchronized void removeFromQueue(TransactionID txID) {
-        lockQueue.remove(txID);
+    public void removeFromQueue(TransactionID txID) {
+        synchronized (this) {
+            lock.removeFromQueue(txID);
+        }
     }
 
-    public synchronized void queueLock(TransactionID txID) {
-        lockQueue.add(txID);
-        logger.debug("Added {} to {}'s queue", txID, key);
+    public void queueLock(TransactionID txID, Operation.Type type) {
+        synchronized (this) {
+            lock.queue(txID, type);
+        }
     }
 }

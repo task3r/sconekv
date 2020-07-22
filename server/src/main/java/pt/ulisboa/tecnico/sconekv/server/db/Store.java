@@ -125,16 +125,16 @@ public class Store {
 
     private Set<TransactionID> validateAndLock(Transaction tx) throws InvalidVersionException {
         Set<TransactionID> owners = new HashSet<>();
-        TransactionID currentOwner;
+        Set<TransactionID> currentOwnersForKey;
         for (Operation op : tx.getRwSet()) {
             if (owners.isEmpty()) { // transaction is still lockable
-                currentOwner = this.get(op.getKey()).validateAndLock(tx.getId(), op);
-                if (!tx.getId().equals(currentOwner))
-                    owners.add(currentOwner);
+                currentOwnersForKey = this.get(op.getKey()).validateAndLock(tx.getId(), op);
+                if (!currentOwnersForKey.contains(tx.getId()))
+                    owners.addAll(currentOwnersForKey);
             } else {
-                currentOwner = this.get(op.getKey()).validate(op);
-                if (currentOwner != null && !tx.getId().equals(currentOwner)) // rollback could have locked key to this tx
-                    owners.add(currentOwner);
+                currentOwnersForKey = this.get(op.getKey()).validate(op);
+                currentOwnersForKey.remove(tx.getId()); // rollback could have locked key with this txID
+                owners.addAll(currentOwnersForKey);
             }
         }
         return owners;
@@ -142,7 +142,7 @@ public class Store {
 
     private synchronized void queueLocks(Transaction tx) {
         for (Operation op : tx.getRwSet()) {
-            this.get(op.getKey()).queueLock(tx.getId());
+            this.get(op.getKey()).queueLock(tx.getId(), op.getType());
         }
     }
 
@@ -151,12 +151,11 @@ public class Store {
         Set<TransactionID> restartTxs = new HashSet<>();
         for (Operation op : tx.getRwSet()) {
             if (butQueue) { // in case of a rollback of txID
-                restartTxs.add(this.get(op.getKey()).releaseLockButQueue(tx.getId()));
+                restartTxs.addAll(this.get(op.getKey()).releaseLockButQueue(tx.getId(), op.getType()));
             } else { // the normal case, txID is decided or reset
-                restartTxs.add(this.get(op.getKey()).releaseLockAndChangeToNext(tx.getId()));
+                restartTxs.addAll(this.get(op.getKey()).releaseLockAndChangeToNext(tx.getId()));
             }
         }
-        restartTxs.remove(null); // releaseLock might return null
         if (logger.isDebugEnabled()) {
             StringBuilder s = new StringBuilder();
             for (TransactionID id : restartTxs)

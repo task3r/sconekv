@@ -9,15 +9,15 @@ import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 public class ReadOperation extends Operation {
 
     public ReadOperation(String key, short version) {
-        super(key, version);
+        super(key, version, Type.READ);
     }
 
     public ReadOperation(String key, short version, byte[] value) {
-        super(key, version, value);
+        super(key, version, value, Type.READ);
     }
 
     public ReadOperation(Common.Operation.Reader reader) {
-        super(new String(reader.getKey().toArray()), reader.getVersion());
+        super(new String(reader.getKey().toArray()), reader.getVersion(), Type.READ);
     }
 
     @Override

@@ -53,6 +53,7 @@ public class PropertiesConfigurator {
         SconeConstants.GC_PERIOD = getLong(properties, "GC_PERIOD");
         SconeConstants.TX_TTL = getLong(properties, "TX_TTL");
         SconeConstants.MAX_TX_LOCK_QUEUE_SIZE = getInt(properties, "MAX_TX_LOCK_QUEUE_SIZE");
+        SconeConstants.LOCK_TYPE = SconeConstants.LockType.valueOf(getString(properties, "LOCK_TYPE"));
         validateSconeConfiguration();
     }
 

@@ -11,11 +11,11 @@ import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 public class DeleteOperation extends Operation {
 
     public DeleteOperation(String key, short version, byte[] value) {
-        super(key, version, value);
+        super(key, version, value, Type.WRITE);
     }
 
     public DeleteOperation(Common.Operation.Reader reader) {
-        super(new String(reader.getKey().toArray()), reader.getVersion(), null);
+        super(new String(reader.getKey().toArray()), reader.getVersion(), null, Type.WRITE);
     }
 
     @Override

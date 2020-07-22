@@ -9,11 +9,11 @@ import pt.ulisboa.tecnico.sconekv.common.transport.Common;
 public class WriteOperation extends Operation {
 
     public WriteOperation(String key, short version, byte[] value) {
-        super(key, version, value);
+        super(key, version, value, Type.WRITE);
     }
 
     public WriteOperation(Common.Operation.Reader reader) {
-        super(new String(reader.getKey().toArray()), reader.getVersion(), reader.getWrite().toArray());
+        super(new String(reader.getKey().toArray()), reader.getVersion(), reader.getWrite().toArray(), Type.WRITE);
     }
 
     @Override
