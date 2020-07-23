@@ -96,12 +96,12 @@ public class StateMachine {
         if (newVersion.isEqual(this.futureVersion) && !newMaster.equals(this.currentMaster)) {
             setStatus(Status.VIEW_CHANGE);
             MessageBuilder message = CommunicationUtils.generateStartViewChange(mm.getMyself(), currentVersion);
-            cm.broadcastBucket(message);
+            cm.broadcastBucket(message, (short) 0);
             logger.debug("Broadcasted startViewChange for {}", currentVersion);
         }
     }
 
-    public synchronized void prepareLogMaster(LogEvent event, SconeEvent cause) throws SMRStatusException {
+    public synchronized void prepareLogMaster(LogEvent event, SconeEvent cause, short workerId) throws SMRStatusException {
         if (status != Status.NORMAL) {
             this.pendingEvents.add(cause);
             logger.info("LogEvent {} was not processed as status is {}", event.getTxID(), status);
@@ -115,11 +115,11 @@ public class StateMachine {
 
         MessageBuilder message = CommunicationUtils.generatePrepare(event, mm.getMyself(), currentVersion,
                 currentBucket.getId(), commitNumber, getOpNumber());
-        cm.broadcastBucket(message);
+        cm.broadcastBucket(message, workerId);
         logger.debug("Master replicated {}", getOpNumber());
     }
 
-    public synchronized void prepareLogReplica(Prepare prepare) {
+    public synchronized void prepareLogReplica(Prepare prepare, short workerId) {
         if (status != Status.NORMAL) {
             this.pendingEvents.add(prepare);
             logger.info("Prepare event {} was not processed as status is {}", prepare.getEvent().getTxID(), status);
@@ -150,7 +150,7 @@ public class StateMachine {
             this.commitNumber = prepare.getCommitNumber();
 
             MessageBuilder message = CommunicationUtils.generatePrepareOK(mm.getMyself(), currentVersion, currentBucket.getId(), getOpNumber());
-            cm.send(message, currentMaster);
+            cm.send(message, currentMaster, workerId);
             logger.debug("Replica sent prepareOK {}", getOpNumber());
 
         } else if (this.log.size() < prepare.getOpNumber()) {// if this entry is not the immediately consecutive in the log, wait
@@ -159,7 +159,7 @@ public class StateMachine {
             if (prepare.getOpNumber() - this.getOpNumber() >= SconeConstants.MAX_OP_NUMBER_HOLE) {
                 logger.info("Detected op number hole, requesting state update");
                 MessageBuilder message = CommunicationUtils.generateGetState(mm.getMyself(), this.currentVersion, getOpNumber());
-                cm.send(message, currentMaster);
+                cm.send(message, currentMaster, workerId);
             }
 
         } else {
@@ -195,7 +195,7 @@ public class StateMachine {
         }
     }
 
-    public synchronized void startViewChange(StartViewChange event) {
+    public synchronized void startViewChange(StartViewChange event, short workerId) {
         logger.debug("Received startViewChange from {}", event.getNode().getAddress().getHostAddress());
         if (event.getViewVersion().isGreater(this.futureVersion)) {
             logger.debug("StartViewChange is for new futureVersion {}", event.getViewVersion());
@@ -216,13 +216,13 @@ public class StateMachine {
                 logger.debug("Sent doView to myself");
             } else {
                 MessageBuilder message = CommunicationUtils.generateDoViewChange(mm.getMyself(), currentVersion, commitNumber, log);
-                cm.send(message, currentBucket.getMaster());
+                cm.send(message, currentBucket.getMaster(), workerId);
                 logger.debug("Sent doView to {}", currentBucket.getMaster().getAddress().getHostAddress());
             }
         }
     }
 
-    public synchronized void doViewChange(DoViewChange event) {
+    public synchronized void doViewChange(DoViewChange event, short workerId) {
         logger.debug("Received doViewChange from {}", event.getNode().getAddress().getHostAddress());
         if (event.getViewVersion().isGreater(this.futureVersion)) {
             this.futureVersion = event.getViewVersion();
@@ -246,13 +246,13 @@ public class StateMachine {
                     cm.queueEvent(entry.getEvent());
                 }
                 MessageBuilder message = CommunicationUtils.generateStartView(mm.getMyself(), currentVersion, commitNumber, log);
-                cm.broadcastBucket(message);
+                cm.broadcastBucket(message, workerId);
                 setStatus(Status.MASTER_AFTER_VIEW_CHANGE);
             }
         }
     }
 
-    public synchronized void startView(StartView event) {
+    public synchronized void startView(StartView event, short workerId) {
         logger.debug("Received startView from {}", event.getNode().getAddress().getHostAddress());
         this.term = event.getViewVersion();
         this.log = event.getLog();
@@ -263,7 +263,7 @@ public class StateMachine {
         this.commitNumber = event.getCommitNumber();
         this.currentMaster = event.getNode();
         MessageBuilder message = CommunicationUtils.generatePrepareOK(mm.getMyself(), currentVersion, currentBucket.getId(), getOpNumber());
-        cm.send(message, currentMaster);
+        cm.send(message, currentMaster, workerId);
         setStatus(Status.NORMAL);
     }
 
@@ -282,7 +282,7 @@ public class StateMachine {
         }
     }
 
-    public synchronized void getState(GetState event) {
+    public synchronized void getState(GetState event, short workerId) {
         logger.debug("Received getState");
         if (status != Status.NORMAL) {
             this.pendingEvents.add(event);
@@ -291,7 +291,7 @@ public class StateMachine {
         }
         if (currentVersion.equals(event.getViewVersion())) {
             MessageBuilder message = CommunicationUtils.generateNewState(mm.getMyself(), this.currentVersion, getOpNumber(), this.commitNumber, this.log.subList(Math.max(event.getOpNumber(),0), log.size()));
-            cm.send(message, event.getNode());
+            cm.send(message, event.getNode(), workerId);
             logger.info("Responded to GetState from {}", event.getNode());
         } else {
             logger.info("Received GetState with version {} but I am on {} so I am not responding", event.getViewVersion(), this.currentVersion);

@@ -29,10 +29,10 @@ public class CommunicationManager {
     private final ZMQ.Socket clientRequestSocket;
     private final ZMQ.Socket internalCommSocket;
     private ZMQ.Poller poller;
-    private final Map<Node, ZMQ.Socket> sockets;
+    private final Map<String, ZMQ.Socket> sockets;
     private BlockingQueue<SconeEvent> eventQueue;
-    private final List<ZMQ.Socket> workerReply;
-    private final ZMQ.Socket workerReplySink;
+    private final List<ZMQ.Socket> workerChannel;
+    private final ZMQ.Socket workerChannelSink;
 
     public CommunicationManager(Node self) {
         this.self = self;
@@ -46,20 +46,20 @@ public class CommunicationManager {
         this.internalCommSocket = context.createSocket(SocketType.ROUTER);
         this.internalCommSocket.bind("tcp://*:" + SconeConstants.SERVER_INTERNAL_PORT);
 
-        this.workerReplySink = context.createSocket(SocketType.PULL);
-        this.workerReplySink.bind("inproc://reply-sink");
+        this.workerChannelSink = context.createSocket(SocketType.PULL);
+        this.workerChannelSink.bind("inproc://reply-sink");
 
-        this.workerReply = new ArrayList<>();
-        for (int i = 0; i < SconeConstants.NUM_WORKERS; i++) {
+        this.workerChannel = new ArrayList<>();
+        for (int i = 0; i <= SconeConstants.NUM_WORKERS; i++) { // workerId 0 is saved for viewChange callbacks
             ZMQ.Socket socket = context.createSocket(SocketType.PUSH);
             socket.connect("inproc://reply-sink");
-            this.workerReply.add(socket);
+            this.workerChannel.add(socket);
         }
 
         this.poller = context.createPoller(3);
         this.poller.register(clientRequestSocket, ZMQ.Poller.POLLIN);
         this.poller.register(internalCommSocket, ZMQ.Poller.POLLIN);
-        this.poller.register(workerReplySink, ZMQ.Poller.POLLIN);
+        this.poller.register(workerChannelSink, ZMQ.Poller.POLLIN);
     }
 
     public void updateBucket(Bucket newBucket) {
@@ -69,14 +69,14 @@ public class CommunicationManager {
         }
     }
 
-    private ZMQ.Socket getSocket(Node node) {
-        if (!sockets.containsKey(node)) {
+    private ZMQ.Socket getSocket(String address) {
+        if (!sockets.containsKey(address)) {
             ZMQ.Socket socket = context.createSocket(SocketType.DEALER);
             socket.setIdentity(UUID.randomUUID().toString().getBytes(ZMQ.CHARSET));
-            socket.connect(String.format("tcp://%s:%s", node.getAddress().getHostAddress(), SconeConstants.SERVER_INTERNAL_PORT));
-            sockets.put(node, socket);
+            socket.connect(String.format("tcp://%s:%s", address, SconeConstants.SERVER_INTERNAL_PORT));
+            sockets.put(address, socket);
         }
-        return sockets.get(node);
+        return sockets.get(address);
     }
 
     public void shutdown() {
@@ -106,12 +106,18 @@ public class CommunicationManager {
                     return new Triplet<>(MessageType.INTERNAL, node, message);
 
                 } else if (poller.pollin(2)) {
-                    String clientToReply = workerReplySink.recvStr();
-                    workerReplySink.recv(); //delimiter
-                    byte[] response = workerReplySink.recv();
-                    clientRequestSocket.sendMore(clientToReply);
-                    clientRequestSocket.sendMore(""); //delimiter
-                    clientRequestSocket.send(response);
+                    MessageType type = MessageType.valueOf(workerChannelSink.recvStr());
+                    workerChannelSink.recv(); //delimiter
+                    String target = workerChannelSink.recvStr();
+                    workerChannelSink.recv(); //delimiter
+                    byte[] message = workerChannelSink.recv();
+                    if (type == MessageType.EXTERNAL) {
+                        clientRequestSocket.sendMore(target);
+                        clientRequestSocket.sendMore(""); //delimiter
+                        clientRequestSocket.send(message);
+                    } else if (type == MessageType.INTERNAL) {
+                        send(message, target);
+                    }
                 }
             }
         } catch (ZError.IOException | ZMQException e) {
@@ -121,25 +127,30 @@ public class CommunicationManager {
         return null;
     }
 
-    public void replyToClient(String client, MessageBuilder response, short id) {
+    private void workerChannelSend(byte[] messageBytes, ZMQ.Socket socket, MessageType type, String target) {
+        socket.sendMore(type.name());
+        socket.sendMore(""); // delimiter
+        socket.sendMore(target);
+        socket.sendMore(""); // delimiter
+        socket.send(messageBytes, 0);
+    }
+
+    public void replyToClient(String client, MessageBuilder response, short workerId) {
             try {
-                ZMQ.Socket socket = workerReply.get(id - 1); // id 0 is reserved for the server thread
-                socket.sendMore(client);
-                socket.sendMore("");
-                socket.send(SerializationUtils.getBytesFromMessage(response), 0);
+                ZMQ.Socket socket = workerChannel.get(workerId);
+                workerChannelSend(SerializationUtils.getBytesFromMessage(response), socket, MessageType.EXTERNAL, client);
             } catch (IOException e) {
                 logger.error("IOException serializing response to {}", client);
             }
     }
 
-    public void broadcastBucket(MessageBuilder message) {
+    public void broadcastBucket(MessageBuilder message, short workerId) {
         synchronized (sockets) {
             try {
                 byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
-                for (Node n : currentBucket.getNodesExcept(self)) { // should guarantee that I am the master and they are all replicas
-                    ZMQ.Socket socket = getSocket(n);
-                    socket.sendMore(""); // delimiter
-                    socket.send(messageBytes);
+                ZMQ.Socket socket = workerChannel.get(workerId);
+                for (Node node : currentBucket.getNodesExcept(self)) { // should guarantee that I am the master and they are all replicas
+                    workerChannelSend(messageBytes, socket, MessageType.INTERNAL, node.getAddress().getHostAddress());
                 }
             } catch (IOException e) {
                 logger.error("IOException serializing internal message");
@@ -147,12 +158,13 @@ public class CommunicationManager {
         }
     }
 
-    public synchronized void broadcast(MessageBuilder message, Set<Node> recipients) {
+    public synchronized void broadcast(MessageBuilder message, Set<Node> recipients, short workerId) {
         synchronized (sockets) {
             try {
                 byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
+                ZMQ.Socket socket = workerChannel.get(workerId);
                 for (Node node : recipients) {
-                    send(messageBytes, node);
+                    workerChannelSend(messageBytes, socket, MessageType.INTERNAL, node.getAddress().getHostAddress());
                 }
             } catch (IOException e) {
                 logger.error("IOException serializing internal message");
@@ -160,19 +172,20 @@ public class CommunicationManager {
         }
     }
 
-    public void send(MessageBuilder message, Node node) {
+    public void send(MessageBuilder message, Node node, short workerId) {
         synchronized (sockets) {
             try {
                 byte[] messageBytes = SerializationUtils.getBytesFromMessage(message);
-                send(messageBytes, node);
+                ZMQ.Socket socket = workerChannel.get(workerId);
+                workerChannelSend(messageBytes, socket, MessageType.INTERNAL, node.getAddress().getHostAddress());
             } catch (IOException e) {
                 logger.error("IOException serializing internal message");
             }
         }
     }
 
-    private void send(byte[] message, Node node) {
-        ZMQ.Socket socket = getSocket(node);
+    private void send(byte[] message, String target) {
+        ZMQ.Socket socket = getSocket(target);
         socket.sendMore(""); // delimiter
         socket.send(message);
     }

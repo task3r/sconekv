@@ -148,7 +148,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                             store.getTransaction(logTransaction.getTxID()).getState() == TransactionState.PREPARED));
                 } else {
                     cm.send(CommunicationUtils.generateLocalDecisionResponse(self, sm.getCurrentVersion(), logTransaction.getTxID(),
-                            store.getTransaction(logTransaction.getTxID()).getState()), coordinator);
+                            store.getTransaction(logTransaction.getTxID()).getState()), coordinator, id);
                 }
             } catch (InvalidBucketException e) {
                 logger.error("Invalid buckets in transaction {}, ignoring", logTransaction.getTxID());
@@ -216,7 +216,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(Prepare prepare) {
-        sm.prepareLogReplica(prepare);
+        sm.prepareLogReplica(prepare, id);
     }
 
     @Override
@@ -226,22 +226,22 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(StartViewChange startViewChange) {
-        sm.startViewChange(startViewChange);
+        sm.startViewChange(startViewChange, id);
     }
 
     @Override
     public void handle(DoViewChange doViewChange) {
-        sm.doViewChange(doViewChange);
+        sm.doViewChange(doViewChange, id);
     }
 
     @Override
     public void handle(StartView startView) {
-        sm.startView(startView);
+        sm.startView(startView, id);
     }
 
     @Override
     public void handle(GetState getState) {
-        sm.getState(getState);
+        sm.getState(getState, id);
     }
 
     @Override
@@ -269,7 +269,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                             tx.setState(TransactionState.ABORTED);
                             Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
                             masters.remove(self);
-                            cm.broadcast(CommunicationUtils.generateAbortTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
+                            cm.broadcast(CommunicationUtils.generateAbortTransaction(self, sm.getCurrentVersion(), tx.getId()), masters, id);
                             cm.queueEvent(new AbortTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
                         } else {
                             Bucket bucket = dht.getBucketOfNode(localDecisionResponse.getNode());
@@ -279,7 +279,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                                     tx.setDecided();
                                     Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
                                     masters.remove(self);
-                                    cm.broadcast(CommunicationUtils.generateCommitTransaction(self, sm.getCurrentVersion(), tx.getId()), masters);
+                                    cm.broadcast(CommunicationUtils.generateCommitTransaction(self, sm.getCurrentVersion(), tx.getId()), masters, id);
                                     cm.queueEvent(new CommitTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
                                 }
                             } else {
@@ -309,7 +309,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                     if (self.equals(requestRollbackLocalDecision.getNode()))
                         cm.queueEvent(new RollbackLocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), tx.getId()));
                     else
-                        cm.send(CommunicationUtils.generateRollbackLocalDecisionResponse(self, sm.getCurrentVersion(), tx.getId()), requestRollbackLocalDecision.getNode());
+                        cm.send(CommunicationUtils.generateRollbackLocalDecisionResponse(self, sm.getCurrentVersion(), tx.getId()), requestRollbackLocalDecision.getNode(), id);
                 }
             } catch (InvalidBucketException e) {
                 logger.error("Invalid buckets in transaction {}, ignoring", tx.getId());
@@ -320,7 +320,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(RollbackLocalDecisionResponse rollbackLocalDecisionResponse) {
         try {
-            sm.prepareLogMaster(new LogRollback(generateId(), rollbackLocalDecisionResponse.getTxID(), null), rollbackLocalDecisionResponse);
+            sm.prepareLogMaster(new LogRollback(generateId(), rollbackLocalDecisionResponse.getTxID(), null), rollbackLocalDecisionResponse, id);
         } catch (SMRStatusException ignored) {
         }
     }
@@ -328,7 +328,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(CommitTransaction commitTransaction) {
         try {
-            sm.prepareLogMaster(new LogTransactionDecision(generateId(), commitTransaction.getTxID(), true, null), commitTransaction);
+            sm.prepareLogMaster(new LogTransactionDecision(generateId(), commitTransaction.getTxID(), true, null), commitTransaction, id);
         } catch (SMRStatusException ignored) {
         }
     }
@@ -336,7 +336,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(AbortTransaction abortTransaction) {
         try {
-            sm.prepareLogMaster(new LogTransactionDecision(generateId(), abortTransaction.getTxID(), false, null), abortTransaction);
+            sm.prepareLogMaster(new LogTransactionDecision(generateId(), abortTransaction.getTxID(), false, null), abortTransaction, id);
         } catch (SMRStatusException ignored) {
         }
     }
@@ -347,7 +347,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         LogTransaction logTransaction = new LogTransaction(generateId(), store.getTransaction(makeLocalDecision.getTxID()), null);
         try {
             store.validate(makeLocalDecision.getTxID());
-            sm.prepareLogMaster(logTransaction, makeLocalDecision);
+            sm.prepareLogMaster(logTransaction, makeLocalDecision, id);
         } catch (SMRStatusException e) {
             queueMakeLocalDecisions(store.resetTx(makeLocalDecision.getTxID()));
         } catch (ValidTransactionNotLockableException e) {
@@ -372,7 +372,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                     if (coordinator.equals(self)) {
                         cm.queueEvent(new RequestRollbackLocalDecision(generateId(), self, sm.getCurrentVersion(), otherTxID));
                     } else {
-                        cm.send(CommunicationUtils.generateRequestRollbackLocalDecision(self, sm.getCurrentVersion(), otherTxID), coordinator);
+                        cm.send(CommunicationUtils.generateRequestRollbackLocalDecision(self, sm.getCurrentVersion(), otherTxID), coordinator, id);
                     }
                 }
             } catch (InvalidBucketException ignored) {
@@ -387,10 +387,10 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         if (tx != null && tx.isDecided()) {
             if (tx.getState() == TransactionState.ABORTED)
                 cm.send(CommunicationUtils.generateAbortTransaction(self, sm.getCurrentVersion(), tx.getId()),
-                        requestGlobalDecision.getNode());
+                        requestGlobalDecision.getNode(), id);
             else
                 cm.send(CommunicationUtils.generateCommitTransaction(self, sm.getCurrentVersion(), tx.getId()),
-                        requestGlobalDecision.getNode());
+                        requestGlobalDecision.getNode(), id);
         }
     }
 
@@ -399,7 +399,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         Transaction tx = store.getTransaction(requestLocalDecision.getTxID());
         if (tx != null) {
             cm.send(CommunicationUtils.generateLocalDecisionResponse(self, sm.getCurrentVersion(), tx.getId(),
-                    tx.getState()), requestLocalDecision.getNode());
+                    tx.getState()), requestLocalDecision.getNode(), id);
         }
     }
 
@@ -414,10 +414,10 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                     if (tx.getCoordinatorBucket() == sm.getCurrentBucketId()) {
                         Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
                         masters.remove(self);
-                        cm.broadcast(CommunicationUtils.generateRequestLocalDecision(self, sm.getCurrentVersion(), tx.getId()), masters);
+                        cm.broadcast(CommunicationUtils.generateRequestLocalDecision(self, sm.getCurrentVersion(), tx.getId()), masters, id);
                     } else {
                         Node coordinator = dht.getMasterOfBucket(tx.getCoordinatorBucket());
-                        cm.send(CommunicationUtils.generateRequestGlobalDecision(self, sm.getCurrentVersion(), tx.getId()), coordinator);
+                        cm.send(CommunicationUtils.generateRequestGlobalDecision(self, sm.getCurrentVersion(), tx.getId()), coordinator, id);
                     }
                 } catch (InvalidBucketException e) {
                     logger.error("Invalid buckets in transaction {}, ignoring", tx.getId()); // should not happen
@@ -434,7 +434,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         if (tx.getState() != TransactionState.ABORTED) {
             try {
                 store.localReject(tx);
-                sm.prepareLogMaster(logTransaction, localRejectTransaction);
+                sm.prepareLogMaster(logTransaction, localRejectTransaction, id);
             } catch (SMRStatusException ignored) {
             }
         }
