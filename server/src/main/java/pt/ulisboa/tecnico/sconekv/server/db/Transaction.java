@@ -20,6 +20,7 @@ public class Transaction extends AbstractTransaction {
     private String client;
     private Common.Transaction.Reader reader;
     private boolean decided;
+    private boolean rollbackInProgress;
 
     public Transaction(TransactionID txID, String client, Common.Transaction.Reader transaction) {
         super(txID, TransactionState.RECEIVED);
@@ -88,5 +89,23 @@ public class Transaction extends AbstractTransaction {
 
     public void removeResponse(short bucket) {
         responses.remove(bucket);
+    }
+
+    public boolean rollback() {
+        synchronized (getId()) {
+            if (this.rollbackInProgress) {
+                return false;
+            } else {
+                this.rollbackInProgress = true;
+                return true;
+            }
+
+        }
+    }
+
+    public void completedRollback() {
+        synchronized (getId()) {
+            this.rollbackInProgress = false;
+        }
     }
 }

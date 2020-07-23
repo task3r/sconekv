@@ -352,25 +352,32 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             queueMakeLocalDecisions(store.resetTx(makeLocalDecision.getTxID()));
         } catch (ValidTransactionNotLockableException e) {
             if (e.possibleRollback()) {
-                logger.debug("Will ask to rollback because of {}", makeLocalDecision.getTxID());
-                for (TransactionID txID : e.getCurrentOwners()) {
-                    try {
-                        Node coordinator = dht.getMasterOfBucket(store.getTransaction(txID).getCoordinatorBucket());
-                        if (coordinator.equals(self)) {
-                            cm.queueEvent(new RequestRollbackLocalDecision(generateId(), self, sm.getCurrentVersion(), txID));
-                        } else {
-                            cm.send(CommunicationUtils.generateRequestRollbackLocalDecision(self, sm.getCurrentVersion(), txID), coordinator);
-                        }
-                    } catch (InvalidBucketException ignored) {
-                        logger.error("Invalid buckets in transaction {}, ignoring", txID); // should not happen
-                    }
-                }
+                rollbackTransactions(makeLocalDecision.getTxID(), e.getCurrentOwners());
             }
         } catch (AlreadyProcessedTransaction e) {
             // this occurs if the makeDecision was already in the queue as the tx was aborted,
             // although it didn't acquire locks, it could be ahead of others in the queue
             // so we need to queue other txs that could be waiting for this one
             queueMakeLocalDecisions(store.releaseLocks(makeLocalDecision.getTxID(), false));
+        }
+    }
+
+    private void rollbackTransactions(TransactionID txID, Set<TransactionID> txsToRollback) {
+        logger.debug("Will ask to rollback because of {}", txID);
+        for (TransactionID otherTxID : txsToRollback) {
+            try {
+                Transaction otherTx = store.getTransaction(otherTxID);
+                if (otherTx.rollback()) {
+                    Node coordinator = dht.getMasterOfBucket(otherTx.getCoordinatorBucket());
+                    if (coordinator.equals(self)) {
+                        cm.queueEvent(new RequestRollbackLocalDecision(generateId(), self, sm.getCurrentVersion(), otherTxID));
+                    } else {
+                        cm.send(CommunicationUtils.generateRequestRollbackLocalDecision(self, sm.getCurrentVersion(), otherTxID), coordinator);
+                    }
+                }
+            } catch (InvalidBucketException ignored) {
+                logger.error("Invalid buckets in transaction {}, ignoring", otherTxID); // should not happen
+            }
         }
     }
 

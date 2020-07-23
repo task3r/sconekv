@@ -212,6 +212,7 @@ public class Store {
         Transaction tx = transactions.get(txID);
         if (tx != null && !tx.isDecided()) {
             tx.setState(TransactionState.RECEIVED);
+            tx.completedRollback();
             return true;
         } else {
             return false;
