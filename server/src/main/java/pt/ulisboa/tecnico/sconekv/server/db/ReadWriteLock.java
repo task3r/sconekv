@@ -54,19 +54,23 @@ public class ReadWriteLock implements Lock {
         if (lockOwners.contains(txID) || lockOwners.isEmpty()) {
             lockOwners.remove(txID);
             TransactionID next = lockQueue.pollFirst();
-            if (lockOwners.isEmpty()) {
-                if (readQueue.contains(next)) {
-                    lockOwners.addAll(readQueue);
+            if (next != null) {
+                if (lockOwners.isEmpty()) {
+                    if (readQueue.contains(next)) {
+                        lockOwners.addAll(readQueue);
+                    } else {
+                        lockOwners.add(next);
+                    }
+                    return lockOwners;
+                } else if (lockOwners.lower(next) == null) {
+                    // if next is lower than any tx currently owning the lock
+                    // we trigger MakeLocalDecision on next to rollback current owners
+                    HashSet<TransactionID> nextHolder = new HashSet<>();
+                    nextHolder.add(next);
+                    return nextHolder;
                 } else {
-                    lockOwners.add(next);
+                    lockQueue.add(next); // next in the queue is not ready to be processed, goes back in the queue
                 }
-                return lockOwners;
-            } else if (lockOwners.lower(next) == null) {
-                // if next is lower than any tx currently owning the lock
-                // we trigger MakeLocalDecision on next to rollback current owners
-                HashSet<TransactionID> nextHolder = new HashSet<>();
-                nextHolder.add(next);
-                return nextHolder;
             }
         }
         return new HashSet<>();
@@ -75,17 +79,9 @@ public class ReadWriteLock implements Lock {
     @Override
     public Set<TransactionID> unlockButQueue(TransactionID txID, Operation.Type type) {
         if (lockOwners.contains(txID) || lockOwners.isEmpty()) {
-            lockOwners.remove(txID);
-            if (lockOwners.isEmpty()) {
-                TransactionID next = lockQueue.pollFirst();
-                if (readQueue.contains(next)) {
-                    lockOwners.addAll(readQueue);
-                } else {
-                    lockOwners.add(next);
-                }
-            }
+            Set<TransactionID> txs = unlockAndLockNext(txID);
             queue(txID, type);
-            return lockOwners;
+            return txs;
         }
         return new HashSet<>();
     }
