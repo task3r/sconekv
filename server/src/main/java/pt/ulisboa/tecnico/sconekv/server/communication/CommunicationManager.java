@@ -57,9 +57,9 @@ public class CommunicationManager {
         }
 
         this.poller = context.createPoller(3);
-        this.poller.register(clientRequestSocket, ZMQ.Poller.POLLIN);
-        this.poller.register(internalCommSocket, ZMQ.Poller.POLLIN);
         this.poller.register(workerChannelSink, ZMQ.Poller.POLLIN);
+        this.poller.register(internalCommSocket, ZMQ.Poller.POLLIN);
+        this.poller.register(clientRequestSocket, ZMQ.Poller.POLLIN);
     }
 
     public void updateBucket(Bucket newBucket) {
@@ -94,18 +94,6 @@ public class CommunicationManager {
                 poller.poll();
 
                 if (poller.pollin(0)) {
-                    String client = clientRequestSocket.recvStr();
-                    clientRequestSocket.recv(); //delimiter
-                    byte[] message = clientRequestSocket.recv();
-                    return new Triplet<>(MessageType.EXTERNAL, client, message);
-
-                } else if (poller.pollin(1)) {
-                    String node = internalCommSocket.recvStr();
-                    internalCommSocket.recv(); //delimiter
-                    byte[] message = internalCommSocket.recv();
-                    return new Triplet<>(MessageType.INTERNAL, node, message);
-
-                } else if (poller.pollin(2)) {
                     MessageType type = MessageType.valueOf(workerChannelSink.recvStr());
                     workerChannelSink.recv(); //delimiter
                     String target = workerChannelSink.recvStr();
@@ -118,6 +106,18 @@ public class CommunicationManager {
                     } else if (type == MessageType.INTERNAL) {
                         send(message, target);
                     }
+
+                } else if (poller.pollin(1)) {
+                    String node = internalCommSocket.recvStr();
+                    internalCommSocket.recv(); //delimiter
+                    byte[] message = internalCommSocket.recv();
+                    return new Triplet<>(MessageType.INTERNAL, node, message);
+
+                } else if (poller.pollin(2)) {
+                    String client = clientRequestSocket.recvStr();
+                    clientRequestSocket.recv(); //delimiter
+                    byte[] message = clientRequestSocket.recv();
+                    return new Triplet<>(MessageType.EXTERNAL, client, message);
                 }
             }
         } catch (ZError.IOException | ZMQException e) {
