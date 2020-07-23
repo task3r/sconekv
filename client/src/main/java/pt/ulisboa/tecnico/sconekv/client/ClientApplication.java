@@ -33,29 +33,7 @@ public class ClientApplication {
     public static void main(String[] args) throws IOException, UnableToGetViewException {
         logger.info("Launching client application...");
 
-        String shell = System.getenv("USE_SHELL");
-
-        if (shell != null) {
-            ShellFactory.createConsoleShell("", "", new ClientApplication()).commandLoop();
-        } else {
-            try {
-                SconeClient client = new SconeClient();
-
-                for (int i = 0; i < 100; i++) {
-                    Transaction tx1 = client.newTransaction();
-                    tx1.write(i + "a", "b".getBytes());
-                    tx1.write(i + "b", "c".getBytes());
-                    try {
-                        tx1.commit();
-                        logger.info("Commit {}", tx1.getId());
-                    } catch (CommitFailedException e) {
-                        logger.info("Abort {}", tx1.getId());
-                    }
-                }
-            } catch (InvalidTransactionStateChangeException | UnableToGetViewException | RequestFailedException e) {
-                e.printStackTrace();
-            }
-        }
+        ShellFactory.createConsoleShell("", "", new ClientApplication()).commandLoop();
     }
 
     @Command
