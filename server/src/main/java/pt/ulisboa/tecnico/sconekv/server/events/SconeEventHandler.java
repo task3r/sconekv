@@ -5,6 +5,7 @@ import pt.ulisboa.tecnico.sconekv.server.events.local.CheckPendingTransactions;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
 import pt.ulisboa.tecnico.sconekv.server.events.local.LocalRejectTransaction;
+import pt.ulisboa.tecnico.sconekv.server.events.local.UpdateView;
 
 public interface SconeEventHandler {
 
@@ -41,4 +42,5 @@ public interface SconeEventHandler {
     // Local Events
     void handle(CheckPendingTransactions checkPendingTransactions);
     void handle(LocalRejectTransaction localRejectTransaction);
+    void handle(UpdateView updateView);
 }

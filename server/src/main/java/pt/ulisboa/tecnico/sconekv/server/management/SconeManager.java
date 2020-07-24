@@ -10,6 +10,7 @@ import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
+import pt.ulisboa.tecnico.sconekv.server.events.local.UpdateView;
 import pt.ulisboa.tecnico.sconekv.server.smr.StateMachine;
 
 import java.io.IOException;
@@ -48,10 +49,10 @@ public class SconeManager implements UpdateViewCallback {
 
     private void start() {
         threads = new ArrayList<>();
-        threads.add(new Thread(new SconeServer((short)0, communicationManager)));
-        for (short i = 1; i <= SconeConstants.NUM_WORKERS; i++) {
+        for (short i = 0; i < SconeConstants.NUM_WORKERS; i++) {
             threads.add(new Thread(new SconeWorker(i, communicationManager, stateMachine, store, dht, membershipManager.getMyself())));
         }
+        threads.add(new Thread(new SconeServer((short)0, communicationManager)));
         for (Thread t : threads) {
             t.start();
         }
@@ -90,20 +91,13 @@ public class SconeManager implements UpdateViewCallback {
             logger.info("Belong to bucket {}, master: {}", currentBucket.getId(),
                     membershipManager.getMyself().equals(currentBucket.getMaster()) ? "myself" : currentBucket.getMaster());
             communicationManager.updateBucket(currentBucket);
-            stateMachine.updateBucket(currentBucket, ring.getVersion());
+            stateMachine.updateBucket(currentBucket, ring.getVersion(), (short) 0);
             start();
         } else if (dht != null) {
-            logger.debug("Applying new view...");
-            dht.applyView(ring);
-            Bucket currentBucket = dht.getBucketOfNode(membershipManager.getMyself());
-            if (currentBucket == null) {
-                logger.error("Was I removed from the membership? I do not belong to the new view");
-                logger.debug("Ring contains myself: {}", ring.contains(membershipManager.getMyself()));
-                System.exit(-1);
-            }
-            logger.info("Belong to bucket {}, master: {}", currentBucket.getId(), currentBucket.getMaster());
-            communicationManager.updateBucket(currentBucket);
-            stateMachine.updateBucket(currentBucket, ring.getVersion());
+            // transformed into an event because of the possible need to send messages
+            // thus it needing to be a worker thread that as a socket for communication
+            // (zmq does not like different threads using the same socket, even if synchronized)
+            communicationManager.queueEvent(new UpdateView(null, ring));
         }
     }
 

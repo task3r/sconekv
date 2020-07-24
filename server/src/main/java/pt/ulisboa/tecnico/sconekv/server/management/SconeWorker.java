@@ -5,6 +5,7 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
+import pt.tecnico.ulisboa.prime.membership.ring.Ring;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionState;
 import pt.ulisboa.tecnico.sconekv.common.dht.Bucket;
@@ -12,6 +13,7 @@ import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidBucketException;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
+import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
@@ -21,6 +23,7 @@ import pt.ulisboa.tecnico.sconekv.server.events.local.CheckPendingTransactions;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.smr.*;
 import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.*;
 import pt.ulisboa.tecnico.sconekv.server.events.local.LocalRejectTransaction;
+import pt.ulisboa.tecnico.sconekv.server.events.local.UpdateView;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.AlreadyProcessedTransaction;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.SMRStatusException;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.ValidTransactionNotLockableException;
@@ -438,6 +441,22 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             } catch (SMRStatusException ignored) {
             }
         }
+    }
+
+    @Override
+    public void handle(UpdateView updateView) {
+        Ring ring = updateView.getRing();
+        logger.debug("Applying new view...");
+        dht.applyView(ring);
+        Bucket currentBucket = dht.getBucketOfNode(self);
+        if (currentBucket == null) {
+            logger.error("Was I removed from the membership? I do not belong to the new view");
+            logger.debug("Ring contains myself: {}", ring.contains(self));
+            System.exit(-1);
+        }
+        logger.info("Belong to bucket {}, master: {}", currentBucket.getId(), currentBucket.getMaster());
+        cm.updateBucket(currentBucket);
+        sm.updateBucket(currentBucket, ring.getVersion(), id);
     }
 
     // Aux methods

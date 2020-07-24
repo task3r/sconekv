@@ -74,7 +74,7 @@ public class StateMachine {
         return log.size() - 1;
     }
 
-    public synchronized void updateBucket(Bucket newBucket, Version newVersion) {
+    public synchronized void updateBucket(Bucket newBucket, Version newVersion, short workerId) {
         logger.debug("Update bucket");
         this.currentVersion = newVersion;
         Node newMaster = newBucket.getMaster();
@@ -96,7 +96,7 @@ public class StateMachine {
         if (newVersion.isEqual(this.futureVersion) && !newMaster.equals(this.currentMaster)) {
             setStatus(Status.VIEW_CHANGE);
             MessageBuilder message = CommunicationUtils.generateStartViewChange(mm.getMyself(), currentVersion);
-            cm.broadcastBucket(message, (short) 0);
+            cm.broadcastBucket(message, workerId);
             logger.debug("Broadcasted startViewChange for {}", currentVersion);
         }
     }
