@@ -29,7 +29,6 @@ public class SconeServer implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(SconeServer.class);
 
     private short id;
-    private int eventCounter;
     private CommunicationManager cm;
 
     public SconeServer(short id, CommunicationManager cm) {
@@ -51,10 +50,6 @@ public class SconeServer implements Runnable {
         }
     }
 
-    private Pair<Short, Integer> generateId() {
-        return new Pair<>(id, eventCounter++);
-    }
-
     private void recvClientRequest(String client, byte[] messageBytes) {
 
         External.Request.Reader request;
@@ -70,26 +65,26 @@ public class SconeServer implements Runnable {
             return;
         }
 
-        ClientRequest event = getClientRequest(request, client, generateId());
+        ClientRequest event = getClientRequest(request, client);
         if (event != null)
             cm.queueEvent(event);
     }
 
-    private ClientRequest getClientRequest(External.Request.Reader request, String client, Pair<Short, Integer> eventId) {
+    private ClientRequest getClientRequest(External.Request.Reader request, String client) {
         TransactionID txID = new TransactionID(request.getTxID());
 
         switch (request.which()) {
             case WRITE:
-                return new WriteRequest(eventId, client, txID, new String(request.getRead().toArray()));
+                return new WriteRequest(client, txID, new String(request.getRead().toArray()));
             case READ:
-                return new ReadRequest(eventId, client, txID, new String(request.getRead().toArray()));
+                return new ReadRequest(client, txID, new String(request.getRead().toArray()));
             case DELETE:
-                return new DeleteRequest(eventId, client, txID, new String(request.getRead().toArray()));
+                return new DeleteRequest(client, txID, new String(request.getRead().toArray()));
             case COMMIT:
                 Transaction tx = new Transaction(txID, client, request.getCommit());
-                return new CommitRequest(eventId, client, tx, request);
+                return new CommitRequest(client, tx, request);
             case GET_DHT:
-                return new GetDHTRequest(eventId, client);
+                return new GetDHTRequest(client);
             case _NOT_IN_SCHEMA:
             default:
                 logger.error("Received an incorrect request, ignoring...");
@@ -121,57 +116,55 @@ public class SconeServer implements Runnable {
             return;
         }
 
-        Pair<Short, Integer> eventId = generateId();
-
         switch (message.which()) {
             case PREPARE:
                 // prepare events have the client as null because using ZMQ only the master can respond to the client
                 // if really needed, the client needs to be listening to requests as well, ans then this string could represent the address
                 LogEvent logEvent = getLogEvent(message.getPrepare().getEvent());
                 if (logEvent != null) {
-                    cm.queueEvent(new Prepare(eventId, node, viewVersion, message.getPrepare().getOpNumber(), message.getPrepare().getCommitNumber(),
+                    cm.queueEvent(new Prepare(node, viewVersion, message.getPrepare().getOpNumber(), message.getPrepare().getCommitNumber(),
                             message.getPrepare().getBucket(), logEvent));
                 }
                 break;
             case PREPARE_OK:
-                cm.queueEvent(new PrepareOK(eventId, node, viewVersion, message.getPrepareOk().getOpNumber(), message.getPrepareOk().getBucket()));
+                cm.queueEvent(new PrepareOK(node, viewVersion, message.getPrepareOk().getOpNumber(), message.getPrepareOk().getBucket()));
                 break;
             case START_VIEW_CHANGE:
-                cm.queueEvent(new StartViewChange(eventId, node, viewVersion));
+                cm.queueEvent(new StartViewChange(node, viewVersion));
                 break;
             case DO_VIEW_CHANGE:
-                cm.queueEvent(new DoViewChange(eventId, node, viewVersion, getLogFromMessage(message.getDoViewChange().getLog()),
+                cm.queueEvent(new DoViewChange(node, viewVersion, getLogFromMessage(message.getDoViewChange().getLog()),
                         SerializationUtils.getVersionFromMesage(message.getDoViewChange().getTerm()), message.getDoViewChange().getCommitNumber()));
                 break;
             case START_VIEW:
-                cm.queueEvent(new StartView(eventId, node, viewVersion, getLogFromMessage(message.getStartView().getLog()), message.getStartView().getCommitNumber()));
+                cm.queueEvent(new StartView(node, viewVersion, getLogFromMessage(message.getStartView().getLog()), message.getStartView().getCommitNumber()));
                 break;
             case GET_STATE:
-                cm.queueEvent(new GetState(eventId, node, viewVersion, message.getGetState().getOpNumber()));
+                cm.queueEvent(new GetState(node, viewVersion, message.getGetState().getOpNumber()));
                 break;
             case NEW_STATE:
-                cm.queueEvent(new NewState(eventId, node, viewVersion, getLogFromMessage(message.getNewState().getLogSegment()), message.getNewState().getOpNumber(), message.getNewState().getCommitNumber()));
+                cm.queueEvent(new NewState(node, viewVersion, getLogFromMessage(message.getNewState().getLogSegment()), message.getNewState().getOpNumber(), message.getNewState().getCommitNumber()));
                 break;
             case LOCAL_DECISION_RESPONSE:
-                cm.queueEvent(new LocalDecisionResponse(eventId, node, viewVersion, new TransactionID(message.getLocalDecisionResponse().getTxID()), message.getLocalDecisionResponse().getToCommit()));
+                cm.queueEvent(new LocalDecisionResponse(node, viewVersion, new TransactionID(message.getLocalDecisionResponse().getTxID()), message.getLocalDecisionResponse().getToCommit()));
                 break;
             case REQUEST_ROLLBACK_LOCAL_DECISION:
-                cm.queueEvent(new RequestRollbackLocalDecision(eventId, node, viewVersion, new TransactionID(message.getRequestRollbackLocalDecision())));
+                cm.queueEvent(new RequestRollbackLocalDecision(node, viewVersion, new TransactionID(message.getRequestRollbackLocalDecision())));
                 break;
             case ROLLBACK_LOCAL_DECISION_RESPONSE:
-                cm.queueEvent(new RollbackLocalDecisionResponse(eventId, node, viewVersion, new TransactionID(message.getRollbackLocalDecisionResponse())));
+                cm.queueEvent(new RollbackLocalDecisionResponse(node, viewVersion, new TransactionID(message.getRollbackLocalDecisionResponse())));
                 break;
             case COMMIT_TRANSACTION:
-                cm.queueEvent(new CommitTransaction(eventId, node, viewVersion, new TransactionID(message.getCommitTransaction())));
+                cm.queueEvent(new CommitTransaction(node, viewVersion, new TransactionID(message.getCommitTransaction())));
                 break;
             case ABORT_TRANSACTION:
-                cm.queueEvent(new AbortTransaction(eventId, node, viewVersion, new TransactionID(message.getAbortTransaction())));
+                cm.queueEvent(new AbortTransaction(node, viewVersion, new TransactionID(message.getAbortTransaction())));
                 break;
             case REQUEST_LOCAL_DECISION:
-                cm.queueEvent(new RequestLocalDecision(eventId, node, viewVersion, new TransactionID(message.getAbortTransaction())));
+                cm.queueEvent(new RequestLocalDecision(node, viewVersion, new TransactionID(message.getAbortTransaction())));
                 break;
             case REQUEST_GLOBAL_DECISION:
-                cm.queueEvent(new RequestGlobalDecision(eventId, node, viewVersion, new TransactionID(message.getAbortTransaction())));
+                cm.queueEvent(new RequestGlobalDecision(node, viewVersion, new TransactionID(message.getAbortTransaction())));
                 break;
             case _NOT_IN_SCHEMA:
             default:
@@ -197,14 +190,13 @@ public class SconeServer implements Runnable {
                 Transaction tx = new Transaction(new TransactionID(logReader.getTxID()), null,
                         logReader.getTransaction().getTransaction());
                 tx.setState(logReader.getTransaction().getPrepared()? TransactionState.PREPARED : TransactionState.ABORTED);
-                event = new LogTransaction(generateId(), tx, logReader);
+                event = new LogTransaction(tx, logReader);
                 break;
             case DECISION:
-                event = new LogTransactionDecision(generateId(),
-                        new TransactionID(logReader.getTxID()), logReader.getDecision(), logReader);
+                event = new LogTransactionDecision(new TransactionID(logReader.getTxID()), logReader.getDecision(), logReader);
                 break;
             case ROLLBACK:
-                event = new LogRollback(generateId(),  new TransactionID(logReader.getTxID()), logReader);
+                event = new LogRollback(new TransactionID(logReader.getTxID()), logReader);
                 break;
             case _NOT_IN_SCHEMA:
                 logger.error("Received incorrect LoggedEvent, ignoring...");

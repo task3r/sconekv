@@ -13,7 +13,6 @@ import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
 import pt.ulisboa.tecnico.sconekv.common.exceptions.InvalidBucketException;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationUtils;
-import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.db.Store;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.db.Value;
@@ -40,7 +39,6 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     private StateMachine sm;
     private DHT dht;
     private Node self;
-    private int eventCounter;
     private Timer timer;
 
     public SconeWorker(short id, CommunicationManager cm, StateMachine sm, Store store, DHT dht, Node self) {
@@ -58,12 +56,11 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 SconeEvent event = cm.takeEvent();
-                if (event.getId() == null)
-                    event.setId(generateId());
                 if (event instanceof ClientRequest) {
                     ClientRequest request = (ClientRequest) event;
                     if (!request.checkBucket(this.dht, self)) {
-                        cm.queueEvent(new GetDHTRequest(request.getId(), request.getClient())); // maybe just process it here?
+                        logger.warn("Received request to incorrect bucket from {}, responding with updated DHT", request.getTxID());
+                        handle(new GetDHTRequest(request.getClient()));
                         continue; // do not process this event as it is not in the correct bucket
                     }
                 }
@@ -73,10 +70,6 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             logger.info("Worker {} interrupted.", id);
             Thread.currentThread().interrupt();
         }
-    }
-
-    private Pair<Short, Integer> generateId() {
-        return new Pair<>(id, eventCounter++);
     }
 
     private void delayEvent(SconeEvent event) {
@@ -119,14 +112,14 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         logger.info("CommitRequest {}", commitRequest.getTxID());
         if (sm.isMaster()) {
             if (store.addTransaction(commitRequest.getTx())) {
-                handle(new MakeLocalDecision(generateId(), commitRequest.getTxID()));
+                handle(new MakeLocalDecision(commitRequest.getTxID()));
             } else if (store.getTransaction(commitRequest.getTxID()).isDecided()) {
                 replyIfAmCoordinator(commitRequest.getTxID());
             } else {
                 logger.error("Received duplicated commitRequest {}, client must be patient", commitRequest.getTxID());
             }
         } else {
-            logger.error("Received commit request {} but I am not the master of bucket {}", commitRequest.getId(), sm.getCurrentBucketId());
+            logger.error("Received commit request {} but I am not the master of bucket {}", commitRequest.getTxID(), sm.getCurrentBucketId());
         }
     }
 
@@ -147,7 +140,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                 logger.info("Sending Local Decision for {}", logTransaction.getTxID());
                 Node coordinator = dht.getMasterOfBucket(store.getTransaction(logTransaction.getTxID()).getCoordinatorBucket());
                 if (coordinator.equals(self)) {
-                    cm.queueEvent(new LocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), logTransaction.getTxID(),
+                    cm.queueEvent(new LocalDecisionResponse(self, sm.getCurrentVersion(), logTransaction.getTxID(),
                             store.getTransaction(logTransaction.getTxID()).getState() == TransactionState.PREPARED));
                 } else {
                     cm.send(CommunicationUtils.generateLocalDecisionResponse(self, sm.getCurrentVersion(), logTransaction.getTxID(),
@@ -170,7 +163,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                 logger.info("Commit : {}", logTransactionDecision.getTxID());
                 Set<TransactionID> txsToAbort = store.commit(logTransactionDecision.getTxID());
                 for (TransactionID otherTxID : txsToAbort) {
-                    cm.queueEvent(new LocalRejectTransaction(generateId(), otherTxID));
+                    cm.queueEvent(new LocalRejectTransaction(otherTxID));
                 }
             } else {
                 logger.info("Abort : {}", logTransactionDecision.getTxID());
@@ -273,7 +266,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                             Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
                             masters.remove(self);
                             cm.broadcast(CommunicationUtils.generateAbortTransaction(self, sm.getCurrentVersion(), tx.getId()), masters, id);
-                            cm.queueEvent(new AbortTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+                            cm.queueEvent(new AbortTransaction(self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
                         } else {
                             Bucket bucket = dht.getBucketOfNode(localDecisionResponse.getNode());
                             if (bucket != null) {
@@ -283,7 +276,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                                     Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
                                     masters.remove(self);
                                     cm.broadcast(CommunicationUtils.generateCommitTransaction(self, sm.getCurrentVersion(), tx.getId()), masters, id);
-                                    cm.queueEvent(new CommitTransaction(generateId(), self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
+                                    cm.queueEvent(new CommitTransaction(self, sm.getCurrentVersion(), localDecisionResponse.getTxID()));
                                 }
                             } else {
                                 logger.error("Received LocalDecision from node that does not belong to the system, ignoring");
@@ -310,7 +303,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                 } else if (!tx.isDecided()) { // not yet committed nor aborted
                     tx.removeResponse(dht.getBucketOfNode(requestRollbackLocalDecision.getNode()).getId());
                     if (self.equals(requestRollbackLocalDecision.getNode()))
-                        cm.queueEvent(new RollbackLocalDecisionResponse(generateId(), self, sm.getCurrentVersion(), tx.getId()));
+                        cm.queueEvent(new RollbackLocalDecisionResponse(self, sm.getCurrentVersion(), tx.getId()));
                     else
                         cm.send(CommunicationUtils.generateRollbackLocalDecisionResponse(self, sm.getCurrentVersion(), tx.getId()), requestRollbackLocalDecision.getNode(), id);
                 }
@@ -323,7 +316,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(RollbackLocalDecisionResponse rollbackLocalDecisionResponse) {
         try {
-            sm.prepareLogMaster(new LogRollback(generateId(), rollbackLocalDecisionResponse.getTxID(), null), rollbackLocalDecisionResponse, id);
+            sm.prepareLogMaster(new LogRollback(rollbackLocalDecisionResponse.getTxID(), null), rollbackLocalDecisionResponse, id);
         } catch (SMRStatusException ignored) {
         }
     }
@@ -331,7 +324,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(CommitTransaction commitTransaction) {
         try {
-            sm.prepareLogMaster(new LogTransactionDecision(generateId(), commitTransaction.getTxID(), true, null), commitTransaction, id);
+            sm.prepareLogMaster(new LogTransactionDecision(commitTransaction.getTxID(), true, null), commitTransaction, id);
         } catch (SMRStatusException ignored) {
         }
     }
@@ -339,7 +332,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(AbortTransaction abortTransaction) {
         try {
-            sm.prepareLogMaster(new LogTransactionDecision(generateId(), abortTransaction.getTxID(), false, null), abortTransaction, id);
+            sm.prepareLogMaster(new LogTransactionDecision(abortTransaction.getTxID(), false, null), abortTransaction, id);
         } catch (SMRStatusException ignored) {
         }
     }
@@ -347,7 +340,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(MakeLocalDecision makeLocalDecision) {
         logger.info("MakeLocalDecision : {}", makeLocalDecision.getTxID());
-        LogTransaction logTransaction = new LogTransaction(generateId(), store.getTransaction(makeLocalDecision.getTxID()), null);
+        LogTransaction logTransaction = new LogTransaction(store.getTransaction(makeLocalDecision.getTxID()), null);
         try {
             store.validate(makeLocalDecision.getTxID());
             sm.prepareLogMaster(logTransaction, makeLocalDecision, id);
@@ -373,7 +366,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                 if (otherTx.rollback()) {
                     Node coordinator = dht.getMasterOfBucket(otherTx.getCoordinatorBucket());
                     if (coordinator.equals(self)) {
-                        cm.queueEvent(new RequestRollbackLocalDecision(generateId(), self, sm.getCurrentVersion(), otherTxID));
+                        cm.queueEvent(new RequestRollbackLocalDecision(self, sm.getCurrentVersion(), otherTxID));
                     } else {
                         cm.send(CommunicationUtils.generateRequestRollbackLocalDecision(self, sm.getCurrentVersion(), otherTxID), coordinator, id);
                     }
@@ -432,7 +425,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(LocalRejectTransaction localRejectTransaction) {
         logger.info("MakeLocalDecision : {}", localRejectTransaction.getTxID());
-        LogTransaction logTransaction = new LogTransaction(generateId(), store.getTransaction(localRejectTransaction.getTxID()), null);
+        LogTransaction logTransaction = new LogTransaction(store.getTransaction(localRejectTransaction.getTxID()), null);
         Transaction tx = store.getTransaction(localRejectTransaction.getTxID());
         if (tx.getState() != TransactionState.ABORTED) {
             try {
@@ -463,7 +456,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     private void queueMakeLocalDecisions(Set<TransactionID> transactions) {
         for (TransactionID txID : transactions) {
-            cm.queueEvent(new MakeLocalDecision(generateId(), txID));
+            cm.queueEvent(new MakeLocalDecision(txID));
         }
     }
 }

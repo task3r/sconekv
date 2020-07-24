@@ -7,8 +7,8 @@ import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
 
 public class GetDHTRequest extends ClientRequest {
 
-    public GetDHTRequest(Pair<Short, Integer> id, String client) {
-        super(id, client, null); // getView does not have txID but it is easier if it is still a ClientRequest
+    public GetDHTRequest(String client) {
+        super(client, null); // getView does not have txID but it is easier if it is still a ClientRequest
     }
 
     @Override

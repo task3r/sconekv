@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.sconekv.server.events.internal.smr;
 
-import org.javatuples.Pair;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
@@ -15,8 +14,8 @@ public class StartView extends InternalEvent {
     private List<LogEntry> log;
     private int commitNumber;
 
-    public StartView(Pair<Short, Integer> id, Node node, Version viewVersion, List<LogEntry> log, int commitNumber) {
-        super(id, node, viewVersion);
+    public StartView(Node node, Version viewVersion, List<LogEntry> log, int commitNumber) {
+        super(node, viewVersion);
         this.log = log;
         this.commitNumber = commitNumber;
     }

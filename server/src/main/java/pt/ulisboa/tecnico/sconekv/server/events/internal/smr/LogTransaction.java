@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.sconekv.server.events.internal.smr;
 
-import org.javatuples.Pair;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.transport.Internal;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
@@ -10,8 +9,8 @@ public class LogTransaction extends LogEvent {
 
     private Transaction tx;
 
-    public LogTransaction(Pair<Short, Integer> id, Transaction tx, Internal.LogEvent.Reader reader) {
-        super(id, reader);
+    public LogTransaction(Transaction tx, Internal.LogEvent.Reader reader) {
+        super(reader);
         this.tx = tx;
     }
 

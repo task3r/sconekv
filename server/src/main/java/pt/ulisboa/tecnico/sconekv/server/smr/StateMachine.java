@@ -190,7 +190,7 @@ public class StateMachine {
         }
 
         if (this.status == Status.MASTER_AFTER_VIEW_CHANGE && (this.commitNumber == -1 || this.commitNumber == getOpNumber())) {
-            cm.queueEvent(new CheckPendingTransactions(null));
+            cm.queueEvent(new CheckPendingTransactions());
             setStatus(Status.NORMAL);
         }
     }
@@ -212,7 +212,7 @@ public class StateMachine {
             this.lastDoView = new Version(this.currentVersion);
             if (currentBucket.getMaster().equals(mm.getMyself())) {
                 // send to self
-                cm.queueEvent(new DoViewChange(null, mm.getMyself(), currentVersion, log, term, commitNumber));
+                cm.queueEvent(new DoViewChange(mm.getMyself(), currentVersion, log, term, commitNumber));
                 logger.debug("Sent doView to myself");
             } else {
                 MessageBuilder message = CommunicationUtils.generateDoViewChange(mm.getMyself(), currentVersion, commitNumber, log);

@@ -1,16 +1,14 @@
 package pt.ulisboa.tecnico.sconekv.server.events.internal.transactions;
 
-import org.javatuples.Pair;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
 
-public class MakeLocalDecision extends SconeEvent  {
+public class MakeLocalDecision implements SconeEvent {
 
     private TransactionID txID;
 
-    public MakeLocalDecision(Pair<Short, Integer> id, TransactionID txID) {
-        super(id);
+    public MakeLocalDecision(TransactionID txID) {
         this.txID = txID;
     }
 

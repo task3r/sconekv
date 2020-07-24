@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.sconekv.server.events.external;
 
-import org.javatuples.Pair;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.dht.DHT;
@@ -13,8 +12,8 @@ public class CommitRequest extends ClientRequest {
     private Transaction tx;
     private External.Request.Reader request;
 
-    public CommitRequest(Pair<Short, Integer> id, String client, Transaction tx, External.Request.Reader request) {
-        super(id, client, tx.getId());
+    public CommitRequest(String client, Transaction tx, External.Request.Reader request) {
+        super(client, tx.getId());
         this.tx = tx;
         this.request = request;
     }

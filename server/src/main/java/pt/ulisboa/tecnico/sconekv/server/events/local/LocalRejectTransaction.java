@@ -1,16 +1,14 @@
 package pt.ulisboa.tecnico.sconekv.server.events.local;
 
-import org.javatuples.Pair;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEvent;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
 
-public class LocalRejectTransaction extends SconeEvent {
+public class LocalRejectTransaction implements SconeEvent {
 
     private TransactionID txID;
 
-    public LocalRejectTransaction(Pair<Short, Integer> id, TransactionID txID) {
-        super(id);
+    public LocalRejectTransaction(TransactionID txID) {
         this.txID = txID;
     }
 

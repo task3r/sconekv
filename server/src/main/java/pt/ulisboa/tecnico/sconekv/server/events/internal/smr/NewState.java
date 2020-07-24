@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.sconekv.server.events.internal.smr;
 
-import org.javatuples.Pair;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
@@ -15,8 +14,8 @@ public class NewState extends InternalEvent {
     private int commitNumber;
     private int opNumber;
 
-    public NewState(Pair<Short, Integer> id, Node node, Version viewVersion, List<LogEntry> logSegment, int opNumber, int commitNumber) {
-        super(id, node, viewVersion);
+    public NewState(Node node, Version viewVersion, List<LogEntry> logSegment, int opNumber, int commitNumber) {
+        super(node, viewVersion);
         this.logSegment = logSegment;
         this.commitNumber = commitNumber;
         this.opNumber = opNumber;

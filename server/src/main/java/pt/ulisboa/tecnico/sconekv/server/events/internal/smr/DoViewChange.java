@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.sconekv.server.events.internal.smr;
 
-import org.javatuples.Pair;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
@@ -15,9 +14,9 @@ public class DoViewChange extends InternalEvent {
     private Version term;
     private int commitNumber;
 
-    public DoViewChange(Pair<Short, Integer> id, Node node, Version newVersion, List<LogEntry> log, Version term,
+    public DoViewChange(Node node, Version newVersion, List<LogEntry> log, Version term,
                         int commitNumber) {
-        super(id, node, newVersion);
+        super(node, newVersion);
         this.log = log;
         this.term = term;
         this.commitNumber = commitNumber;

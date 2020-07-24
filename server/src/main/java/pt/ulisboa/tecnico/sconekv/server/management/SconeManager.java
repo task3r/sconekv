@@ -97,7 +97,7 @@ public class SconeManager implements UpdateViewCallback {
             // transformed into an event because of the possible need to send messages
             // thus it needing to be a worker thread that as a socket for communication
             // (zmq does not like different threads using the same socket, even if synchronized)
-            communicationManager.queueEvent(new UpdateView(null, ring));
+            communicationManager.queueEvent(new UpdateView(ring));
         }
     }
 

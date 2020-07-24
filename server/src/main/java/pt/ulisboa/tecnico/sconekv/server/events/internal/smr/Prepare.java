@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.sconekv.server.events.internal.smr;
 
-import org.javatuples.Pair;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
 import pt.tecnico.ulisboa.prime.membership.ring.Version;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
@@ -13,8 +12,8 @@ public class Prepare extends InternalEvent {
     private short bucket;
     private LogEvent event;
 
-    public Prepare(Pair<Short, Integer> id, Node node, Version viewNumber, int opNumber, int commitNumber, short bucket, LogEvent event) {
-        super(id, node, viewNumber);
+    public Prepare(Node node, Version viewNumber, int opNumber, int commitNumber, short bucket, LogEvent event) {
+        super(node, viewNumber);
         this.opNumber = opNumber;
         this.commitNumber = commitNumber;
         this.bucket = bucket;
