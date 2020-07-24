@@ -42,6 +42,7 @@ public class StateMachine {
     private List<DoViewChange> doViews;
     private Map<Integer, Prepare> pendingEntries; // Map opNumber -> Prepare
     private List<SconeEvent> pendingEvents;
+    private boolean getStateInProgress = false;
 
     public StateMachine(CommunicationManager cm, MembershipManager mm) {
         this.cm = cm;
@@ -156,8 +157,9 @@ public class StateMachine {
         } else if (this.log.size() < prepare.getOpNumber()) {// if this entry is not the immediately consecutive in the log, wait
             logger.error("Received {} but am on {}", prepare.getOpNumber(), getOpNumber());
             this.pendingEntries.put(prepare.getOpNumber(), prepare);
-            if (prepare.getOpNumber() - this.getOpNumber() >= SconeConstants.MAX_OP_NUMBER_HOLE) {
+            if (prepare.getOpNumber() - this.getOpNumber() >= SconeConstants.MAX_OP_NUMBER_HOLE && !getStateInProgress) {
                 logger.info("Detected op number hole, requesting state update");
+                getStateInProgress = true;
                 MessageBuilder message = CommunicationUtils.generateGetState(mm.getMyself(), this.currentVersion, getOpNumber());
                 cm.send(message, currentMaster, workerId);
             }
@@ -317,6 +319,7 @@ public class StateMachine {
             for (Integer entryKey: pendingOpNumbers) {
                 pendingEntries.remove(entryKey);
             }
+            getStateInProgress = false;
         } else if (event.getViewVersion().isGreater(this.currentVersion)) {
             logger.info("Received newState from future view version, delaying...");
             pendingEvents.add(event);
