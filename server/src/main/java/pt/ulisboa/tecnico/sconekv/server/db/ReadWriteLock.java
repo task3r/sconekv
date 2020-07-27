@@ -52,6 +52,8 @@ public class ReadWriteLock implements Lock {
     @Override
     public Set<TransactionID> unlockAndLockNext(TransactionID txID) {
         if (lockOwners.contains(txID) || lockOwners.isEmpty()) {
+            lockQueue.remove(txID);
+            readQueue.remove(txID);
             lockOwners.remove(txID);
             TransactionID next = lockQueue.pollFirst();
             if (next != null) {

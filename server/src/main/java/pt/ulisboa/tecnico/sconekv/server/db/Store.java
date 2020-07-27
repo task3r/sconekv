@@ -74,7 +74,10 @@ public class Store {
     public synchronized void validate(TransactionID txID) throws ValidTransactionNotLockableException, AlreadyProcessedTransaction {
         Transaction tx = transactions.get(txID);
         try {
-            if (tx.isDecided()) {
+            if (tx == null) {
+                logger.debug("Tx {} is not in the store, assuming it was garbage collected", txID);
+                throw new AlreadyProcessedTransaction();
+            } else if (tx.isDecided()) {
                 logger.debug("Already decided transaction {}, ignoring", txID);
                 throw new AlreadyProcessedTransaction();
             } else {
@@ -111,7 +114,7 @@ public class Store {
             this.get(op.getKey()).releaseLock(tx.getId());
     }
 
-    public void localReject(Transaction tx) {
+    public synchronized void localReject(Transaction tx) {
         simplyReleaseLocks(tx);
         unqueueTransaction(tx);
         tx.setState(TransactionState.ABORTED);
@@ -149,18 +152,22 @@ public class Store {
     public synchronized Set<TransactionID> releaseLocks(TransactionID txID, boolean butQueue) {
         Transaction tx = transactions.get(txID);
         Set<TransactionID> restartTxs = new HashSet<>();
-        for (Operation op : tx.getRwSet()) {
-            if (butQueue) { // in case of a rollback of txID
-                restartTxs.addAll(this.get(op.getKey()).releaseLockButQueue(tx.getId(), op.getType()));
-            } else { // the normal case, txID is decided or reset
-                restartTxs.addAll(this.get(op.getKey()).releaseLockAndChangeToNext(tx.getId()));
+        if (tx != null) {
+            for (Operation op : tx.getRwSet()) {
+                if (butQueue) { // in case of a rollback of txID
+                    restartTxs.addAll(this.get(op.getKey()).releaseLockButQueue(tx.getId(), op.getType()));
+                } else { // the normal case, txID is decided or reset
+                    restartTxs.addAll(this.get(op.getKey()).releaseLockAndChangeToNext(tx.getId()));
+                }
             }
-        }
-        if (logger.isDebugEnabled()) {
-            StringBuilder s = new StringBuilder();
-            for (TransactionID id : restartTxs)
-                s.append(id).append(",");
-            logger.debug("Released locks for {}, restarting {}", txID, s);
+            if (logger.isDebugEnabled()) {
+                StringBuilder s = new StringBuilder();
+                for (TransactionID id : restartTxs)
+                    s.append(id).append(",");
+                logger.debug("Released locks for {}, restarting {}", txID, s);
+            }
+        } else {
+            logger.debug("Tx {} is not in the store, assuming it was garbage collected", txID);
         }
         return restartTxs;
     }

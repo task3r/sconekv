@@ -42,6 +42,7 @@ public class SingleLock implements Lock {
     @Override
     public Set<TransactionID> unlockAndLockNext(TransactionID txID) {
         if (txID.equals(lockOwner) || lockOwner == null) {
+            lockQueue.remove(txID);
             lockOwner = lockQueue.pollFirst();
             return getLockOwners();
         }
@@ -51,6 +52,7 @@ public class SingleLock implements Lock {
     @Override
     public Set<TransactionID> unlockButQueue(TransactionID txID, Operation.Type type) {
         if (txID.equals(lockOwner) || lockOwner == null) {
+            lockQueue.remove(txID);
             lockOwner = lockQueue.pollFirst();
             queue(txID, type);
             return getLockOwners();

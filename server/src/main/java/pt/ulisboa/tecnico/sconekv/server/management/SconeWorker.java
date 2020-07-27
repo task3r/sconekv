@@ -116,7 +116,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
             } else if (store.getTransaction(commitRequest.getTxID()).isDecided()) {
                 replyIfAmCoordinator(commitRequest.getTxID());
             } else {
-                logger.error("Received duplicated commitRequest {}, client must be patient", commitRequest.getTxID());
+                logger.warn("Received duplicated commitRequest {}, client must be patient", commitRequest.getTxID());
             }
         } else {
             logger.error("Received commit request {} but I am not the master of bucket {}", commitRequest.getTxID(), sm.getCurrentBucketId());
@@ -137,8 +137,8 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     public void handle(LogTransaction logTransaction) {
         if (sm.isMaster()) {
             try {
-                logger.info("Sending Local Decision for {}", logTransaction.getTxID());
                 Node coordinator = dht.getMasterOfBucket(store.getTransaction(logTransaction.getTxID()).getCoordinatorBucket());
+                logger.info("Sending Local Decision for {} to {}", logTransaction.getTxID(), coordinator);
                 if (coordinator.equals(self)) {
                     cm.queueEvent(new LocalDecisionResponse(self, sm.getCurrentVersion(), logTransaction.getTxID(),
                             store.getTransaction(logTransaction.getTxID()).getState() == TransactionState.PREPARED));
@@ -424,15 +424,14 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(LocalRejectTransaction localRejectTransaction) {
-        logger.info("MakeLocalDecision : {}", localRejectTransaction.getTxID());
-        LogTransaction logTransaction = new LogTransaction(store.getTransaction(localRejectTransaction.getTxID()), null);
+        logger.info("LocalRejectTransaction : {}", localRejectTransaction.getTxID());
         Transaction tx = store.getTransaction(localRejectTransaction.getTxID());
-        if (tx.getState() != TransactionState.ABORTED) {
+        if (tx != null && tx.getState() != TransactionState.ABORTED) {
+            LogTransaction logTransaction = new LogTransaction(tx, null);
             try {
                 store.localReject(tx);
                 sm.prepareLogMaster(logTransaction, localRejectTransaction, id);
-            } catch (SMRStatusException ignored) {
-            }
+            } catch (SMRStatusException ignored) {}
         }
     }
 
