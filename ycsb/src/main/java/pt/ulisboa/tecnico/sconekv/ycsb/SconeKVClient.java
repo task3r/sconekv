@@ -10,15 +10,19 @@ import site.ycsb.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SconeKVClient extends DB {
     private static final Logger logger = LoggerFactory.getLogger(SconeKVClient.class);
     private SconeClient sconeClient;
     private Transaction currentTransaction;
-    private int transactionSize = 10;
+    private int transactionSize;
+    private int transactionSizeMin;
+    private int transactionSizeMax;
     private int totalTransactions = 0;
     private int commits = 0;
     private int aborts = 0;
+    private boolean randomTransactionSize;
 
     @Override
     public void init() throws DBException {
@@ -26,6 +30,8 @@ public class SconeKVClient extends DB {
             Properties props = getProperties();
             String configFile = props.getProperty("scone.config");
             String txSize = props.getProperty("scone.tx_size");
+            String txSizeMin = props.getProperty("scone.tx_min_size");
+            String txSizeMax = props.getProperty("scone.tx_max_size");
 
             if (configFile != null) {
                 sconeClient = new SconeClient(configFile);
@@ -35,14 +41,29 @@ public class SconeKVClient extends DB {
 
             if (txSize != null) {
                 transactionSize = Integer.parseInt(txSize);
+                randomTransactionSize = false;
+            }
+
+            if (txSizeMin != null && txSizeMax != null) {
+                transactionSizeMin = Integer.parseInt(txSizeMin);
+                transactionSizeMax = Integer.parseInt(txSizeMax);
+                randomTransactionSize = true;
             }
 
             Stats.getInstance().newClient();
 
-            currentTransaction = sconeClient.newTransaction();
+            newTransaction();
 
         } catch (UnableToGetViewException | IOException e) {
             throw new DBException(e);
+        }
+    }
+
+    private void newTransaction() {
+        currentTransaction = sconeClient.newTransaction();
+        if (randomTransactionSize) {
+            // without +1 it's [min,max[ and not [min,max]
+            transactionSize = ThreadLocalRandom.current().nextInt(transactionSizeMin, transactionSizeMax + 1);
         }
     }
 
@@ -72,11 +93,11 @@ public class SconeKVClient extends DB {
             return Status.OK;
 
         } catch (InvalidTransactionStateChangeException e) { // should not happen
-            currentTransaction = sconeClient.newTransaction();
+            newTransaction();
             return Status.ERROR;
         } catch (RequestFailedException e) {
             totalTransactions++;
-            currentTransaction = sconeClient.newTransaction();
+            newTransaction();
             return Status.SERVICE_UNAVAILABLE;
         }
     }
@@ -89,11 +110,11 @@ public class SconeKVClient extends DB {
             return Status.OK;
 
         } catch (InvalidTransactionStateChangeException e) { // should not happen
-            currentTransaction = sconeClient.newTransaction();
+            newTransaction();
             return Status.ERROR;
         } catch (RequestFailedException e) {
             totalTransactions++;
-            currentTransaction = sconeClient.newTransaction();
+            newTransaction();
             return Status.SERVICE_UNAVAILABLE;
         }
     }
@@ -109,11 +130,11 @@ public class SconeKVClient extends DB {
             return Status.OK;
 
         } catch (InvalidTransactionStateChangeException e) { // should not happen
-            currentTransaction = sconeClient.newTransaction();
+            newTransaction();
             return Status.ERROR;
         } catch (RequestFailedException e) {
             totalTransactions++;
-            currentTransaction = sconeClient.newTransaction();
+            newTransaction();
             return Status.SERVICE_UNAVAILABLE;
         }
     }
@@ -130,7 +151,7 @@ public class SconeKVClient extends DB {
                 totalTransactions++;
                 aborts++;
             }
-            currentTransaction = sconeClient.newTransaction();
+            newTransaction();
         }
     }
 
