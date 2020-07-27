@@ -60,9 +60,12 @@ public class Transaction extends AbstractTransaction {
         return responses.size() == buckets.length;
     }
 
-    public void addResponse(short bucket) {
-        if (!this.responses.add(bucket))
-            logger.error("Received a second response from bucket {} for transaction {}", bucket, getId());
+    public boolean addResponse(short bucket) {
+        synchronized (this) {
+            if (!this.responses.add(bucket))
+                logger.error("Received a second response from bucket {} for transaction {}", bucket, getId());
+            return isReady();
+        }
     }
 
     public boolean isDecided() {

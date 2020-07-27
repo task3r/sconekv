@@ -270,8 +270,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                         } else {
                             Bucket bucket = dht.getBucketOfNode(localDecisionResponse.getNode());
                             if (bucket != null) {
-                                tx.addResponse(bucket.getId());
-                                if (tx.isReady()) {
+                                if (tx.addResponse(bucket.getId())) {
                                     tx.setDecided();
                                     Set<Node> masters = dht.getMastersOfBuckets(tx.getBuckets());
                                     masters.remove(self);
@@ -292,6 +291,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(RequestRollbackLocalDecision requestRollbackLocalDecision) {
+        logger.debug("RequestRollback : {} {}", requestRollbackLocalDecision.getTxID(), requestRollbackLocalDecision.getNode());
         Transaction tx = store.getTransaction(requestRollbackLocalDecision.getTxID());
         if (tx == null) {
             logger.debug("Received a RequestRollbackLocalDecision for a transaction {} I've yet to receive, delaying", requestRollbackLocalDecision.getTxID());
