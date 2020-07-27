@@ -10,7 +10,7 @@ COPY scripts/load.sh /usr/src/sconekv/load
 COPY workloads /usr/src/sconekv/
 ENV PATH="${PATH}:/usr/src/sconekv"
 ENV WORKLOAD="workloada"
-ENV THREADS="256"
+ENV THREADS="128"
 ENV LOAD_TX_SIZE="100"
 ENV BENCH_TX_SIZE="5"
 CMD "/bin/bash"
