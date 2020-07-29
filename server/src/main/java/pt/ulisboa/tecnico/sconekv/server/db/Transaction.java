@@ -30,13 +30,15 @@ public class Transaction extends AbstractTransaction {
         this.responses = new HashSet<>();
         this.reader = transaction;
 
-        for (int i = 0; i < transaction.getOps().size(); i++) {
-            addOperation(Operation.unserialize(transaction.getOps().get(i)));
-        }
+        if (transaction != null) {
+            for (int i = 0; i < transaction.getOps().size(); i++) {
+                addOperation(Operation.unserialize(transaction.getOps().get(i)));
+            }
 
-        this.buckets = new short[transaction.getBuckets().size()];
-        for (int i = 0; i < buckets.length; i++) {
-            this.buckets[i] = transaction.getBuckets().get(i);
+            this.buckets = new short[transaction.getBuckets().size()];
+            for (int i = 0; i < buckets.length; i++) {
+                this.buckets[i] = transaction.getBuckets().get(i);
+            }
         }
     }
 

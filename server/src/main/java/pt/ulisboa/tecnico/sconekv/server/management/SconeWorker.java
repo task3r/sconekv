@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.sconekv.server.management;
 
 import org.capnproto.MessageBuilder;
-import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.membership.ring.Node;
@@ -158,6 +157,10 @@ public class SconeWorker implements Runnable, SconeEventHandler {
 
     @Override
     public void handle(LogTransactionDecision logTransactionDecision) {
+        if (store.getTransaction(logTransactionDecision.getTxID()) == null && !sm.isMaster() && logTransactionDecision.getDecision() == TransactionState.ABORTED) {
+            Transaction tx = new Transaction(logTransactionDecision.getTxID(), null, null);
+            store.addTransaction(tx);
+        }
         if (store.getTransaction(logTransactionDecision.getTxID()) != null) {
             if (logTransactionDecision.getDecision() == TransactionState.COMMITTED) {
                 logger.info("Commit : {}", logTransactionDecision.getTxID());
