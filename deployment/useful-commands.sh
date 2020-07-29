@@ -7,8 +7,14 @@ scone_tasks() {
 
 scone_deploy() {
     docker pull task3r/sconekv-node
-    docker stack deploy sconekv --compose-file deployment/sconekv.yml
-    docker service logs -f sconekv_cluster
+    docker stack deploy sconekv --compose-file ~/deployment/sconekv.yml
+    echo "Waiting 1min for membership to form..."
+    sleep 60
+    scone_ready
+}
+
+scone_stop() {
+  docker stack rm sconekv
 }
 
 scone_task_ip() {
@@ -53,8 +59,7 @@ scone_logs() {
         docker service logs $task |& sed 's/.*|\s//' > $dir/`scone_task_ip $task`.log &
         processes+=($!)
     done
-    for process in ${processes[@]}; do
-        wait $process &> /dev/null
+    for process in "${processes[@]}"; do
+        wait "$process" &> /dev/null
     done
 }
-
