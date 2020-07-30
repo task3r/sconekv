@@ -148,7 +148,6 @@ public class CommunicationUtils {
         builder.setOpNumber(opNumber);
         Internal.LogEvent.Builder eBuilder = builder.initEvent();
         serializeEvent(event, eBuilder);
-        event.setReader(eBuilder.asReader());
         return message;
     }
 
@@ -220,11 +219,7 @@ public class CommunicationUtils {
     private static void serializeLog(List<LogEntry> log, StructList.Builder<Internal.LoggedEvent.Builder> logBuilder) {
         for (int i = 0; i < log.size(); i++) {
             LogEvent entry = log.get(i).getEvent();
-            if (entry.getReader() != null) {
-                logBuilder.get(i).setEvent(entry.getReader());
-            } else {
-                serializeEvent(entry, logBuilder.get(i).initEvent());
-            }
+            serializeEvent(entry, logBuilder.get(i).initEvent());
         }
     }
 

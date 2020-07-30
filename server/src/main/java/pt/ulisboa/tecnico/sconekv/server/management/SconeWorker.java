@@ -319,7 +319,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(RollbackLocalDecisionResponse rollbackLocalDecisionResponse) {
         try {
-            sm.prepareLogMaster(new LogRollback(rollbackLocalDecisionResponse.getTxID(), null), rollbackLocalDecisionResponse, id);
+            sm.prepareLogMaster(new LogRollback(rollbackLocalDecisionResponse.getTxID()), rollbackLocalDecisionResponse, id);
         } catch (SMRStatusException ignored) {
         }
     }
@@ -327,7 +327,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(CommitTransaction commitTransaction) {
         try {
-            sm.prepareLogMaster(new LogTransactionDecision(commitTransaction.getTxID(), true, null), commitTransaction, id);
+            sm.prepareLogMaster(new LogTransactionDecision(commitTransaction.getTxID(), true), commitTransaction, id);
         } catch (SMRStatusException ignored) {
         }
     }
@@ -335,7 +335,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(AbortTransaction abortTransaction) {
         try {
-            sm.prepareLogMaster(new LogTransactionDecision(abortTransaction.getTxID(), false, null), abortTransaction, id);
+            sm.prepareLogMaster(new LogTransactionDecision(abortTransaction.getTxID(), false), abortTransaction, id);
         } catch (SMRStatusException ignored) {
         }
     }
@@ -343,7 +343,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     @Override
     public void handle(MakeLocalDecision makeLocalDecision) {
         logger.info("MakeLocalDecision : {}", makeLocalDecision.getTxID());
-        LogTransaction logTransaction = new LogTransaction(store.getTransaction(makeLocalDecision.getTxID()), null);
+        LogTransaction logTransaction = new LogTransaction(store.getTransaction(makeLocalDecision.getTxID()));
         try {
             store.validate(makeLocalDecision.getTxID());
             sm.prepareLogMaster(logTransaction, makeLocalDecision, id);
@@ -430,7 +430,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
         logger.info("LocalRejectTransaction : {}", localRejectTransaction.getTxID());
         Transaction tx = store.getTransaction(localRejectTransaction.getTxID());
         if (tx != null && tx.getState() != TransactionState.ABORTED) {
-            LogTransaction logTransaction = new LogTransaction(tx, null);
+            LogTransaction logTransaction = new LogTransaction(tx);
             try {
                 store.localReject(tx);
                 sm.prepareLogMaster(logTransaction, localRejectTransaction, id);

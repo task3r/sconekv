@@ -190,13 +190,13 @@ public class SconeServer implements Runnable {
                 Transaction tx = new Transaction(new TransactionID(logReader.getTxID()), null,
                         logReader.getTransaction().getTransaction());
                 tx.setState(logReader.getTransaction().getPrepared()? TransactionState.PREPARED : TransactionState.ABORTED);
-                event = new LogTransaction(tx, logReader);
+                event = new LogTransaction(tx);
                 break;
             case DECISION:
-                event = new LogTransactionDecision(new TransactionID(logReader.getTxID()), logReader.getDecision(), logReader);
+                event = new LogTransactionDecision(new TransactionID(logReader.getTxID()), logReader.getDecision());
                 break;
             case ROLLBACK:
-                event = new LogRollback(new TransactionID(logReader.getTxID()), logReader);
+                event = new LogRollback(new TransactionID(logReader.getTxID()));
                 break;
             case _NOT_IN_SCHEMA:
                 logger.error("Received incorrect LoggedEvent, ignoring...");

@@ -1,15 +1,13 @@
 package pt.ulisboa.tecnico.sconekv.server.events.internal.smr;
 
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
-import pt.ulisboa.tecnico.sconekv.common.transport.Internal;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
 
-public class LogRollback extends LogEvent {
+public class LogRollback implements LogEvent {
 
     private TransactionID txID;
 
-    public LogRollback(TransactionID txID, Internal.LogEvent.Reader reader) {
-        super(reader);
+    public LogRollback(TransactionID txID) {
         this.txID = txID;
     }
 

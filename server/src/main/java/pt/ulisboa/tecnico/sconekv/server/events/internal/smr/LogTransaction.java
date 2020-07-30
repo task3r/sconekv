@@ -1,16 +1,14 @@
 package pt.ulisboa.tecnico.sconekv.server.events.internal.smr;
 
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
-import pt.ulisboa.tecnico.sconekv.common.transport.Internal;
 import pt.ulisboa.tecnico.sconekv.server.db.Transaction;
 import pt.ulisboa.tecnico.sconekv.server.events.SconeEventHandler;
 
-public class LogTransaction extends LogEvent {
+public class LogTransaction implements LogEvent {
 
     private Transaction tx;
 
-    public LogTransaction(Transaction tx, Internal.LogEvent.Reader reader) {
-        super(reader);
+    public LogTransaction(Transaction tx) {
         this.tx = tx;
     }
 
