@@ -17,6 +17,7 @@ public class SconeKVClient extends DB {
     private SconeClient sconeClient;
     private Transaction currentTransaction;
     private int transactionSize;
+    // TPC-C NewOrder [5..15]
     private int transactionSizeMin;
     private int transactionSizeMax;
     private int totalTransactions = 0;
@@ -73,9 +74,9 @@ public class SconeKVClient extends DB {
             commit();
         } catch (RequestFailedException | InvalidTransactionStateChangeException ignored) {}
 
-        logger.info("\nEnded SconeKV benchmark for client {}.\nTotal transactions: {}\nCommitted: {} ({}%)\nAborted: {} ({}%)",
-                currentTransaction.getId().getClient(), totalTransactions, commits, commits/(float)totalTransactions*100,
-                aborts, aborts/(float)totalTransactions*100);
+//        logger.info("\nEnded SconeKV benchmark for client {}.\nTotal transactions: {}\nCommitted: {} ({}%)\nAborted: {} ({}%)",
+//                currentTransaction.getId().getClient(), totalTransactions, commits, commits/(float)totalTransactions*100,
+//                aborts, aborts/(float)totalTransactions*100);
 
         Stats.getInstance().clientFinished(totalTransactions, commits, aborts);
     }
