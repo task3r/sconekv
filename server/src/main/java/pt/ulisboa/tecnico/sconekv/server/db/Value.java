@@ -7,6 +7,7 @@ import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.InvalidVersionException;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 
 public class Value {
@@ -19,6 +20,19 @@ public class Value {
 
     public Value(String key) {
         this(key, new byte[0], (short) 0);
+    }
+
+    public Value(String key, byte[] versionAndContent) {
+        this.key = key;
+        ByteBuffer buffer = ByteBuffer.wrap(versionAndContent);
+        this.version = buffer.getShort();
+        this.content = new byte[buffer.remaining()];
+        buffer.get(this.content);
+        if (SconeConstants.LOCK_TYPE == SconeConstants.LockType.SINGLE) {
+            this.lock = new SingleLock();
+        } else if (SconeConstants.LOCK_TYPE == SconeConstants.LockType.READ_WRITE) {
+            this.lock = new ReadWriteLock();
+        }
     }
 
     public Value(String key, byte[] content, short version) {
@@ -130,5 +144,12 @@ public class Value {
         synchronized (this) {
             lock.queue(txID, type);
         }
+    }
+
+    public byte[] serialize() {
+        ByteBuffer buffer = ByteBuffer.allocate(content.length + 2);
+        buffer.putShort(version);
+        buffer.put(content);
+        return buffer.array();
     }
 }

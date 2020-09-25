@@ -1,5 +1,8 @@
 package pt.ulisboa.tecnico.sconekv.server.management;
 
+import org.rocksdb.Options;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.tecnico.ulisboa.prime.MembershipManager;
@@ -25,11 +28,15 @@ public class SconeManager implements UpdateViewCallback {
     private MembershipManager membershipManager;
     private StateMachine stateMachine;
     private Store store;
+    private RocksDB db;
     private DHT dht;
     private List<Thread> threads;
 
-    public SconeManager() throws IOException, InterruptedException {
-        this.store = new Store();
+    public SconeManager() throws IOException, InterruptedException, RocksDBException {
+        try (final Options options = new Options().setCreateIfMissing(true)) {
+            this.db = RocksDB.open(options, SconeConstants.PATH_TO_DB);
+            this.store = new Store(db);
+        }
         joinMembership();
         this.communicationManager = new CommunicationManager(membershipManager.getMyself());
         this.stateMachine = new StateMachine(communicationManager, membershipManager);
@@ -61,6 +68,10 @@ public class SconeManager implements UpdateViewCallback {
 
     public void shutdown() throws InterruptedException {
         logger.info("Shutdown handler");
+
+        if (db != null) {
+            db.close();
+        }
 
         if (membershipManager != null) {
             membershipManager.leave();

@@ -1,6 +1,8 @@
 package pt.ulisboa.tecnico.sconekv.server.db;
 
 import org.javatuples.Pair;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.common.db.*;
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 
 public class Store {
@@ -19,15 +22,46 @@ public class Store {
     private final Map<String, Value> values;
     private final Map<TransactionID, Transaction> transactions;
     private final Queue<Pair<TransactionID, LocalDateTime>> completedTransactions;
+    private final Set<String> updates;
+    private final Set<String> deletes;
+    private final RocksDB db;
 
-    public Store() {
+    public Store(RocksDB db) {
         this.values = new ConcurrentHashMap<>();
         this.transactions = new ConcurrentHashMap<>();
         this.completedTransactions = new ConcurrentLinkedQueue<>();
+        this.updates = new ConcurrentSkipListSet<>();
+        this.deletes = new ConcurrentSkipListSet<>();
+        this.db = db;
+
+        // Flushing updates to disk
+        Timer flusher = new Timer("DiskFlushingTimer", true);
+        flusher.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                for (String key : updates) {
+                    try {
+                        db.put(key.getBytes(), values.get(key).serialize());
+                    } catch (RocksDBException e) {
+                        e.printStackTrace();
+                    }
+                }
+                updates.clear();
+
+                for (String key : deletes) {
+                    try {
+                        db.delete(key.getBytes());
+                    } catch (RocksDBException e) {
+                        e.printStackTrace();
+                    }
+                }
+                deletes.clear();
+            }
+        }, 0, TimeUnit.SECONDS.toMillis(SconeConstants.GC_PERIOD));
 
         // Garbage Collection
-        Timer timer = new Timer("GarbageCollectionTimer", true);
-        timer.schedule(new TimerTask() {
+        Timer gcollecter = new Timer("GarbageCollectionTimer", true);
+        gcollecter.schedule(new TimerTask() {
             @Override
             public void run() {
                 LocalDateTime gcTime = LocalDateTime.now().minusSeconds(SconeConstants.TX_TTL);
@@ -46,8 +80,17 @@ public class Store {
     }
 
     public synchronized Value get(String key) {
-        if (!values.containsKey(key))
-            values.put(key, new Value(key));
+        if (!values.containsKey(key)) {
+            byte[] content = null;
+            try {
+                content = db.get(key.getBytes());
+            } catch (RocksDBException ignored) { }
+            if (content != null) {
+                values.put(key, new Value(key, content));
+            } else {
+                values.put(key, new Value(key));
+            }
+        }
         return values.get(key);
     }
 
@@ -179,9 +222,11 @@ public class Store {
             for (Operation op : tx.getRwSet()) {
                 if (op instanceof WriteOperation) {
                     txsToAbort.addAll(this.put(op.getKey(), op.getValue(), (short) (op.getVersion() + 1)));
+                    updates.add(op.getKey());
                 } else if (op instanceof DeleteOperation) {
                     txsToAbort.addAll(values.get(op.getKey()).getLockQueue());
                     values.remove(op.getKey()); // maybe could simply turn it invisible in the future
+                    deletes.add(op.getKey());
                 }
             }
             tx.setState(TransactionState.COMMITTED);

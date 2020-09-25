@@ -51,8 +51,10 @@ public class PropertiesConfigurator {
         SconeConstants.TRACKER_URL = getString(properties, "TRACKER_URL");
         SconeConstants.MAX_OP_NUMBER_HOLE = getInt(properties, "MAX_OP_NUMBER_HOLE");
         SconeConstants.GC_PERIOD = getLong(properties, "GC_PERIOD");
+        SconeConstants.FLUSH_TO_DISK_PERIOD = getLong(properties, "FLUSH_TO_DISK_PERIOD");
         SconeConstants.TX_TTL = getLong(properties, "TX_TTL");
         SconeConstants.LOCK_TYPE = SconeConstants.LockType.valueOf(getString(properties, "LOCK_TYPE"));
+        SconeConstants.PATH_TO_DB = getString(properties, "PATH_TO_DB");
         validateSconeConfiguration();
     }
 

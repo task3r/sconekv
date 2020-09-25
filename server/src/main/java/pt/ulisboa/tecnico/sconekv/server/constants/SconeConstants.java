@@ -8,6 +8,7 @@ public class SconeConstants {
     }
 
     public static long GC_PERIOD = 100L; // 100s
+    public static long FLUSH_TO_DISK_PERIOD = 10L; // 10s
     public static long TX_TTL = 100L; // 100s
     public static int SERVER_REQUEST_PORT = 5555;
     public static int SERVER_INTERNAL_PORT = 6666;
@@ -20,6 +21,7 @@ public class SconeConstants {
     public static short NUM_WORKERS = 1;
     public static LockType LOCK_TYPE = LockType.SINGLE;
     public static String TRACKER_URL = "http://tracker:4321";
+    public static String PATH_TO_DB = "/tmp/rocksDB";
 
 
     private SconeConstants() {}
