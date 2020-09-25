@@ -1,0 +1,2887 @@
+/opt/java/openjdk/bin/java  -classpath /usr/src/ycsb/conf:/usr/src/ycsb/lib/HdrHistogram-2.1.4.jar:/usr/src/ycsb/lib/core-0.18.0-SNAPSHOT.jar:/usr/src/ycsb/lib/htrace-core4-4.1.0-incubating.jar:/usr/src/ycsb/lib/jackson-core-asl-1.9.4.jar:/usr/src/ycsb/lib/jackson-mapper-asl-1.9.4.jar:/usr/src/ycsb/lib/postgresql-42.2.16.jar:/usr/src/ycsb/jdbc-binding/conf:/usr/src/ycsb/jdbc-binding/lib/commons-collections-3.2.1.jar:/usr/src/ycsb/jdbc-binding/lib/commons-lang-2.4.jar:/usr/src/ycsb/jdbc-binding/lib/commons-pool-1.5.4.jar:/usr/src/ycsb/jdbc-binding/lib/geronimo-jms_1.1_spec-1.1.1.jar:/usr/src/ycsb/jdbc-binding/lib/geronimo-jta_1.1_spec-1.1.1.jar:/usr/src/ycsb/jdbc-binding/lib/jdbc-binding-0.18.0-SNAPSHOT.jar:/usr/src/ycsb/jdbc-binding/lib/openjpa-jdbc-2.1.1.jar:/usr/src/ycsb/jdbc-binding/lib/openjpa-kernel-2.1.1.jar:/usr/src/ycsb/jdbc-binding/lib/openjpa-lib-2.1.1.jar:/usr/src/ycsb/jdbc-binding/lib/serp-1.13.1.jar site.ycsb.Client -t -db site.ycsb.db.JdbcDBClient -P workloads/workloadc -p operationcount=10000000 -p db.driver=org.postgresql.Driver -p db.url=jdbc:postgresql://seed:26257/ycsb;jdbc:postgresql://10.0.4.12:26257/ycsb;jdbc:postgresql://10.0.4.11:26257/ycsb;jdbc:postgresql://10.0.4.5:26257/ycsb;jdbc:postgresql://10.0.4.4:26257/ycsb;jdbc:postgresql://10.0.4.16:26257/ycsb;jdbc:postgresql://10.0.4.15:26257/ycsb;jdbc:postgresql://10.0.4.21:26257/ycsb;jdbc:postgresql://10.0.4.3:26257/ycsb;jdbc:postgresql://10.0.4.10:26257/ycsb;jdbc:postgresql://10.0.4.9:26257/ycsb;jdbc:postgresql://10.0.4.14:26257/ycsb;jdbc:postgresql://10.0.4.20:26257/ycsb;jdbc:postgresql://10.0.4.8:26257/ycsb;jdbc:postgresql://10.0.4.19:26257/ycsb;jdbc:postgresql://10.0.4.13:26257/ycsb;jdbc:postgresql://10.0.4.18:26257/ycsb;jdbc:postgresql://10.0.4.7:26257/ycsb;jdbc:postgresql://10.0.4.6:26257/ycsb;jdbc:postgresql://10.0.4.17:26257/ycsb; -p db.user=root -p jdbc.autocommit=false -p maxexecutiontime=300 -threads 128 -s
+Command line: -t -db site.ycsb.db.JdbcDBClient -P workloads/workloadc -p operationcount=10000000 -p db.driver=org.postgresql.Driver -p db.url=jdbc:postgresql://seed:26257/ycsb;jdbc:postgresql://10.0.4.12:26257/ycsb;jdbc:postgresql://10.0.4.11:26257/ycsb;jdbc:postgresql://10.0.4.5:26257/ycsb;jdbc:postgresql://10.0.4.4:26257/ycsb;jdbc:postgresql://10.0.4.16:26257/ycsb;jdbc:postgresql://10.0.4.15:26257/ycsb;jdbc:postgresql://10.0.4.21:26257/ycsb;jdbc:postgresql://10.0.4.3:26257/ycsb;jdbc:postgresql://10.0.4.10:26257/ycsb;jdbc:postgresql://10.0.4.9:26257/ycsb;jdbc:postgresql://10.0.4.14:26257/ycsb;jdbc:postgresql://10.0.4.20:26257/ycsb;jdbc:postgresql://10.0.4.8:26257/ycsb;jdbc:postgresql://10.0.4.19:26257/ycsb;jdbc:postgresql://10.0.4.13:26257/ycsb;jdbc:postgresql://10.0.4.18:26257/ycsb;jdbc:postgresql://10.0.4.7:26257/ycsb;jdbc:postgresql://10.0.4.6:26257/ycsb;jdbc:postgresql://10.0.4.17:26257/ycsb; -p db.user=root -p jdbc.autocommit=false -p maxexecutiontime=300 -threads 128 -s
+YCSB Client 0.18.0-SNAPSHOT
+
+Loading workload...
+Starting test.
+Maximum execution time specified as: 300 secs
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+Adding shard node URL: jdbc:postgresql://seed:26257/ycsb
+2020-09-11 15:54:48:112 0 sec: 0 operations; est completion in 0 second 
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.12:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.11:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.5:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.4:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.16:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.15:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.21:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.3:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.10:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.9:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.14:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.20:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.8:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.19:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.13:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.18:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+Using shards: 20, batchSize:-1, fetchSize: -1
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.7:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.6:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+Using shards: 20, batchSize:-1, fetchSize: -1
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Adding shard node URL: jdbc:postgresql://10.0.4.17:26257/ycsb
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 20, batchSize:-1, fetchSize: -1
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+2020-09-11 15:54:57:590 10 sec: 37028 operations; 3702.43 current ops/sec; est completion in 44 minutes [READ: Count=37067, Max=235263, Min=2054, Avg=17071.31, 90=29071, 99=59199, 99.9=105983, 99.99=144639] 
+2020-09-11 15:55:07:589 20 sec: 118203 operations; 8118.31 current ops/sec; est completion in 27 minutes [READ: Count=81138, Max=115327, Min=1807, Avg=15603.3, 90=26447, 99=46463, 99.9=70591, 99.99=99903] 
+2020-09-11 15:55:17:589 30 sec: 198882 operations; 8067.09 current ops/sec; est completion in 24 minutes [READ: Count=80689, Max=113919, Min=1744, Avg=15849.3, 90=27231, 99=48223, 99.9=71679, 99.99=94527] 
+2020-09-11 15:55:27:589 40 sec: 276346 operations; 7746.4 current ops/sec; est completion in 23 minutes [READ: Count=77452, Max=134015, Min=1621, Avg=15916.13, 90=27439, 99=48511, 99.9=72511, 99.99=89727] 
+2020-09-11 15:55:37:589 50 sec: 356678 operations; 8033.2 current ops/sec; est completion in 22 minutes [READ: Count=80338, Max=564223, Min=1781, Avg=16501.05, 90=27007, 99=48191, 99.9=494079, 99.99=529919] 
+2020-09-11 15:55:47:589 60 sec: 437850 operations; 8118.01 current ops/sec; est completion in 21 minutes [READ: Count=81172, Max=106431, Min=1570, Avg=15766.89, 90=26943, 99=47903, 99.9=73407, 99.99=92863] 
+2020-09-11 15:55:57:589 70 sec: 518915 operations; 8105.69 current ops/sec; est completion in 21 minutes [READ: Count=81064, Max=116223, Min=1778, Avg=15786.49, 90=27007, 99=49471, 99.9=76223, 99.99=97151] 
+2020-09-11 15:56:07:589 80 sec: 599227 operations; 8032 current ops/sec; est completion in 20 minutes [READ: Count=80311, Max=132223, Min=1655, Avg=15930.25, 90=26879, 99=49343, 99.9=79551, 99.99=106047] 
+2020-09-11 15:56:17:589 90 sec: 679230 operations; 8000.3 current ops/sec; est completion in 20 minutes [READ: Count=80006, Max=529407, Min=1856, Avg=15992.53, 90=27215, 99=50207, 99.9=84543, 99.99=520959] 
+2020-09-11 15:56:27:589 100 sec: 760315 operations; 8108.5 current ops/sec; est completion in 20 minutes [READ: Count=81081, Max=130111, Min=1537, Avg=15774.3, 90=26975, 99=48223, 99.9=73983, 99.99=98879] 
+2020-09-11 15:56:37:589 110 sec: 841162 operations; 8084.7 current ops/sec; est completion in 19 minutes [READ: Count=80848, Max=125503, Min=1604, Avg=15828.62, 90=27167, 99=48383, 99.9=74111, 99.99=98559] 
+2020-09-11 15:56:47:589 120 sec: 920941 operations; 7977.9 current ops/sec; est completion in 19 minutes [READ: Count=79775, Max=118975, Min=1797, Avg=16030.96, 90=27647, 99=51839, 99.9=79295, 99.99=102719] 
+2020-09-11 15:56:57:589 130 sec: 1003108 operations; 8215.88 current ops/sec; est completion in 19 minutes [READ: Count=82174, Max=146303, Min=1643, Avg=15574.92, 90=26367, 99=47359, 99.9=83647, 99.99=118847] 
+2020-09-11 15:57:07:589 140 sec: 1085249 operations; 8214.1 current ops/sec; est completion in 19 minutes [READ: Count=82142, Max=98431, Min=1821, Avg=15569.12, 90=26495, 99=45055, 99.9=68159, 99.99=91583] 
+2020-09-11 15:57:17:589 150 sec: 1165708 operations; 8046.7 current ops/sec; est completion in 18 minutes [READ: Count=80451, Max=112319, Min=1684, Avg=15902.06, 90=27295, 99=47519, 99.9=71743, 99.99=94655] 
+2020-09-11 15:57:27:589 160 sec: 1245318 operations; 7961 current ops/sec; est completion in 18 minutes [READ: Count=79610, Max=117823, Min=1849, Avg=16070.49, 90=27535, 99=50079, 99.9=78975, 99.99=99711] 
+2020-09-11 15:57:37:589 170 sec: 1323324 operations; 7800.6 current ops/sec; est completion in 18 minutes [READ: Count=78007, Max=121151, Min=1900, Avg=16401.85, 90=28447, 99=49855, 99.9=72511, 99.99=97919] 
+2020-09-11 15:57:47:589 180 sec: 1402337 operations; 7901.3 current ops/sec; est completion in 18 minutes [READ: Count=79019, Max=123007, Min=1704, Avg=16197.32, 90=27759, 99=49311, 99.9=75647, 99.99=98751] 
+2020-09-11 15:57:57:589 190 sec: 1481502 operations; 7916.5 current ops/sec; est completion in 18 minutes [READ: Count=79164, Max=107839, Min=1926, Avg=16138.65, 90=27727, 99=49631, 99.9=78655, 99.99=93567] 
+2020-09-11 15:58:07:589 200 sec: 1561682 operations; 8018 current ops/sec; est completion in 18 minutes [READ: Count=80176, Max=229119, Min=1626, Avg=15980.87, 90=27583, 99=48767, 99.9=76159, 99.99=99455] 
+2020-09-11 15:58:17:589 210 sec: 1642207 operations; 8052.5 current ops/sec; est completion in 17 minutes [READ: Count=80526, Max=102975, Min=1959, Avg=15890.63, 90=27215, 99=46751, 99.9=70655, 99.99=89471] 
+2020-09-11 15:58:27:589 220 sec: 1720673 operations; 7845.82 current ops/sec; est completion in 17 minutes [READ: Count=78463, Max=363263, Min=1777, Avg=16305.3, 90=27375, 99=50815, 99.9=291839, 99.99=336383] 
+2020-09-11 15:58:37:589 230 sec: 1800990 operations; 8032.5 current ops/sec; est completion in 17 minutes [READ: Count=80321, Max=133631, Min=1856, Avg=15923.33, 90=27231, 99=48383, 99.9=78719, 99.99=120959] 
+2020-09-11 15:58:47:589 240 sec: 1880368 operations; 7937.8 current ops/sec; est completion in 17 minutes [READ: Count=79381, Max=525311, Min=1853, Avg=16118.28, 90=27359, 99=47839, 99.9=89535, 99.99=480767] 
+2020-09-11 15:58:57:589 250 sec: 1960924 operations; 8055.6 current ops/sec; est completion in 17 minutes [READ: Count=80553, Max=139519, Min=1758, Avg=15888.28, 90=27359, 99=48287, 99.9=71359, 99.99=93375] 
+2020-09-11 15:59:07:589 260 sec: 2041171 operations; 8024.7 current ops/sec; est completion in 16 minutes [READ: Count=80246, Max=369151, Min=1847, Avg=15931.68, 90=27567, 99=51327, 99.9=80063, 99.99=325375] 
+2020-09-11 15:59:17:589 270 sec: 2123035 operations; 8186.4 current ops/sec; est completion in 16 minutes [READ: Count=81866, Max=111743, Min=1713, Avg=15632.61, 90=26799, 99=46207, 99.9=68159, 99.99=88191] 
+2020-09-11 15:59:27:589 280 sec: 2203593 operations; 8055.8 current ops/sec; est completion in 16 minutes [READ: Count=80557, Max=108671, Min=1781, Avg=15884.26, 90=27343, 99=47967, 99.9=74943, 99.99=93439] 
+2020-09-11 15:59:37:589 290 sec: 2283623 operations; 8003 current ops/sec; est completion in 16 minutes [READ: Count=80029, Max=117183, Min=1585, Avg=15995.28, 90=27455, 99=48575, 99.9=78079, 99.99=98303] 
+2020-09-11 15:59:47:589 300 sec: 2364678 operations; 8105.5 current ops/sec; est completion in 16 minutes [READ: Count=81055, Max=121791, Min=1759, Avg=15779.61, 90=27039, 99=47871, 99.9=74559, 99.99=100479] 
+Maximum time elapsed. Requesting stop for the workload.
+Stop requested for workload. Now Joining!
+
+Ended JDBC benchmark.
+Number of clients: 128
+Total transactions: 473100
+Committed: 473100 (100.000000)
+Aborted: 0 (0.000000)
+2020-09-11 15:59:48:008 300 sec: 2365737 operations; 2521.43 current ops/sec; est completion in 16 minutes [READ: Count=1056, Max=319743, Min=3388, Avg=22755.3, 90=38687, 99=150271, 99.9=288767, 99.99=319743] [CLEANUP: Count=128, Max=105855, Min=1464, Avg=16366.45, 90=44351, 99=104127, 99.9=105855, 99.99=105855] 
+[OVERALL], RunTime(ms), 300422
+[OVERALL], Throughput(ops/sec), 7874.712903848586
+[TOTAL_GCS_G1_Young_Generation], Count, 30
+[TOTAL_GC_TIME_G1_Young_Generation], Time(ms), 645
+[TOTAL_GC_TIME_%_G1_Young_Generation], Time(%), 0.21469799149196797
+[TOTAL_GCS_G1_Old_Generation], Count, 0
+[TOTAL_GC_TIME_G1_Old_Generation], Time(ms), 0
+[TOTAL_GC_TIME_%_G1_Old_Generation], Time(%), 0.0
+[TOTAL_GCs], Count, 30
+[TOTAL_GC_TIME], Time(ms), 645
+[TOTAL_GC_TIME_%], Time(%), 0.21469799149196797
+[READ], Operations, 2365737
+[READ], AverageLatency(us), 15955.271029704485
+[READ], MinLatency(us), 1537
+[READ], MaxLatency(us), 564223
+[READ], 95thPercentileLatency(us), 33119
+[READ], 99thPercentileLatency(us), 48703
+[READ], Return=OK, 2365737
+[CLEANUP], Operations, 128
+[CLEANUP], AverageLatency(us), 16366.453125
+[CLEANUP], MinLatency(us), 1464
+[CLEANUP], MaxLatency(us), 105855
+[CLEANUP], 95thPercentileLatency(us), 57023
+[CLEANUP], 99thPercentileLatency(us), 104127
