@@ -56,7 +56,7 @@ public class SconeManager implements UpdateViewCallback {
         for (Thread t : threads) {
             t.start();
         }
-        logger.info("Scone Node ready.");
+        System.out.println("Scone Node ready.");
     }
 
     public void shutdown() throws InterruptedException {
