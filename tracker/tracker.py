@@ -7,6 +7,7 @@ import random
 import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
+from socketserver import ThreadingMixIn
 
 
 TRACKER_PORT = 4321
@@ -106,10 +107,13 @@ class FloridaState:
         # Useful for bootstrap to work with churn.
         self.seen_peers = set()
 
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """Handle requests in a separate thread."""
+
 
 class FloridaServer:
     def __init__(self):
-        self.server = HTTPServer(('', TRACKER_PORT), FloridaHandler)
+        self.server = ThreadedHTTPServer(('', TRACKER_PORT), FloridaHandler)
         self.server.florida_state = FloridaState()
         self.server.serve_forever()
 
