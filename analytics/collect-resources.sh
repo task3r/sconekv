@@ -22,9 +22,9 @@ cluster_nodes=$7
 if [ $1 = "sconekv" ]; then
     run_command="docker run -t --network sconekv_sconenet -v ~/client-logs:/usr/src/sconekv/out -e THREADS=$threads -e WORKLOAD=$workload task3r/sconekv-ycsb benchmark"
 elif [ $1 = "cassandra" ]; then
-    run_commands="docker run -t --network cassandra_cassnet -v ~/client-logs:/usr/src/sconekv/out task3r/ycsb bash -c \\\"source useful-commands.sh; cassandra_run $workload $threads $cluster_nodes\\\""
+    run_command="docker run -t --network cassandra_cassnet -v ~/client-logs:/usr/src/ycsb/out task3r/ycsb bash -c \\\"source useful_commands.sh; cassandra_run $workload $threads $cluster_nodes\\\""
 elif [ $1 = "cockroach" ]; then
-    run_commands="docker run -t --network cockroach_roachnet -v ~/client-logs:/usr/src/sconekv/out task3r/ycsb bash -c \\\"source useful-commands.sh; cockroach_run $workload $threads $cluster_nodes\\\""
+    run_command="docker run -t --network cockroach_roachnet -v ~/client-logs:/usr/src/ycsb/out task3r/ycsb bash -c \\\"source useful_commands.sh; cockroach_run $workload $threads $cluster_nodes\\\""
 else
     echo "ERROR: Invalid system"
     exit
