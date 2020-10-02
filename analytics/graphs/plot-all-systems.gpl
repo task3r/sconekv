@@ -1,0 +1,42 @@
+# vi: set ft=gnuplot :
+
+if (!exists("input")) {
+    print "No input file given"
+    exit
+}
+
+if (!exists("workload")) {
+    print "No workload letter given"
+    exit
+}
+
+if (!exists("type")) {
+    type='Throughput'
+}
+
+set title font "Helvetica,20"
+set key left top Left
+
+set terminal eps
+
+filename=workload.'-'.type.'.eps'
+set output filename
+
+set style line 2 lc rgb 'black' lt 1 lw 1
+set style data histogram
+set style histogram cluster gap 1
+set style fill pattern border -1
+set boxwidth 0.9
+set xtics format ""
+set grid ytics
+
+ylabel=type.' (ops/sec)'
+set ylabel ylabel
+set xlabel "Number of client threads"
+
+title='Workload '.workload
+set title title
+plot input using 2:xtic(1) title "Cassandra" ls 2, \
+            '' using 3 title "SconeKV" ls 2, \
+            '' using 4 title "CockroachDB" ls 2
+
