@@ -1,0 +1,54 @@
+# vi: set ft=gnuplot :
+
+if (!exists("prefix")) {
+    print "No input file given"
+    exit
+}
+
+if (!exists("workload")) {
+    print "No workload letter given"
+    exit
+}
+
+
+set title font "Helvetica,20"
+set key left top Left
+
+set terminal eps
+
+filename=workload.'-cpu.eps'
+set output filename
+
+set style data histogram
+set style histogram rowstacked
+#set style fill pattern border -1
+set style fill solid noborder
+set boxwidth 0.9
+set xtics format ""
+set grid ytics
+set style line 2 lc rgb 'black' lt 1 lw 1
+
+set key autotitle columnheader
+
+ylabel="CPU usage (%)"
+set ylabel ylabel
+set yrange [0:100]
+
+set xlabel "Number of client threads"
+
+title='Workload '.workload
+set title title
+input16=prefix.'16.dat'
+input32=prefix.'32.dat'
+input64=prefix.'64.dat'
+input128=prefix.'128.dat'
+input256=prefix.'256.dat'
+set label 1 "Cassandra" at 0,35 rotate by 70 front
+set label 2 "SconeKV" at 1,35 rotate by 70 front
+set label 3 "CockroachDB" at 2,35 rotate by 70 front
+plot \
+    newhistogram "16" fs pattern 1 lt 1, input16 u 2, '' u 3, '' u 4, '' u 5, '' u 6, \
+    newhistogram "32" fs pattern 1 lt 1, input32 u 2 notitle, '' u 3 notitle, '' u 4 notitle, '' u 5 notitle, '' u 6 notitle, \
+    newhistogram "64" fs pattern 1 lt 1, input64 u 2 notitle, '' u 3 notitle, '' u 4 notitle, '' u 5 notitle, '' u 6 notitle, \
+    newhistogram "128" fs pattern 1 lt 1, input128 u 2 notitle, '' u 3 notitle, '' u 4 notitle, '' u 5 notitle, '' u 6 notitle, \
+    newhistogram "256" fs pattern 1 lt 1, input256 u 2 notitle, '' u 3 notitle, '' u 4 notitle, '' u 5 notitle, '' u 6 notitle
