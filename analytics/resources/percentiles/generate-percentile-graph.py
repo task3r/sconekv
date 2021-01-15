@@ -17,12 +17,13 @@ if len(sys.argv) != 2:
 else:
     metric = sys.argv[1]
 
-os.system(f"./get-{metric}.sh")
+#os.system(f"rm -rf {metric}; mkdir {metric}")
+#os.system(f"./get-{metric}.sh")
 
 for w in ['a','b','c','f']:
     for t in [16,32,64,128,256]:
-        f = open(f"{metric}-workload{w}-{t}.dat", 'w')
-        f.write(f"system 5 25 50 75 90\n")
+        f = open(f"data/{metric}-workload{w}-{t}.dat", 'w')
+        f.write(f"system 5th 25th 50th 75th 90th\n")
         for system in ['cassandra', 'sconekv', 'cockroach']:
             file_name = f"{metric}/{metric}-{system}-workload{w}-{t}.dat"
             f.write(f"{system} ")
@@ -33,7 +34,6 @@ for w in ['a','b','c','f']:
                 line += f" {difference}"
             f.write(f"{line}\n")
         f.close()
-    sys.exit()
 
 
 

@@ -1,0 +1,41 @@
+# vi: set ft=gnuplot :
+
+if (!exists("input")) {
+    print "No input file given"
+    exit
+}
+
+set title font "Helvetica,20"
+set key left top Left
+
+set terminal postscript color eps enhanced 22
+set size 1,0.7
+
+filename='sconekv-dist-comparision.eps'
+set output filename
+
+set style line 2 lc rgb 'black' lt 1 lw 1
+set style data histogram
+set style histogram cluster gap 1
+set style fill solid border -1
+set boxwidth 0.9
+set xtics format ""
+set grid ytics
+
+set yrange [0:6500]
+
+ylabel='Throughput/Goodput (ops/sec)'
+set ylabel ylabel
+set xlabel "Number of client threads"
+set style line 1 lc rgb 'gray30' lt 1 lw 2
+set style line 2 lc rgb 'gray50' lt 1 lw 2
+set style line 3 lc rgb 'gray70' lt 1 lw 2
+set style line 4 lc rgb 'gray90' lt 1 lw 2
+
+title='Workload A - SconeKV comparision'
+set title title
+plot input using 2:xtic(1) title "Zipfian Throughput" ls 4, \
+            '' using 3 title "Zipfian Goodput" ls 3, \
+            '' using 4 title "Uniform Throughput" ls 2, \
+            '' using 5 title "Uniform Goodput" ls 1
+
