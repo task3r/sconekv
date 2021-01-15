@@ -1,0 +1,52 @@
+version: '3.2'
+services:
+  tracker:
+    image: us.gcr.io/scone-296713/tracker
+    networks:
+      - sconenet
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.sconekv_type==tracker"
+  cluster:
+    image: us.gcr.io/scone-296713/sconekv-node
+    networks:
+      - sconenet
+    depends_on:
+      - tracker
+    deploy:
+      replicas: 20
+      placement:
+        constraints:
+          - "node.labels.sconekv_type==worker"
+      restart_policy:
+        condition: none
+      resources:
+        limits:
+          cpus: '1'
+          memory: 7.5G
+        reservations:
+          cpus: '1'
+          memory: 5G
+    volumes:
+      - /home/docker-user/configs/20-nodes.properties:/usr/src/sconekv/config.properties
+  client:
+    depends_on:
+      - tracker
+      - cluster
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.sconekv_type==client"
+      restart_policy:
+        condition: none
+    image: us.gcr.io/scone-296713/sconekv-ycsb
+    networks:
+      - sconenet
+
+networks:
+  sconenet:
+    driver: overlay
+    attachable: true

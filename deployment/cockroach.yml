@@ -1,0 +1,49 @@
+version: '3.2'
+services:
+  seed:
+    hostname: 'seed'
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.sconekv_type!=client"
+    command: start --insecure
+    image: us.gcr.io/scone-296713/cockroach
+    networks:
+      roachnet:
+        aliases:
+          - seed
+
+  cluster:
+    depends_on:
+      - seed
+    deploy:
+      replicas: 19
+      placement:
+        constraints:
+          - "node.labels.sconekv_type!=client"
+    command: start --insecure --join=seed
+    image: us.gcr.io/scone-296713/cockroach
+    networks:
+      - roachnet
+
+  client:
+    depends_on:
+      - seed
+      - cluster
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.sconekv_type==client"
+      restart_policy:
+        condition: none
+    image: us.gcr.io/scone-296713/ycsb
+    networks:
+      - roachnet
+
+
+networks:
+  roachnet:
+    driver: overlay
+    attachable: true
