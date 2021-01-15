@@ -44,6 +44,7 @@ public class SconeClient {
     private DHT dht;
     private int transactionCounter = 0;
     private Random random;
+    private List<String> discoveryNodes;
 
     public SconeClient() throws UnableToGetViewException, IOException {
         this("client-config.properties");
@@ -55,20 +56,28 @@ public class SconeClient {
         this.random = new Random();
         this.context = new ZContext();
         this.clientID = UUID.randomUUID();
+
+        this.discoveryNodes = getDiscoveryNodes();
         this.dht = new DHT(getDHT());
 
         logger.info("Created new client {}", this.clientID);
     }
 
+    public SconeClient(List<String> nodes) throws UnableToGetViewException, IOException {
+        this.properties = new SconeClientProperties("client-config.properties");
+        this.sockets = new HashMap<>();
+        this.random = new Random();
+        this.context = new ZContext();
+        this.clientID = UUID.randomUUID();
+        this.discoveryNodes = nodes;
+        this.dht = new DHT(getDHT());
+
+        logger.info("Created new client {}", this.clientID);
+    }
+
+
     private Common.DHT.Reader getDHT() throws UnableToGetViewException {
         try {
-            DiscoveryResponseDto discoveryResponseDto = getDiscoveryNodes();
-            if (discoveryResponseDto == null)
-                throw new UnableToGetViewException("Did not receive any discovery nodes");
-
-            List<String> discoveryNodes = Arrays.asList(discoveryResponseDto.view);
-            Collections.shuffle(discoveryNodes);
-
             MessageBuilder message = new org.capnproto.MessageBuilder();
             External.Request.Builder builder = message.initRoot(External.Request.factory);
             builder.setGetDht(null);
@@ -77,7 +86,9 @@ public class SconeClient {
             try (ZMQ.Socket socket = this.context.createSocket(SocketType.DEALER)) {
                 socket.setReceiveTimeOut(properties.RECV_TIMEOUT);
                 socket.setIdentity(UUID.randomUUID().toString().getBytes());
-                for (String node : discoveryNodes) {
+
+                Collections.shuffle(this.discoveryNodes);
+                for (String node : this.discoveryNodes) {
                     String address = "tcp://" + node + ":" + properties.SERVER_REQUEST_PORT;
                     socket.connect(address);
                     socket.sendMore(""); // delimiter
@@ -100,18 +111,21 @@ public class SconeClient {
         throw new UnableToGetViewException("Did not receive any correct GetDHT responses");
     }
 
-    private DiscoveryResponseDto getDiscoveryNodes() throws IOException {
+    private List<String> getDiscoveryNodes() throws IOException, UnableToGetViewException {
         HttpGet get = new HttpGet(properties.TRACKER_URL + "/current");
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             CloseableHttpResponse response = httpClient.execute(get);
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 try (InputStream stream = entity.getContent()) {
-                    return new Gson().fromJson(new String(stream.readAllBytes()), DiscoveryResponseDto.class);
+                    DiscoveryResponseDto discoveryResponseDto = new Gson().fromJson(new String(stream.readAllBytes()), DiscoveryResponseDto.class);
+
+                    List<String> discoveryNodes = Arrays.asList(discoveryResponseDto.view);
+                    return discoveryNodes;
                 }
             }
         }
-        return null;
+        throw new UnableToGetViewException("Did not receive any discovery nodes");
     }
 
     private ZMQ.Socket getSocket(Node node) {

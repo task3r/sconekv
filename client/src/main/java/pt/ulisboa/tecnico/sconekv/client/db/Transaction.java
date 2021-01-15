@@ -87,7 +87,7 @@ public class Transaction extends AbstractTransaction {
         return rwSet.size();
     }
 
-    public void setState(TransactionState state) throws InvalidTransactionStateChangeException {
+    private void setState(TransactionState state) throws InvalidTransactionStateChangeException {
         if (getState() == TransactionState.COMMITTED || getState() == TransactionState.ABORTED)
             throw new InvalidTransactionStateChangeException("Transaction was already " + getState());
         applyState(state);

@@ -94,7 +94,7 @@ public class SconeManager implements UpdateViewCallback {
 
     @Override
     public void onUpdateView(Ring ring) {
-        logger.debug("New view! {}", ring);
+        System.out.println("New view: " + ring);
         if (dht == null && ring.size() >= SconeConstants.BOOTSTRAP_NODE_NUMBER) {
             logger.debug("Constructing DHT...");
             dht = new DHT(ring, SconeConstants.NUM_BUCKETS, SconeConstants.MURMUR3_SEED);
@@ -114,7 +114,7 @@ public class SconeManager implements UpdateViewCallback {
 
     @Override
     public void onWrongLeave() {
-        logger.debug("I was wrongly removed!");
+        System.out.println("Scone Node wrongly removed.");
         System.exit(-1); // maybe this should be a normal termination
     }
 }

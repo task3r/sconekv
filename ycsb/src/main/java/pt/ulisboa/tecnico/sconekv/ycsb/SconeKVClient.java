@@ -33,9 +33,11 @@ public class SconeKVClient extends DB {
             String txSize = props.getProperty("scone.tx_size");
             String txSizeMin = props.getProperty("scone.tx_min_size");
             String txSizeMax = props.getProperty("scone.tx_max_size");
+            String nodes = props.getProperty("scone.nodes");
 
-            if (configFile != null) {
-                sconeClient = new SconeClient(configFile);
+            if (nodes != null) {
+                final String[] nodeArray = nodes.split(";");
+                sconeClient = new SconeClient(Arrays.asList(nodeArray));
             } else {
                 sconeClient = new SconeClient();
             }
