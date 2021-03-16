@@ -24,8 +24,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class SconeManager implements UpdateViewCallback {
     private static final Logger logger = LoggerFactory.getLogger(SconeManager.class);
 
+    private final MembershipManager membershipManager;
     private CommunicationManager communicationManager;
-    private MembershipManager membershipManager;
     private StateMachine stateMachine;
     private Store store;
     private RocksDB db;
@@ -33,17 +33,16 @@ public class SconeManager implements UpdateViewCallback {
     private List<Thread> threads;
 
     public SconeManager() throws IOException, InterruptedException, RocksDBException {
-        try (final Options options = new Options().setCreateIfMissing(true)) {
-            this.db = RocksDB.open(options, SconeConstants.PATH_TO_DB);
-            this.store = new Store(db);
-        }
-        joinMembership();
-        this.communicationManager = new CommunicationManager(membershipManager.getMyself());
-        this.stateMachine = new StateMachine(communicationManager, membershipManager);
+        this.membershipManager = new MembershipManager(this);
+        init();
     }
 
-    private void joinMembership() throws IOException, InterruptedException {
-        membershipManager = new MembershipManager(this);
+    public SconeManager(String nodeID) throws IOException, InterruptedException, RocksDBException {
+        this.membershipManager = new MembershipManager(this, nodeID);
+        init();
+    }
+
+    private void init() throws IOException, InterruptedException, RocksDBException {
         if (!membershipManager.isFirstNode()) {
             int sleepMs = ThreadLocalRandom.current().nextInt(20000);
             logger.info("[{}] - Sleeping {} ms", MembershipManager.myself, sleepMs);
@@ -52,6 +51,12 @@ public class SconeManager implements UpdateViewCallback {
             logger.info("[{}] - Not sleeping", MembershipManager.myself);
         }
         membershipManager.join();
+        try (final Options options = new Options().setCreateIfMissing(true)) {
+            this.db = RocksDB.open(options, SconeConstants.PATH_TO_DB);
+            this.store = new Store(db);
+        }
+        this.communicationManager = new CommunicationManager(membershipManager.getMyself());
+        this.stateMachine = new StateMachine(communicationManager, membershipManager);
     }
 
     private void start() {

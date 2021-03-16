@@ -38,7 +38,10 @@ public class ServerApplication {
         handleSigterm();
         PropertiesConfigurator.loadProperties("config.properties");
 
-        sm = new SconeManager();
+        if (args.length == 1)
+            sm = new SconeManager(args[0]);
+        else
+            sm = new SconeManager();
     }
 
     private static void handleSigterm() {
