@@ -224,7 +224,7 @@ public class Store {
                     txsToAbort.addAll(this.put(op.getKey(), op.getValue(), (short) (op.getVersion() + 1)));
                     updates.add(op.getKey());
                 } else if (op instanceof DeleteOperation) {
-                    txsToAbort.addAll(values.get(op.getKey()).getLockQueue());
+                    txsToAbort.addAll(this.get(op.getKey()).getLockQueue());
                     values.remove(op.getKey()); // maybe could simply turn it invisible in the future
                     deletes.add(op.getKey());
                 }
