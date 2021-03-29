@@ -39,23 +39,25 @@ public class Store {
         flusher.schedule(new TimerTask() {
             @Override
             public void run() {
-                for (String key : updates) {
-                    try {
-                        db.put(key.getBytes(), values.get(key).serialize());
-                    } catch (RocksDBException e) {
-                        e.printStackTrace();
+                synchronized (db) {
+                    for (String key : updates) {
+                        try {
+                            db.put(key.getBytes(), values.get(key).serialize());
+                        } catch (RocksDBException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
-                updates.clear();
+                    updates.clear();
 
-                for (String key : deletes) {
-                    try {
-                        db.delete(key.getBytes());
-                    } catch (RocksDBException e) {
-                        e.printStackTrace();
+                    for (String key : deletes) {
+                        try {
+                            db.delete(key.getBytes());
+                        } catch (RocksDBException e) {
+                            e.printStackTrace();
+                        }
                     }
+                    deletes.clear();
                 }
-                deletes.clear();
             }
         }, 0, TimeUnit.SECONDS.toMillis(SconeConstants.GC_PERIOD));
 
@@ -82,9 +84,15 @@ public class Store {
     public synchronized Value get(String key) {
         if (!values.containsKey(key)) {
             byte[] content = null;
-            try {
-                content = db.get(key.getBytes());
-            } catch (RocksDBException ignored) { }
+            boolean toDelete = false;
+            synchronized (db) {
+                toDelete = deletes.contains(key);
+            }
+            if (!toDelete) {
+                try {
+                    content = db.get(key.getBytes());
+                } catch (RocksDBException ignored) {}
+            }
             if (content != null) {
                 values.put(key, new Value(key, content));
             } else {
@@ -222,12 +230,16 @@ public class Store {
             for (Operation op : tx.getRwSet()) {
                 if (op instanceof WriteOperation) {
                     txsToAbort.addAll(this.put(op.getKey(), op.getValue(), (short) (op.getVersion() + 1)));
-                    updates.add(op.getKey());
+                    synchronized (db) {
+                        updates.add(op.getKey());
+                    }
                 } else if (op instanceof DeleteOperation) {
                     txsToAbort.addAll(this.get(op.getKey()).getLockQueue());
-                    values.remove(op.getKey()); // maybe could simply turn it invisible in the future
-                    updates.remove(op.getKey());
-                    deletes.add(op.getKey());
+                    synchronized (db) {
+                        values.remove(op.getKey()); // maybe could simply turn it invisible in the future
+                        updates.remove(op.getKey());
+                        deletes.add(op.getKey());
+                    }
                 }
             }
             tx.setState(TransactionState.COMMITTED);
