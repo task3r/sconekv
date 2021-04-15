@@ -35,8 +35,8 @@ swarm_ips() {
     for task in `swarm_tasks $1`; do
          ips="`swarm_task_ip $task`,$ips"
     done
-    #echo ${ips::-1}
-    echo $ips
+    echo ${ips::-1}
+    #echo $ips
 }
 
 scone_single_log() {

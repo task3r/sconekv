@@ -1,0 +1,30 @@
+version: '3.2'
+services:
+  cluster:
+    deploy:
+      replicas: 1
+      resources:
+          limits:
+              memory: 1G
+    environment:
+      - "MAX_HEAP_SIZE=500M"
+      - "HEAP_NEWSIZE=500M"
+    entrypoint:
+      - "sh"
+      - "-c"
+      - export CASSANDRA_SEEDS=$$(nrOfTasks=`getent hosts tasks.cluster | wc -l` ;
+        many=`getent hosts tasks.cluster | awk '{print $$1}' | sed "/$$(hostname --ip-address)/d"
+        | paste -d, -s -` ; printf '%s' $$( [ $${nrOfTasks} -gt 1 ] && echo $${many} ||
+        echo "$$(hostname --ip-address)" )) ; /docker-entrypoint.sh cassandra -f
+    image: cassandra
+    networks:
+      - cassnet
+
+networks:
+  cassnet:
+    driver: overlay
+    attachable: true
+
+# Cassandra does not deal well with multiple nodes joining at once
+# the idea here is to launch 1 node at a time, up-scaling the service with intervals of 30/40s
+

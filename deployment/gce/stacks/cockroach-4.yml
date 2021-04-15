@@ -1,0 +1,31 @@
+version: '3.2'
+services:
+  seed:
+    hostname: 'seed'
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+    command: start --insecure --join=seed
+    image: cockroachdb/cockroach
+    networks:
+      roachnet:
+        aliases:
+          - seed
+
+  cluster:
+    depends_on:
+      - seed
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: none
+    command: start --insecure --join=seed
+    image: cockroachdb/cockroach
+    networks:
+      - roachnet
+
+networks:
+  roachnet:
+    driver: overlay
+    attachable: true
