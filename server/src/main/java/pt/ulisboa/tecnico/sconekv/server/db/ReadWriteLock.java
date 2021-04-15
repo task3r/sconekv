@@ -68,7 +68,11 @@ public class ReadWriteLock implements Lock {
                     // if next is lower than any tx currently owning the lock
                     // we trigger MakeLocalDecision on next to rollback current owners
                     HashSet<TransactionID> nextHolder = new HashSet<>();
-                    nextHolder.add(next);
+                    if (readQueue.contains(next)) {
+                        nextHolder.addAll(readQueue);
+                    } else {
+                        nextHolder.add(next);
+                    }
                     return nextHolder;
                 } else {
                     lockQueue.add(next); // next in the queue is not ready to be processed, goes back in the queue
