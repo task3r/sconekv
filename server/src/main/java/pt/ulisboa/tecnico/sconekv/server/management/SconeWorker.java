@@ -254,7 +254,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
     public void handle(LocalDecisionResponse localDecisionResponse) {
         Transaction tx = store.getTransaction(localDecisionResponse.getTxID());
         if (tx == null) {
-            logger.debug("Received a LocalDecisionResponse for a transaction {} I've yet to receive, delaying", localDecisionResponse.getTxID());
+            logger.debug("Received a LocalDecisionResponse for a transaction {} from {} . I've yet to receive the commit request, delaying", localDecisionResponse.getTxID(), localDecisionResponse.getNode());
             delayEvent(localDecisionResponse);
         } else {
             logger.debug("Received a LocalDecisionResponse from {} for transaction {}", localDecisionResponse.getNode(), localDecisionResponse.getTxID());
@@ -304,7 +304,7 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                 if (!dht.getMasterOfBucket(tx.getCoordinatorBucket()).equals(self)) {
                     logger.error("Received incorrect RollbackLocalDecision for tx {}, i am not the coordinator", tx.getId());
                 } else if (!tx.isDecided()) { // not yet committed nor aborted
-                    tx.removeResponse(dht.getBucketOfNode(requestRollbackLocalDecision.getNode()).getId());
+                    tx.removeResponse(dht.getBucketOfNode(requestRollbackLocalDecision.getNode()).getId()); //orderrrr
                     if (self.equals(requestRollbackLocalDecision.getNode()))
                         cm.queueEvent(new RollbackLocalDecisionResponse(self, sm.getCurrentVersion(), tx.getId()));
                     else
@@ -354,10 +354,12 @@ public class SconeWorker implements Runnable, SconeEventHandler {
                 rollbackTransactions(makeLocalDecision.getTxID(), e.getCurrentOwners());
             }
         } catch (AlreadyProcessedTransaction e) {
-            // this occurs if the makeDecision was already in the queue as the tx was aborted,
-            // although it didn't acquire locks, it could be ahead of others in the queue
-            // so we need to queue other txs that could be waiting for this one
-            queueMakeLocalDecisions(store.releaseLocks(makeLocalDecision.getTxID(), false));
+            if (e.isDecided()) {
+                // this occurs if the makeDecision was already in the queue as the tx was aborted,
+                // although it didn't acquire locks, it could be ahead of others in the queue
+                // so we need to queue other txs that could be waiting for this one
+                queueMakeLocalDecisions(store.releaseLocks(makeLocalDecision.getTxID(), false));
+            }
         }
     }
 

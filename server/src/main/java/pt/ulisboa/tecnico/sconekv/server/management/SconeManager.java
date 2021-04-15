@@ -51,12 +51,12 @@ public class SconeManager implements UpdateViewCallback {
             logger.info("[{}] - Not sleeping", MembershipManager.myself);
         }
         membershipManager.join();
-        try (final Options options = new Options().setCreateIfMissing(true)) {
-            this.db = RocksDB.open(options, SconeConstants.PATH_TO_DB);
-            this.store = new Store(db);
-        }
         this.communicationManager = new CommunicationManager(membershipManager.getMyself());
         this.stateMachine = new StateMachine(communicationManager, membershipManager);
+        try (final Options options = new Options().setCreateIfMissing(true)) {
+            this.db = RocksDB.open(options, SconeConstants.PATH_TO_DB);
+            this.store = new Store(db, communicationManager);
+        }
     }
 
     private void start() {

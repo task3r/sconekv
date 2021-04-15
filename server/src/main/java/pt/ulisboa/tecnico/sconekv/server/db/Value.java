@@ -58,7 +58,8 @@ public class Value {
         return lock.getLockQueue();
     }
 
-    public Set<TransactionID> update(byte[] content, short version) {
+    public Set<TransactionID> update(byte[] content, short version, TransactionID txID) {
+        logger.debug("{} - update {} version {} content {}", txID, key, version, content);
         synchronized (this) {
             if (version > this.version) {
                 this.content = content;
@@ -76,6 +77,7 @@ public class Value {
             if (version == op.getVersion()) {
                 return lock.lock(txID, op.getType());
             } else {
+                logger.debug("{} - key {} version {} > {}", txID, key, version, op.getVersion());
                 throw new InvalidVersionException();
             }
         }

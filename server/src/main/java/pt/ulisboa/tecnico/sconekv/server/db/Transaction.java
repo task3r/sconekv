@@ -7,20 +7,24 @@ import pt.ulisboa.tecnico.sconekv.common.db.Operation;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionID;
 import pt.ulisboa.tecnico.sconekv.common.db.TransactionState;
 import pt.ulisboa.tecnico.sconekv.common.transport.Common;
+import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class Transaction extends AbstractTransaction {
     private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
     private short[] buckets;
-    private List<Operation> rwSet;
+    private final List<Operation> rwSet;
     // which buckets responded
-    private Set<Short> responses;
-    private String client;
-    private Common.Transaction.Reader reader;
+    private final Set<Short> responses;
+    private final String client;
+    private final Common.Transaction.Reader reader;
     private boolean decided;
     private boolean rollbackInProgress;
+    private LocalDateTime arrival;
 
     public Transaction(TransactionID txID, String client, Common.Transaction.Reader transaction) {
         super(txID, TransactionState.RECEIVED);
@@ -112,5 +116,20 @@ public class Transaction extends AbstractTransaction {
         synchronized (getId()) {
             this.rollbackInProgress = false;
         }
+    }
+
+    public LocalDateTime getArrival() {
+        return arrival;
+    }
+
+    public void setArrival() {
+        this.arrival = LocalDateTime.now();
+    }
+
+    public boolean exceededTTL() {
+        if (arrival != null) {
+            return arrival.until(LocalDateTime.now(), ChronoUnit.SECONDS) > SconeConstants.QUEUED_TX_TTL;
+        }
+        return false;
     }
 }

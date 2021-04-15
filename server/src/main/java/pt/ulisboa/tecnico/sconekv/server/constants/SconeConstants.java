@@ -10,6 +10,7 @@ public class SconeConstants {
     public static long GC_PERIOD = 100L; // 100s
     public static long FLUSH_TO_DISK_PERIOD = 10L; // 10s
     public static long TX_TTL = 100L; // 100s
+    public static long QUEUED_TX_TTL = 15L; // 15s
     public static int SERVER_REQUEST_PORT = 5555;
     public static int SERVER_INTERNAL_PORT = 6666;
     public static short NUM_BUCKETS = 1;

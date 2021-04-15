@@ -6,10 +6,13 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ulisboa.tecnico.sconekv.common.db.*;
+import pt.ulisboa.tecnico.sconekv.server.communication.CommunicationManager;
 import pt.ulisboa.tecnico.sconekv.server.constants.SconeConstants;
+import pt.ulisboa.tecnico.sconekv.server.events.internal.transactions.MakeLocalDecision;
 import pt.ulisboa.tecnico.sconekv.server.exceptions.*;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -22,16 +25,20 @@ public class Store {
     private final Map<String, Value> values;
     private final Map<TransactionID, Transaction> transactions;
     private final Queue<Pair<TransactionID, LocalDateTime>> completedTransactions;
+    private final Set<TransactionID> queuedTransactions;
     private final Set<String> updates;
     private final Set<String> deletes;
     private final RocksDB db;
+    private CommunicationManager cm;
 
-    public Store(RocksDB db) {
+    public Store(RocksDB db, CommunicationManager communicationManager) {
         this.values = new ConcurrentHashMap<>();
         this.transactions = new ConcurrentHashMap<>();
         this.completedTransactions = new ConcurrentLinkedQueue<>();
+        this.queuedTransactions = new ConcurrentSkipListSet<>();
         this.updates = new ConcurrentSkipListSet<>();
         this.deletes = new ConcurrentSkipListSet<>();
+        this.cm = communicationManager;
         this.db = db;
 
         // Flushing updates to disk
@@ -79,6 +86,25 @@ public class Store {
                 }
             }
         }, 0, TimeUnit.SECONDS.toMillis(SconeConstants.GC_PERIOD));
+
+        // Preemptive abort
+        Timer preempter = new Timer("PreemptiveAbortTimer", true);
+        preempter.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                LocalDateTime now = LocalDateTime.now();
+                for (TransactionID txID : queuedTransactions) {
+                    Transaction tx = transactions.get(txID);
+                    if (tx != null) {
+                        if (tx.getArrival() == null) {
+                            logger.error("Queued tx {} has no arrival time set", tx.getId());
+                        } else if (tx.getArrival().until(now, ChronoUnit.SECONDS) > SconeConstants.QUEUED_TX_TTL) {
+                            cm.queueEvent(new MakeLocalDecision(tx.getId()));
+                        }
+                    }
+                }
+            }
+        }, 0, TimeUnit.SECONDS.toMillis(SconeConstants.GC_PERIOD/2));
     }
 
     public synchronized Value get(String key) {
@@ -94,19 +120,21 @@ public class Store {
                 } catch (RocksDBException ignored) {}
             }
             if (content != null) {
+                logger.debug("Got {} from rocks {}", key, content);
                 values.put(key, new Value(key, content));
             } else {
+                logger.debug("Created new {}", key);
                 values.put(key, new Value(key));
             }
         }
         return values.get(key);
     }
 
-    private synchronized Set<TransactionID> put(String key, byte[] value, short version) {
+    private synchronized Set<TransactionID> put(String key, byte[] value, short version, TransactionID txID) {
         if (!values.containsKey(key))
             values.put(key, new Value(key));
 
-        return values.get(key).update(value, version);
+        return values.get(key).update(value, version, txID);
     }
 
     public boolean addTransaction(Transaction tx) {
@@ -114,6 +142,7 @@ public class Store {
             return false;
         } else {
             this.transactions.put(tx.getId(), tx);
+            tx.setArrival();
             return true;
         }
     }
@@ -127,18 +156,23 @@ public class Store {
         try {
             if (tx == null) {
                 logger.debug("Tx {} is not in the store, assuming it was garbage collected", txID);
-                throw new AlreadyProcessedTransaction();
-            } else if (tx.isDecided()) {
-                logger.debug("Already decided transaction {}, ignoring", txID);
-                throw new AlreadyProcessedTransaction();
+                throw new AlreadyProcessedTransaction(true);
+            } else if (tx.isDecided() || TransactionState.PREPARED.equals(tx.getState())) {
+                logger.debug("Already decided/prepared transaction {}, ignoring", txID);
+                throw new AlreadyProcessedTransaction(tx.isDecided());
             } else {
                 Set<TransactionID> currentOwners = validateAndLock(tx);
 
                 if (currentOwners.isEmpty()) { // acquired locks for all keys
                     logger.debug("Locally accepted {}", txID);
+                    queuedTransactions.remove(txID);
                     tx.setState(TransactionState.PREPARED);
                 } else {
                     simplyReleaseLocks(tx);
+                    if (tx.exceededTTL()) {
+                        logger.debug("Locally accepted {} but it's not lockable and exceeded TTl, aborting", txID);
+                        throw new TxExceededTTL();
+                    }
                     queueLocks(tx);
 
                     if (logger.isDebugEnabled()) {
@@ -155,7 +189,7 @@ public class Store {
                         throw new ValidTransactionNotLockableException();
                 }
             }
-        } catch (InvalidVersionException e) {
+        } catch (InvalidVersionException | TxExceededTTL e) {
             localReject(tx);
         }
     }
@@ -173,6 +207,7 @@ public class Store {
     }
 
     private void unqueueTransaction(Transaction tx) {
+        queuedTransactions.remove(tx.getId());
         for (Operation op : tx.getRwSet())
             this.get(op.getKey()).removeFromQueue(tx.getId());
     }
@@ -195,6 +230,7 @@ public class Store {
     }
 
     private synchronized void queueLocks(Transaction tx) {
+        queuedTransactions.add(tx.getId());
         for (Operation op : tx.getRwSet()) {
             this.get(op.getKey()).queueLock(tx.getId(), op.getType());
         }
@@ -229,7 +265,7 @@ public class Store {
         if (tx.getState() != TransactionState.COMMITTED) {
             for (Operation op : tx.getRwSet()) {
                 if (op instanceof WriteOperation) {
-                    txsToAbort.addAll(this.put(op.getKey(), op.getValue(), (short) (op.getVersion() + 1)));
+                    txsToAbort.addAll(this.put(op.getKey(), op.getValue(), (short) (op.getVersion() + 1), txID));
                     synchronized (db) {
                         updates.add(op.getKey());
                     }
