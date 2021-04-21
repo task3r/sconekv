@@ -5,11 +5,6 @@ if (!exists("input")) {
     exit
 }
 
-if (!exists("workload")) {
-    print "No workload letter given"
-    exit
-}
-
 if (!exists("type")) {
     type='Throughput'
 }
@@ -19,10 +14,10 @@ set key left top Left
 
 set terminal postscript color eps enhanced 22
 
-filename=workload.'-'.type.'.eps'
-set output filename
-
 set size 1,0.65
+
+filename='tpcc-'.type.'.eps'
+set output filename
 
 set style line 2 lc rgb 'black' lt 1 lw 1
 set style data histogram
@@ -32,14 +27,16 @@ set boxwidth 0.9
 set xtics format ""
 set grid ytics
 
-ylabel=type.' (ops/sec)'
+ylabel=type.' (tx/sec)'
 set ylabel ylabel
-set xlabel "Number of client threads"
+set xlabel "Cluster size"
+set yrange [0:2500]
+
 set style line 1 lc rgb 'gray30' lt 1 lw 2
 set style line 2 lc rgb 'gray60' lt 1 lw 2
 set style line 3 lc rgb 'gray90' lt 1 lw 2
 
-title='YCSB Workload '.workload
+title='Scalability TPC-C'
 set title title
 plot input using 2:xtic(1) title "Cassandra" ls 3, \
             '' using 3 title "SconeKV" ls 2, \

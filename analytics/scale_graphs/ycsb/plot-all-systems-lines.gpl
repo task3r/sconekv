@@ -1,0 +1,45 @@
+# vi: set ft=gnuplot :
+
+if (!exists("input")) {
+    print "No input file given"
+    exit
+}
+
+if (!exists("workload")) {
+    print "No workload letter given"
+    exit
+}
+
+if (!exists("type")) {
+    type='Throughput'
+}
+
+set title font "Helvetica,20"
+set key left top Left
+
+set terminal eps
+
+filename=workload.'-'.type.'.eps'
+set output filename
+
+set style line 2 lc rgb 'black' lt 1 lw 1
+#set style data histogram
+#set style histogram cluster gap 1
+#set style fill solid border -1
+#set boxwidth 0.9
+set xtics format ""
+set grid ytics
+
+ylabel=type.' (ops/sec)'
+set ylabel ylabel
+set xlabel "Cluster size"
+#set style line 0 lc rgb 'gray30' lt 1 lw 2
+#set style line 2 lc rgb 'gray60' lt 1 lw 2
+#set style line 3 lc rgb 'gray90' lt 1 lw 2
+
+title='Scalability Workload '.workload
+set title title
+plot input using 2:xtic(1) title "Cassandra" with linespoints, \
+            '' using 3 title "SconeKV" with linespoints, \
+            '' using 4 title "CockroachDB" with linespoints
+
