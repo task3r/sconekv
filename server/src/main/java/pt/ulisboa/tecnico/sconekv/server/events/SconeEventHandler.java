@@ -38,6 +38,8 @@ public interface SconeEventHandler {
     void handle(MakeLocalDecision makeLocalDecision);
     void handle(RequestGlobalDecision requestGlobalDecision);
     void handle(RequestLocalDecision requestLocalDecision);
+    void handle(RequestMissingLocalDecisions requestLocalDecision);
+    void handle(RequestMissingGlobalDecision requestLocalDecision);
 
     // Local Events
     void handle(CheckPendingTransactions checkPendingTransactions);

@@ -319,4 +319,20 @@ public class Store {
             return false;
         }
     }
+
+    public synchronized void acquireLocks(Transaction tx) {
+        if (TransactionState.PREPARED.equals(tx.getState())){
+            for (Operation op : tx.getRwSet()) {
+                Set<TransactionID> owners = null;
+                try {
+                    owners = get(op.getKey()).validateAndLock(tx.getId(), op);
+                    if (!owners.contains(tx.getId())) {
+                        logger.error("Couldn't acquire lock for {} after view change", tx.getId());
+                    }
+                } catch (InvalidVersionException e) {
+                    logger.error("Couldn't acquire lock for {} after view change because of invalid version", tx.getId());
+                }
+            }
+        }
+    }
 }

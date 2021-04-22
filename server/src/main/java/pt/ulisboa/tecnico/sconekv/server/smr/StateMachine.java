@@ -43,6 +43,7 @@ public class StateMachine {
     private Map<Integer, Prepare> pendingEntries; // Map opNumber -> Prepare
     private List<SconeEvent> pendingEvents;
     private boolean getStateInProgress = false;
+    private boolean checkedPending = false;
 
     public StateMachine(CommunicationManager cm, MembershipManager mm) {
         this.cm = cm;
@@ -75,6 +76,11 @@ public class StateMachine {
         return log.size() - 1;
     }
 
+    public void setStatusNormal() {
+        setStatus(Status.NORMAL);
+        logger.info("Back in normal execution");
+    }
+
     public synchronized void updateBucket(Bucket newBucket, Version newVersion, short workerId) {
         logger.debug("Update bucket");
         this.currentVersion = newVersion;
@@ -99,6 +105,9 @@ public class StateMachine {
             MessageBuilder message = CommunicationUtils.generateStartViewChange(mm.getMyself(), currentVersion);
             cm.broadcastBucket(message, workerId);
             logger.debug("Broadcasted startViewChange for {}", currentVersion);
+            logger.info("Changing master after view-change");
+        } else {
+            logger.info("All good after view-change");
         }
     }
 
@@ -191,9 +200,9 @@ public class StateMachine {
             }
         }
 
-        if (this.status == Status.MASTER_AFTER_VIEW_CHANGE && (this.commitNumber == -1 || this.commitNumber == getOpNumber())) {
+        if (this.status == Status.MASTER_AFTER_VIEW_CHANGE && (this.commitNumber == -1 || this.commitNumber == getOpNumber()) && !checkedPending) {
             cm.queueEvent(new CheckPendingTransactions());
-            setStatus(Status.NORMAL);
+            this.checkedPending = true;
         }
     }
 
@@ -247,9 +256,10 @@ public class StateMachine {
                     LogEntry entry = log.get(i);
                     cm.queueEvent(entry.getEvent());
                 }
+                setStatus(Status.MASTER_AFTER_VIEW_CHANGE);
+                this.checkedPending = false;
                 MessageBuilder message = CommunicationUtils.generateStartView(mm.getMyself(), currentVersion, commitNumber, log);
                 cm.broadcastBucket(message, workerId);
-                setStatus(Status.MASTER_AFTER_VIEW_CHANGE);
             }
         }
     }

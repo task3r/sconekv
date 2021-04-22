@@ -21,10 +21,11 @@ public class Transaction extends AbstractTransaction {
     // which buckets responded
     private final Set<Short> responses;
     private final String client;
-    private final Common.Transaction.Reader reader;
+    private Common.Transaction.Reader reader;
     private boolean decided;
     private boolean rollbackInProgress;
     private LocalDateTime arrival;
+    private boolean replicated;
 
     public Transaction(TransactionID txID, String client, Common.Transaction.Reader transaction) {
         super(txID, TransactionState.RECEIVED);
@@ -32,9 +33,13 @@ public class Transaction extends AbstractTransaction {
         this.client = client;
         this.rwSet = new ArrayList<>();
         this.responses = new HashSet<>();
-        this.reader = transaction;
+        this.replicated = false;
+        setTransactionReader(transaction);
+    }
 
+    public void setTransactionReader(Common.Transaction.Reader transaction) {
         if (transaction != null) {
+            this.reader = transaction;
             for (int i = 0; i < transaction.getOps().size(); i++) {
                 addOperation(Operation.unserialize(transaction.getOps().get(i)));
             }
@@ -131,5 +136,13 @@ public class Transaction extends AbstractTransaction {
             return arrival.until(LocalDateTime.now(), ChronoUnit.SECONDS) > SconeConstants.QUEUED_TX_TTL;
         }
         return false;
+    }
+
+    public void setReplicated() {
+        this.replicated = true;
+    }
+
+    public boolean isReplicated() {
+        return replicated;
     }
 }
