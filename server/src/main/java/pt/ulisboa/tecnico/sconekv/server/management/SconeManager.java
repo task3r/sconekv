@@ -100,6 +100,7 @@ public class SconeManager implements UpdateViewCallback {
     @Override
     public void onUpdateView(Ring ring) {
         System.out.println("New view: " + ring);
+        logger.info("New view: " + ring);
         if (dht == null && ring.size() >= SconeConstants.BOOTSTRAP_NODE_NUMBER) {
             logger.debug("Constructing DHT...");
             dht = new DHT(ring, SconeConstants.NUM_BUCKETS, SconeConstants.MURMUR3_SEED);
