@@ -130,7 +130,7 @@ public class DHT {
      */
     private void defineBuckets() {
         buckets = new Bucket[numBuckets];
-        int bucketSize = nodes.size() / numBuckets;
+        int bucketSize = (int) Math.ceil((float)nodes.size() / numBuckets);
         ArrayList<Node> aux = new ArrayList<>(nodes);
         for (short b = 0; b < numBuckets; b++) {
             buckets[b] = new Bucket(b, new TreeSet<>(aux.subList(b*bucketSize, Math.min((b+1)*bucketSize, nodes.size()))));
@@ -141,6 +141,7 @@ public class DHT {
                 logger.debug(b.toString());
             }
         }
+        System.out.println("Defined buckets version " + viewVersion);
     }
 
     /**
