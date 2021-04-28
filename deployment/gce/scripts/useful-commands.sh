@@ -21,12 +21,24 @@ swarm_task_ip() {
 }
 
 scone_ips() {
-    echo -e "TASK\t\t\t\tIP\t\tNODE"
+    echo -e "TASK\t\t\t\tCONTAINER\t\t\t\t\t\t\t\tIP\t\tNODE"
     for task in `scone_tasks`; do
         ip=`swarm_task_ip $task`
         node_id=`docker inspect $task -f {{.NodeID}}`
+        container_id=` docker inspect $task -f {{.Status.ContainerStatus.ContainerID}}`
         node_name=`docker inspect $node_id -f {{.Description.Hostname}}`
-        echo -e "$task\t$ip\t$node_name"
+        echo -e "$task\t$container_id\t$ip\t$node_name"
+    done
+}
+
+swarm_ip_list() {
+    echo -e "TASK\t\t\t\tCONTAINER\t\t\t\t\t\t\t\tIP\t\tNODE"
+    for task in `swarm_tasks $1`; do
+        ip=`swarm_task_ip $task`
+        node_id=`docker inspect $task -f {{.NodeID}}`
+        container_id=` docker inspect $task -f {{.Status.ContainerStatus.ContainerID}}`
+        node_name=`docker inspect $node_id -f {{.Description.Hostname}}`
+        echo -e "$task\t$container_id\t$ip\t$node_name"
     done
 }
 

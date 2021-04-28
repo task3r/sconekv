@@ -1,7 +1,7 @@
 #!/bin/bash
 
 start_dstat() {
-    docker-machine ssh $1 "dstat -t -c -m -d -n --noupdate --output $2.csv 1 400 > /dev/null &"
+    docker-machine ssh $1 "dstat -t -c -m -d -n --noupdate --output $2.csv 1 600 > /dev/null &"
     echo "Started dstat $1 $2"
 }
 
@@ -23,14 +23,19 @@ let n=workers*txs_per_worker
 cluster="$system"_cluster
 cluster_nodes=$(docker-machine ssh "$system"-manager "source useful-commands.sh; swarm_ips $cluster" | sed "s/,/;/g")
 time=$(date +%Y%m%d-%H%M%S)
-test_basename="$system-$cluster_size-$workers-$warehouses-$n-$runs-$warmup_runs-$time"
+test_basename="tpcc-$system-$cluster_size-$workers-$warehouses-$n-$runs-$warmup_runs-$time"
 
 if [ $1 = "sconekv" ]; then
-    run_command="docker run -t --network sconekv_sconenet us.gcr.io/scone-296713/tpcc java -jar TPCC.jar -s SconeKV -r $runs -warmup $warmup_runs -n $n -w $workers -warehouses $warehouses -nodes \"$cluster_nodes\" |& tee tpcc-results/$test_basename.log"
+    if [ $runs = $warmup_runs ]; then
+        echo "No output!"
+        run_command="docker run -t --network sconekv_sconenet us.gcr.io/scone-296713/tpcc java -jar TPCC.jar -s SconeKV -r $runs -warmup $warmup_runs -n $n -w $workers -warehouses $warehouses -nodes \"$cluster_nodes\""
+    else
+        run_command="docker run -t --network sconekv_sconenet us.gcr.io/scone-296713/tpcc java -jar TPCC.jar -s SconeKV -r $runs -warmup $warmup_runs -n $n -w $workers -warehouses $warehouses -nodes \"$cluster_nodes\" |& tee results/$test_basename.log"
+    fi
 elif [ $1 = "cassandra" ]; then
-    run_command="docker run -t --network cassandra_cassnet us.gcr.io/scone-296713/tpcc java -jar TPCC.jar -s Cassandra -r $runs -warmup $warmup_runs -n $n -w $workers -warehouses $warehouses -nodes \"$cluster_nodes\" |& tee tpcc-results/$test_basename.log"
+    run_command="docker run -t --network cassandra_cassnet us.gcr.io/scone-296713/tpcc java -jar TPCC.jar -s Cassandra -r $runs -warmup $warmup_runs -n $n -w $workers -warehouses $warehouses -nodes \"$cluster_nodes\" |& tee results/$test_basename.log"
 elif [ $1 = "cockroach" ]; then
-    run_command="docker run -t --network cockroach_roachnet us.gcr.io/scone-296713/tpcc java -jar TPCC.jar -s JDBC -r $runs -warmup $warmup_runs -n $n -w $workers -warehouses $warehouses -nodes \"$cluster_nodes\" |& tee tpcc-results/$test_basename.log"
+    run_command="docker run -t --network cockroach_roachnet us.gcr.io/scone-296713/tpcc java -jar TPCC.jar -s JDBC -r $runs -warmup $warmup_runs -n $n -w $workers -warehouses $warehouses -nodes \"$cluster_nodes\" |& tee results/$test_basename.log"
 else
     echo "ERROR: Invalid system"
     exit
