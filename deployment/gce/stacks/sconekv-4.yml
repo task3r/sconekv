@@ -1,25 +1,25 @@
-version: '3.2'
+version: "3.2"
 services:
-  tracker:
-    image: task3r/tracker
-    networks:
-      - sconenet
-    deploy:
-      replicas: 1
-  cluster:
-    image: task3r/sconekv-node
-    networks:
-      - sconenet
-    depends_on:
-      - tracker
-    deploy:
-      replicas: 4
-      restart_policy:
-        condition: none
-    volumes:
-      - /Users/task3r/dev/sconekv/deployment/configs/4-nodes.properties:/usr/src/sconekv/config.properties
+    tracker:
+        image: tracker
+        networks:
+            - sconenet
+        deploy:
+            replicas: 1
+    cluster:
+        image: sconekv-node
+        networks:
+            - sconenet
+        depends_on:
+            - tracker
+        deploy:
+            replicas: 4
+            restart_policy:
+                condition: none
+        volumes:
+            - /Users/task3r/dev/sconekv/deployment/configs/4-nodes.properties:/usr/src/sconekv/config.properties
 
 networks:
-  sconenet:
-    driver: overlay
-    attachable: true
+    sconenet:
+        driver: overlay
+        attachable: true

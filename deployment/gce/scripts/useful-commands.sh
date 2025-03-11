@@ -9,7 +9,7 @@ scone_tasks() {
 }
 
 scone_deploy() {
-    docker pull task3r/sconekv-node
+    docker pull sconekv-node
     docker stack deploy sconekv --compose-file deployment/sconekv.yml
     echo "Waiting 1min for membership to form..."
     sleep 60

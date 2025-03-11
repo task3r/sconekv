@@ -1,29 +1,29 @@
-version: '3.2'
+version: "3.2"
 services:
-  tracker:
-    image: task3r/tracker
-    networks:
-      - sconenet
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - "node.labels.sconekv_type==client"
-  cluster:
-    image: task3r/sconekv-node
-    networks:
-      - sconenet
-    depends_on:
-      - tracker
-    deploy:
-      replicas: 20
-      placement:
-        constraints:
-          - "node.labels.sconekv_type!=client"
-      restart_policy:
-        condition: none
+    tracker:
+        image: tracker
+        networks:
+            - sconenet
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - "node.labels.sconekv_type==client"
+    cluster:
+        image: sconekv-node
+        networks:
+            - sconenet
+        depends_on:
+            - tracker
+        deploy:
+            replicas: 20
+            placement:
+                constraints:
+                    - "node.labels.sconekv_type!=client"
+            restart_policy:
+                condition: none
 
 networks:
-  sconenet:
-    driver: overlay
-    attachable: true
+    sconenet:
+        driver: overlay
+        attachable: true
